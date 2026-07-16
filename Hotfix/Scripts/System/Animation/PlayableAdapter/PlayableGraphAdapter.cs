@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -5,8 +6,8 @@ using UnityEngine.Playables;
 
 public enum EnAnimLayer
 {
-    None = -1,
-    Base = 0,
+    None = 0,
+    Base,
     LowerBottom,
     LowerTop,
     Body,
@@ -14,9 +15,50 @@ public enum EnAnimLayer
     Top,
     EnumCount,
 }
+public enum EnAnimLayerBit
+{
+    None = 0,
+    Base = 1 << EnAnimLayer.Base,
+    LowerBottom = 1 << EnAnimLayer.LowerBottom,
+    LowerTop = 1 << EnAnimLayer.LowerTop,
+    Body = 1 << EnAnimLayer.Body,
+    Bottom = 1 << EnAnimLayer.Bottom,
+    Top = 1 << EnAnimLayer.Top,
+}
 public class PlayableGraphAdapter : IClassPool<PlayableGraphAdapterUserData>, IUpdate
 {
+    private struct LayerAnimMixerInfo
+    {
+        public EnAnimLayer layer;
+        public float mixerTime;
 
+        public LayerAnimMixerInfo(EnAnimLayer layer, float mixerTime)
+        {
+            this.layer = layer;
+            this.mixerTime = mixerTime;
+        }
+        public override readonly bool Equals(object obj)
+        {
+            return obj is LayerAnimMixerInfo info &&
+                   layer == info.layer;
+        }
+        public override readonly int GetHashCode()
+        {
+            return HashCode.Combine(layer);
+        }
+        public static bool operator==(LayerAnimMixerInfo info1, LayerAnimMixerInfo info2)
+        {
+            return info1.layer == info2.layer;
+        }
+        public static bool operator!=(LayerAnimMixerInfo info1, LayerAnimMixerInfo info2)
+        {
+            return info1.layer != info2.layer;
+        }
+        public static implicit operator LayerAnimMixerInfo(EnAnimLayer layer)
+        {
+            return new(layer, 0);
+        }
+    }
     public static PlayableGraphAdapter Create(int entityID, Animator animator)
     {
         animator.applyRootMotion = false;
@@ -41,8 +83,8 @@ public class PlayableGraphAdapter : IClassPool<PlayableGraphAdapterUserData>, IU
     private int _EntityID = -1;
     private AnimationLayerMixerPlayable _LayerMixerPlayable;
     private Dictionary<EnAnimLayer, LayerMixerInfo> _Layer2unusePortDic = new();
-    private List<EnAnimLayer> _EnterLayerList = new();
-    private List<EnAnimLayer> _ExistLayerList = new();
+    private List<LayerAnimMixerInfo> _EnterLayerList = new();
+    private List<LayerAnimMixerInfo> _ExistLayerList = new();
     //private AnimationScriptPlayable _PlayableJob;
 
     public void PoolConstructor()
@@ -94,15 +136,15 @@ public class PlayableGraphAdapter : IClassPool<PlayableGraphAdapterUserData>, IU
     }
     private float GetLayerWeight(EnAnimLayer layer)
     {
-        return _LayerMixerPlayable.GetInputWeight((int)layer);
+        return _LayerMixerPlayable.GetInputWeight((int)layer - 1);
     }
     private void SetLayerWeight(EnAnimLayer layer, float weight)
     {
-        _LayerMixerPlayable.SetInputWeight((int)layer, weight);
+        _LayerMixerPlayable.SetInputWeight((int)layer - 1, weight);
     }
     private void SetLayerAdditive(EnAnimLayer layer, bool isAdditive)
     {
-        _LayerMixerPlayable.SetLayerAdditive((uint)layer, isAdditive);
+        _LayerMixerPlayable.SetLayerAdditive((uint)layer - 1, isAdditive);
     }
     public PlayableGraph GetGraph()
     {
@@ -144,11 +186,11 @@ public class PlayableGraphAdapter : IClassPool<PlayableGraphAdapterUserData>, IU
 
     #region layermixer
 
-    public void AddMixerLayer(EnAnimLayer layer)
+    public void AddMixerLayer(EnAnimLayer layer, float layerMixerTime)
     {
         if (!TryGetLayerMixerInfo(layer, out var info))
             return;
-        _EnterLayerList.Add(layer);
+        _EnterLayerList.Add(new(layer, layerMixerTime));
         if (info.IsStatus(EnAnimLayerStatus.Exiting))
         {
             _ExistLayerList.Remove(layer);
@@ -171,7 +213,7 @@ public class PlayableGraphAdapter : IClassPool<PlayableGraphAdapterUserData>, IU
     {
         if (!TryGetLayerMixerInfo(layer, out var layerInfo))
             return;
-        _LayerMixerPlayable.DisconnectInput((int)layer);
+        _LayerMixerPlayable.DisconnectInput((int)layer - 1);
         _Layer2unusePortDic.Remove(layer);
         ClassPoolMgr.Instance.Push(layerInfo);
     }
@@ -185,10 +227,10 @@ public class PlayableGraphAdapter : IClassPool<PlayableGraphAdapterUserData>, IU
         var info = ClassPoolMgr.Instance.Pull<LayerMixerInfo>(infoUserData);
         ClassPoolMgr.Instance.Push(infoUserData);
         _Layer2unusePortDic.Add(layer, info);
-        _LayerMixerPlayable.ConnectInput((int)layer, layerAdapter, GlobalConfig.Int0, GlobalConfig.Int0);
+        _LayerMixerPlayable.ConnectInput((int)layer - 1, layerAdapter, GlobalConfig.Int0, GlobalConfig.Int0);
         var avatar = AnimMgr.Instance.GetLayerAvatar(layer);
         if (avatar != null)
-            _LayerMixerPlayable.SetLayerMaskFromAvatarMask((uint)layer, avatar);
+            _LayerMixerPlayable.SetLayerMaskFromAvatarMask((uint)layer - 1, avatar);
         SetLayerAdditive(layer, false);
         return info;
     }
@@ -228,39 +270,39 @@ public class PlayableGraphAdapter : IClassPool<PlayableGraphAdapterUserData>, IU
         UpdtaeGraphEvaluate();
         for (int i = 0; i < _EnterLayerList.Count; i++)
         {
-            var layer = _EnterLayerList[i];
-            var curWeight = GetLayerWeight(layer);
+            var layerAnimMixerInfo = _EnterLayerList[i];
+            var curWeight = GetLayerWeight(layerAnimMixerInfo.layer);
             if (curWeight == 1)
             {
                 _EnterLayerList[i] = _EnterLayerList[^1];
                 _EnterLayerList.RemoveAt(_EnterLayerList.Count - 1);
                 i--;
-                SetLayerStatus(layer, EnAnimLayerStatus.Playing);
+                SetLayerStatus(layerAnimMixerInfo.layer, EnAnimLayerStatus.Playing);
                 continue;
             }
-            var toWeight = curWeight + ABBUtil.GetTimeDelta() * 5;
+            var toWeight = curWeight + 1 / layerAnimMixerInfo.mixerTime * ABBUtil.GetTimeDelta();
             var weight = Mathf.Clamp(toWeight, 0, 1);
-            SetLayerWeight(layer, weight);
+            SetLayerWeight(layerAnimMixerInfo.layer, weight);
         }
         for (int i = 0; i < _ExistLayerList.Count; i++)
         {
-            var layer = _ExistLayerList[i];
-            var curWeight = GetLayerWeight(layer);
+            var layerAnimMixerInfo = _ExistLayerList[i];
+            var curWeight = GetLayerWeight(layerAnimMixerInfo.layer);
             if (curWeight == 0)
             {
                 _ExistLayerList[i] = _ExistLayerList[^1];
                 _ExistLayerList.RemoveAt(_ExistLayerList.Count - 1);
                 i--;
-                SetLayerStatus(layer, EnAnimLayerStatus.Nothing);
-                if (!TryGetLayerMixerInfo(layer, out var layerInfo))
+                SetLayerStatus(layerAnimMixerInfo.layer, EnAnimLayerStatus.Nothing);
+                if (!TryGetLayerMixerInfo(layerAnimMixerInfo.layer, out var layerInfo))
                     continue;
                 layerInfo.DisconnectAll();
-                DestroyLayerMixerInfo(layer);
+                DestroyLayerMixerInfo(layerAnimMixerInfo.layer);
                 continue;
             }
             var toWeight = curWeight - ABBUtil.GetTimeDelta() * 5;
             var weight = Mathf.Clamp(toWeight, 0, 1);
-            SetLayerWeight(layer, weight);
+            SetLayerWeight(layerAnimMixerInfo.layer, weight);
         }
     }
     public void SetApplyRootMotion(bool applyRootMotion)

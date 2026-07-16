@@ -33,7 +33,7 @@ public class SkillPlayableAdapterDrawStageEditor
                 var length = dataList?.Length ?? 0;
                 if (length == 0)
                 {
-                    EditorGUILayout.HelpBox("Ñ¡ÔñÒ»¸öÊý¾Ý", MessageType.Warning);
+                    EditorGUILayout.HelpBox("select item", MessageType.Warning);
                 }
                 else
                 {
@@ -69,9 +69,9 @@ public class SkillPlayableAdapterDrawStageEditor
                     case 1:
                         {
                             var menu = new GenericMenu();
-                            menu.AddItem(new GUIContent($"ÒÆ³ý {index}"), false, () =>
+                            menu.AddItem(new GUIContent($"ï¿½Æ³ï¿½ {index}"), false, () =>
                             {
-                                if (!EditorUtility.DisplayDialog("ÒÆ³ý", $"ÊÇ·ñÒÆ³ý¼¼ÄÜ½×¶Î {index}", "ok", "cancel"))
+                                if (!EditorUtility.DisplayDialog("ï¿½Æ³ï¿½", $"ï¿½Ç·ï¿½ï¿½Æ³ï¿½ï¿½ï¿½ï¿½Ü½×¶ï¿½ {index}", "ok", "cancel"))
                                     return;
                                 if (index <= _DrawDataIndex)
                                     _DrawDataIndex--;

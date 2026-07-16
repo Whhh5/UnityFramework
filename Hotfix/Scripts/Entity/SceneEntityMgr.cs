@@ -11,31 +11,32 @@ public class SceneEntityMgr : Singleton<SceneEntityMgr>
     {
         return _SceneEntityDatas[entityId];
     }
-    public bool EntityIsValid(in int entityId, in EnSceneEntityStatus checkRules, in EnSceneEntityStatus ignoreRules)
-    {
-        if (!_SceneEntityDatas.TryGetValue(entityId, out var entityData))
-            return false;
-
-        ref readonly var entityState = ref entityData.GetSceneEntityStatus();
-        var checkResult = checkRules & entityState & ~ignoreRules;
-        if (checkResult != EnSceneEntityStatus.None)
-            return false;
-        return true;
-    }
-    public bool EntityIsValid(in int entityId)
-    {
-        var result = EntityIsValid(entityId, EnSceneEntityStatus.Die, EnSceneEntityStatus.None);
-        return result;
-    }
 
     public int CreateEntityData(in int typeId)
     {
-        var userData = ClassPoolMgr.Instance.Pull<GameEntityDataUserData>();
+        var userData = ClassPoolMgr.Instance.Pull<GameEntityUserData>();
         var sceneEntityId = CreateEntityData(in typeId, in userData);
         ClassPoolMgr.Instance.Push(in userData);
         return sceneEntityId;
     }
-    public int CreateEntityData(in int typeId, in GameEntityDataUserData userData)
+    public int CreateEntityData<T>()
+        where T : GameEntityData, new()
+    {
+        var userData = ClassPoolMgr.Instance.Pull<GameEntityUserData>();
+        var entityID = CreateEntityData<T>(userData);
+        ClassPoolMgr.Instance.Push(in userData);
+        return entityID;
+    }
+    public int CreateEntityData<T>(GameEntityUserData userData)
+        where T : GameEntityData, new()
+    {
+        var entityID = EntityMgr.Instance.CreateEntityData<T>(userData);
+        var sceneEntity = EntityMgr.Instance.GetEntityData<SceneEntityData>(in entityID);
+
+        _SceneEntityDatas.Add(entityID, sceneEntity);
+        return entityID;
+    }
+    public int CreateEntityData(in int typeId, in GameEntityUserData userData)
     {
         var sceneEntityId = EntityMgr.Instance.CreateEntityData(in typeId, userData);
         var sceneEntity = EntityMgr.Instance.GetEntityData<SceneEntityData>(in sceneEntityId);
@@ -50,30 +51,6 @@ public class SceneEntityMgr : Singleton<SceneEntityMgr>
         _SceneEntityDatas.Remove(entityId);
         EntityMgr.Instance.RecycleEntityData(in entityId);
 
-    }
-    public ref readonly Vector3 GetSceneEntityHitPosition(in int entityId)
-    {
-        var entityData = GetSceneEntityData(in entityId);
-        ref readonly var pos = ref entityData.GetHitPosition();
-        return ref pos;
-    }
-    public ref readonly EnGameLayerInt GetEntityEnemyLayer(in int entityId)
-    {
-        var entityData = GetSceneEntityData(in entityId);
-        ref readonly var enemyLayer = ref entityData.GetEnemyLayer();
-        return ref enemyLayer;
-    }
-    public ref readonly EnGameLayerInt GetEntityFriendLayer(in int entityId)
-    {
-        var entityData = GetSceneEntityData(in entityId);
-        ref readonly var friendLayer = ref entityData.GetFriendLayer();
-        return ref friendLayer;
-    }
-    public ref readonly EnGameLayerInt GetEntityLayer(in int entityId)
-    {
-        var entityData = GetSceneEntityData(in entityId);
-        ref readonly var layer = ref entityData.GetLayer();
-        return ref layer;
     }
 
     #region Com

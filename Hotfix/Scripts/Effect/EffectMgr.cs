@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.XR;
 
 
 public class EffectMgr : Singleton<EffectMgr>
@@ -23,9 +22,9 @@ public class EffectMgr : Singleton<EffectMgr>
         }
     }
     public override EnManagerFuncType FuncType => base.FuncType | EnManagerFuncType.Update;
-    private Dictionary<int, EffectInfo> _EffectInfos = new();
-    private List<DelayDestroyInfo> _DelayDestroyList = new();
-    private HashSet<int> _DelayEntityID = new();
+    private readonly Dictionary<int, EffectInfo> _EffectInfos = new();
+    private readonly List<DelayDestroyInfo> _DelayDestroyList = new();
+    private readonly HashSet<int> _DelayEntityID = new();
     private int _DelayListIndex = 0;
 
     public bool IsValid(int entityID)
@@ -37,9 +36,15 @@ public class EffectMgr : Singleton<EffectMgr>
         return true;
     }
 
-    public int PlayEffectOnce(int effectID, Vector3 worldPos, Vector3 rot, Vector3 scale)
+    public int PlayEffectOnce(in int effectID, in Vector3 worldPos, in Vector3 rot, in Vector3 scale)
     {
-        var entityID = PlayEffect(effectID);
+        var entityId = PlayEffectOnce<EffectEntityData>(in effectID, in worldPos, in rot, in scale);
+        return entityId;
+    }
+    public int PlayEffectOnce<T>(in int effectID, in Vector3 worldPos, in Vector3 rot, in Vector3 scale)
+        where T : EffectEntityData, new()
+    {
+        var entityID = PlayEffect<T>(effectID);
         var entityData = EntityMgr.Instance.GetEntityData<EffectEntityData>(entityID);
         entityData.SetPosition(worldPos);
         entityData.SetLocalRotation(rot);
@@ -48,7 +53,7 @@ public class EffectMgr : Singleton<EffectMgr>
         AddDelayDesytroyList(entityID, time);
         return entityID;
     }
-    public int PlayEffectOnce(int effectID, Vector3 worldPos)
+    public int PlayEffectOnce(in int effectID, in Vector3 worldPos)
     {
         var entityID = PlayEffect(effectID);
         var entityData = EntityMgr.Instance.GetEntityData<EffectEntityData>(entityID);
@@ -57,13 +62,19 @@ public class EffectMgr : Singleton<EffectMgr>
         AddDelayDesytroyList(entityID, time);
         return entityID;
     }
-    public int PlayEffect(int effectID, Vector3 worldPos, Vector3 rot, Vector3 scale)
+    public int PlayEffect<T>(in int effectID, in Vector3 worldPos, in Vector3 rot, in Vector3 scale)
+        where T : EffectEntityData, new()
     {
-        var entityID = PlayEffect(effectID);
+        var entityID = PlayEffect<T>(effectID);
         var entityData = EntityMgr.Instance.GetEntityData(entityID);
         entityData.SetPosition(worldPos);
         entityData.SetLocalRotation(rot);
         entityData.SetLocalScale(scale);
+        return entityID;
+    }
+    public int PlayEffect(in int effectID, in Vector3 worldPos, in Vector3 rot, in Vector3 scale)
+    {
+        var entityID = PlayEffect<EffectEntityData>(effectID, worldPos, rot, scale);
         return entityID;
     }
     public int PlayEffect(int effectID, Vector3 worldPos)
@@ -73,19 +84,15 @@ public class EffectMgr : Singleton<EffectMgr>
         entityData.SetPosition(worldPos);
         return entityID;
     }
-    public int PlayEffect(int effectID)
+    public int PlayEffect<T>(in int effectID)
+        where T: EffectEntityData, new()
     {
-        var userData = ClassPoolMgr.Instance.Pull<EffectDataUserData>();
+        var userData = ClassPoolMgr.Instance.Pull<EffectEntityUserData>();
         userData.effectCfgID = effectID;
-        var entityID = effectID switch
-        {
-            //1 => EntityMgr.Instance.CreateEntityData<EffectEntityDefaultData>(userData),
-            //2 => 
-            _ => EntityMgr.Instance.CreateEntityData<EffectEntityDefaultData>(userData),
-        };
+        var entityID = EntityMgr.Instance.CreateEntityData<T>(userData);
         ClassPoolMgr.Instance.Push(userData);
 
-        var effectData = EntityMgr.Instance.GetEntityData<EffectEntityData>(entityID);
+        var effectData = EntityMgr.Instance.GetEntityData<T>(entityID);
         effectData.Play();
 
         EntityMgr.Instance.LoadEntity(entityID);
@@ -95,7 +102,12 @@ public class EffectMgr : Singleton<EffectMgr>
         _EffectInfos.Add(entityID, effectInfo);
         return entityID;
     }
-    public void DestroyEffect(int entityID)
+    public int PlayEffect(in int effectID)
+    {
+        var entityId = PlayEffect<EffectEntityData>(effectID);
+        return entityId;
+    }
+    public void DestroyEffect(in int entityID)
     {
         if (!_EffectInfos.TryGetValue(entityID, out var _))
             return;
@@ -104,7 +116,7 @@ public class EffectMgr : Singleton<EffectMgr>
         var time = effectData.GetMaxTime();
         AddDelayDesytroyList(entityID, time);
     }
-    private void AddDelayDesytroyList(int entityID, float time)
+    private void AddDelayDesytroyList(in int entityID, in float time)
     {
         var desInfo = ClassPoolMgr.Instance.Pull<DelayDestroyInfo>();
         desInfo.effectEntityID = entityID;
@@ -116,7 +128,6 @@ public class EffectMgr : Singleton<EffectMgr>
     {
         if (_DelayEntityID.Contains(entityId))
         {
-            // �Ż�
             var desInfo = _DelayDestroyList.Find(item => item.effectEntityID == entityId);
             _DelayDestroyList.Remove(desInfo);
             _DelayEntityID.Remove(entityId);

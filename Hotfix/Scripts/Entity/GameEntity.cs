@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 
-public class GameEntityDataUserData : IClassPoolUserData
+public class GameEntityUserData : IClassPoolDestroy
 {
     public int entityId;
     public virtual void OnPoolDestroy()
@@ -12,7 +12,7 @@ public class GameEntityDataUserData : IClassPoolUserData
 }
 public abstract class GameEntityData<T, TUserData> : GameEntityData
     where T : GameEntity
-    where TUserData: GameEntityDataUserData
+    where TUserData: GameEntityUserData
 {
     protected T _Entity = null;
     public override void OnGODestroy()
@@ -26,7 +26,7 @@ public abstract class GameEntityData<T, TUserData> : GameEntityData
         _Entity = _GameEntity as T;
     }
     protected abstract void OnPoolInit(TUserData userData);
-    public sealed override void OnPoolInit(GameEntityDataUserData userData)
+    public sealed override void OnPoolInit(GameEntityUserData userData)
     {
         base.OnPoolInit(userData);
         OnPoolInit(userData as TUserData);
@@ -47,7 +47,7 @@ public abstract class GameEntityData<T>: GameEntityData
         _Entity = _GameEntity as T;
     }
 }
-public abstract class GameEntityData : IClassPool<GameEntityDataUserData>
+public abstract class GameEntityData : IClassPool<GameEntityUserData>
 {
     protected int _EntityID;
     public int EntityID => _EntityID;
@@ -103,7 +103,7 @@ public abstract class GameEntityData : IClassPool<GameEntityDataUserData>
     {
         _IsActive = false;
     }
-    public virtual void OnPoolInit(GameEntityDataUserData userData)
+    public virtual void OnPoolInit(GameEntityUserData userData)
     {
         _EntityID = userData.entityId;
         _LoadStatus = EnLoadStatus.Start;
@@ -237,7 +237,7 @@ public abstract class GameEntity : MonoBehaviour
     {
         return entity._EntityID;
     }
-    
+
     public void SetEntityID(int entityDataID)
     {
         var entityData = EntityMgr.Instance.GetEntityData(entityDataID);

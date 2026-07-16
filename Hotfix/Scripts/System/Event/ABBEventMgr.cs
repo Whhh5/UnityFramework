@@ -6,8 +6,6 @@ using System;
 public class ABBEventMgr : Singleton<ABBEventMgr>
 {
     private Dictionary<EnABBEvent, ABBEventData> m_ActionList = new();
-
-
     public void Register(EnABBEvent ev, int sourceID, int typeID, IABBEventExecute action)
     {
         if (!m_ActionList.TryGetValue(ev, out var evData))

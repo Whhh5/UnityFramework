@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Playables;
 
-public class PoolNaNUserData : IClassPoolUserData
+public class PoolNaNUserData : IClassPoolDestroy
 {
     public void OnPoolDestroy()
     {
     }
 }
-public class ABBEventDataUserData : IClassPoolUserData
+public class ABBEventDataUserData : IClassPoolDestroy
 {
     public EnABBEvent abbevent;
 
@@ -18,7 +18,7 @@ public class ABBEventDataUserData : IClassPoolUserData
         abbevent = EnABBEvent.NONE;
     }
 }
-public class Entity3DComDataUserData : IClassPoolUserData
+public class Entity3DComDataUserData : IClassPoolDestroy
 {
     public int entityID;
     public void OnPoolDestroy()
@@ -26,7 +26,7 @@ public class Entity3DComDataUserData : IClassPoolUserData
         entityID = -1;
     }
 }
-public class EntityBuffDataUserData : IClassPoolUserData
+public class EntityBuffDataUserData : IClassPoolDestroy
 {
     public int targetEntityID;
     public int sourceEntityID;
@@ -37,7 +37,7 @@ public class EntityBuffDataUserData : IClassPoolUserData
         buff = EnBuff.None;
     }
 }
-public class LayerMixerInfoUserData : IClassPoolUserData
+public class LayerMixerInfoUserData : IClassPoolDestroy
 {
     public EnAnimLayer layer;
     public ScriptPlayable<BridgePlayableAdapter> layerAdapter;
@@ -47,7 +47,7 @@ public class LayerMixerInfoUserData : IClassPoolUserData
         layerAdapter = ScriptPlayable<BridgePlayableAdapter>.Null;
     }
 }
-public class PlayableAdapterUserData : IClassPoolUserData
+public class PlayableAdapterUserData : IClassPoolDestroy
 {
     public PlayableGraphAdapter graph;
     public Playable rootPlayable;
@@ -58,7 +58,7 @@ public class PlayableAdapterUserData : IClassPoolUserData
         graph = null;
     }
 }
-public class PlayableGraphAdapterUserData : IClassPoolUserData
+public class PlayableGraphAdapterUserData : IClassPoolDestroy
 {
     public int entityID;
     public Animator anim;
@@ -70,42 +70,13 @@ public class PlayableGraphAdapterUserData : IClassPoolUserData
     }
 }
 
-public class EntityNoMovementBuffData : IEntityBuffParams
-{
-    public void OnPoolDestroy()
-    {
-    }
 
-    public void OnPoolInit(ISerializeToIntArrayUserData userData)
-    {
-        DeserializeFromIntArray(userData.arrParams, userData.startIndex, userData.count, userData);
-    }
-
-    public EnBuff GetBuff() => EnBuff.NoMovement;
-    public EnTypeId GetTypeDefineId() => EnTypeId.EntityNoMovementBuffData;
-
-    public List<int> SerializeToIntArray()
-    {
-        return null;
-    }
-
-    public void DeserializeFromIntArray(int[] datas, int start, int count, ISerializeToIntArrayUserData userData)
-    {
-        
-    }
-
-}
-
-public abstract class AttackLinkUserData : IClassPoolUserData
+public abstract class AttackLinkUserData : IClassPoolDestroy
 {
     public abstract void OnPoolDestroy();
 }
 
-public class MonsterBaseDataUserData: MonsterEntityDataUserData
-{
-    public int monsterID;
-}
-public abstract class PlayableBehaviourAdapterUserData : IClassPoolUserData
+public abstract class PlayableBehaviourAdapterUserData : IClassPoolDestroy
 {
     public virtual void OnPoolDestroy()
     {
@@ -117,7 +88,7 @@ public abstract class CmdPlayableAdapterUserData : PlayableAdapterUserData
 
 }
 
-public class SkillBehaviourUserData : IClassPoolUserData
+public class SkillBehaviourUserData : IClassPoolDestroy
 {
     public int[] arrValue;
     public void OnPoolDestroy()
@@ -125,7 +96,7 @@ public class SkillBehaviourUserData : IClassPoolUserData
         arrValue = null;
     }
 }
-public sealed class GeneralIntUserData : IClassPoolUserData
+public sealed class GeneralIntUserData : IClassPoolDestroy
 {
     public int intValue;
     public void OnPoolDestroy()
@@ -133,7 +104,7 @@ public sealed class GeneralIntUserData : IClassPoolUserData
         intValue = -1;
     }
 }
-public sealed class GeneralInt2UserData : IClassPoolUserData
+public sealed class GeneralInt2UserData : IClassPoolDestroy
 {
     public int intValue;
     public int intValue2;
@@ -145,7 +116,7 @@ public sealed class GeneralInt2UserData : IClassPoolUserData
     }
 }
 
-public class AIModuleUserData : IClassPoolUserData
+public class AIModuleUserData : IClassPoolDestroy
 {
     public int entityID;
     public int aiModuleCfgID;
@@ -155,17 +126,6 @@ public class AIModuleUserData : IClassPoolUserData
         aiModuleCfgID
             = entityID
             = moduleDataID
-            = -1;
-    }
-}
-
-public class EffectDataUserData : GameEntityDataUserData
-{
-    public int effectCfgID;
-    public override void OnPoolDestroy()
-    {
-        base.OnPoolDestroy();
-        effectCfgID
             = -1;
     }
 }

@@ -180,9 +180,9 @@ public class AbbAssetbundleLoader : IABBAssetLoader2
         await UniTask.Delay(0);
     }
 
-    public async UniTask<T> LoadAssetAsync<T>(int assetID) where T : Object
+    public async UniTask<T> LoadAssetAsync<T>(int assetID, CancellationToken token) where T : Object
     {
-        var result = await PullObject<T>(assetID);
+        var result = await PullObject<T>(assetID, token);
         return result;
     }
 
@@ -195,10 +195,10 @@ public class AbbAssetbundleLoader : IABBAssetLoader2
     {
         PushObject(in assetID);
     }
-    public async UniTask<T> PullObject<T>(int assetID)
+    public async UniTask<T> PullObject<T>(int assetID, CancellationToken token)
         where T : Object
     {
-        if (!await LoadAssetAsync(assetID))
+        if (!await LoadAssetAsync(assetID, token))
             return null;
         if (!_RuntimeAssetInfos.TryGetValue(assetID, out var runtimeAssetInfo))
             return null;
@@ -221,13 +221,13 @@ public class AbbAssetbundleLoader : IABBAssetLoader2
             UnloadAsset(assetID);
     }
 
-    private async UniTask<bool> LoadAssetAsync(int assetID)
+    private async UniTask<bool> LoadAssetAsync(int assetID, CancellationToken token)
     {
         if (_RuntimeAssetInfos.TryGetValue(assetID, out var runtimeAssetInfo))
         {
             var curInfoID = runtimeAssetInfo.infoID;
             if (runtimeAssetInfo.tokenSource != null)
-                await UniTask.WaitUntil(() => runtimeAssetInfo.tokenSource == null);
+                await UniTask.WaitUntil(() => runtimeAssetInfo.tokenSource == null, cancellationToken: token);
             return curInfoID == runtimeAssetInfo.infoID;
         }
 
@@ -240,14 +240,15 @@ public class AbbAssetbundleLoader : IABBAssetLoader2
         runtimeAssetInfo.infoID = infoID;
         runtimeAssetInfo.assetID = assetID;
         _RuntimeAssetInfos.Add(assetID, runtimeAssetInfo);
-        var ab = await LoadAssetbundleAsync(assetInfo.abID);
+        var ab = await LoadAssetbundleAsync(assetInfo.abID, token);
         if (infoID != runtimeAssetInfo.infoID)
         {
             UnloadAsset(assetID);
             return false;
         }
         //ABBUtil.Log($"加载 asset - {assetID} - {assetInfo.path} - {assetInfo.addressableName}");
-        var asset = await ab.LoadAssetAsync<Object>(assetInfo.addressableName);
+        var abRequest = ab.LoadAssetAsync<Object>(assetInfo.addressableName);
+        var asset = await abRequest.ToUniTask(cancellationToken: token);
         if (infoID != runtimeAssetInfo.infoID)
         {
             UnloadAsset(assetID);
@@ -332,7 +333,7 @@ public class AbbAssetbundleLoader : IABBAssetLoader2
         }
 
     }
-    private async UniTask<AssetBundle> LoadAssetbundleAsync(int abID)
+    private async UniTask<AssetBundle> LoadAssetbundleAsync(int abID, CancellationToken token)
     {
         if (_RuntimeAbInfos.TryGetValue(abID, out var runtimeAbInfo))
         {
@@ -349,7 +350,7 @@ public class AbbAssetbundleLoader : IABBAssetLoader2
         var unitaskList = new List<UniTask>();
         foreach (var depAbID in abInfo.dependAbList)
         {
-            var unitask = LoadAssetbundleAsync(depAbID);
+            var unitask = LoadAssetbundleAsync(depAbID, token);
             //if (_RuntimeAbInfos.TryGetValue(depAbID, out var depAbInfo))
             //    depAbInfo.AddRefCount();
             unitaskList.Add(unitask);

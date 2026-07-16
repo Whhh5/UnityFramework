@@ -2,12 +2,18 @@ using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 
-public interface IEntityBuffParamsEditor : IEntityBuffParams, ISkillEditor
+
+public interface IEntityBuffParamsEditor : IEntityBuffData, ISkillEditor
 {
 
 }
 
 public interface ISkillScheduleActionEditor : ISkillScheduleAction, ISkillEditor
+{
+
+}
+
+public interface ISkillEventScheduleDataEditor : ISkillEventScheduleData, ISkillEditor
 {
 
 }

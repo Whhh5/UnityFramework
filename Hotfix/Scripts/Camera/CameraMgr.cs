@@ -89,7 +89,7 @@ public class CameraMgr : SingletonMono<CameraMgr>
         var cameraTarget = EntityMgr.Instance.GetEntityData<ICameraTarget>(in entityId);
         if (cameraTarget == null)
         {
-            ABBUtil.LogError($"SetCameraTarget failed, entityId:{entityId}, EntityData 没有实现接口: {typeof(ICameraTarget)}");
+            ABBUtil.LogError($"SetCameraTarget failed, entityId:{entityId}, EntityData 没锟斤拷实锟街接匡拷: {typeof(ICameraTarget)}");
             return;
         }
         _CameraTarget = cameraTarget;
@@ -115,6 +115,11 @@ public class CameraMgr : SingletonMono<CameraMgr>
     public void SetDepth(in float depth)
     {
         _Depth = depth;
+    }
+    public Vector2 WorldPosToScreenPos(in Vector3 worldPos)
+    {
+        var screenPos = RectTransformUtility.WorldToScreenPoint(_MainCamera, worldPos);
+        return screenPos;
     }
 
     protected override void Update()

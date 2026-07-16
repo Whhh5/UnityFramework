@@ -1,4 +1,4 @@
-public interface IEntityBuffParams: IClassPoolInit<ISerializeToIntArrayUserData>, ISerializeToIntArray
+public interface IEntityBuffData: ISerializeToIntArray<CommonSerializeToIntArrayUserData>
 {
     public EnBuff GetBuff();
 }

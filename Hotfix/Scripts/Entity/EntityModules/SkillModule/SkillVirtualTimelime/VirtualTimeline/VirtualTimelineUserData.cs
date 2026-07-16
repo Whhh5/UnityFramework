@@ -1,4 +1,4 @@
-﻿public class VirtualTimelineUserData : IClassPoolUserData, ISerializeToIntArrayUserData
+﻿public class VirtualTimelineUserData : IClassPoolDestroy, ISerializeToIntArrayUserData
 {
     public int startIndex { get; set; }
     public int count { get ; set; }

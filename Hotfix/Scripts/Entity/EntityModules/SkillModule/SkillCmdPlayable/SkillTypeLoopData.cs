@@ -22,7 +22,7 @@ public class SkillTypeLoopData : ISkillTypeData<SkillPlayableAdapterUserData>, I
 
 
     protected SkillStageInfo[] _DataList = null;
-    protected IEntityBuffParams[] _BuffInfoList = null;
+    protected IEntityBuffData[] _BuffInfoList = null;
     public EnTypeId GetTypeDefineId() => EnTypeId.SkillTypeLoopData;
     
     private List<int> _BuffAddKeyList = new();

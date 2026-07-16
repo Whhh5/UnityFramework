@@ -28,7 +28,7 @@ public class AiPerceptionLayerTest : IAiPerceptionTest
 
     public bool IsPassable(in int testEntityId)
     {
-        ref readonly var layer = ref SceneEntityMgr.Instance.GetEntityLayer(in testEntityId);
+        ref readonly var layer = ref MonsterUtility.GetEntityLayer(in testEntityId);
         var result = layer.HasFlag(_Layer);
         return result;
     }

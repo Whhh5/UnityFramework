@@ -27,14 +27,16 @@ public static class SkillEditorDefine
         { typeof(SkillPhysicsScheduleAction), typeof(SkillPhysicsScheduleActionEditor) },
         { typeof(SkillBuffScheduleAction), typeof(SkillBuffScheduleActionEditor) },
         { typeof(SkillFlyItemScheduleAction), typeof(SkillFlyItemScheduleActionEditor) },
+        { typeof(SkillEventScheduleAction), typeof(SkillEventScheduleActionEditor) },
         { typeof(SkillEffectScheduleAction), typeof(SkillEffectScheduleActionEditor) },
         { typeof(PhysicsResolveBox), typeof(PhysicsResolveBoxEditor) },
         { typeof(PhysicsResolveSphere), typeof(PhysicsResolveSphereEditor) },
         { typeof(PhysicsResolveCylinder), typeof(PhysicsResolveCylinderEditor) },
 
-        { typeof(IEntityBuffParams), typeof(IEntityBuffParamsEditor) },
+        { typeof(IEntityBuffData), typeof(IEntityBuffParamsEditor) },
         { typeof(ISkillScheduleAction), typeof(ISkillScheduleActionEditor) },
         { typeof(IPhysicsResolve), typeof(IPhysicsResolveEditor) },
+        { typeof(ISkillEventScheduleData), typeof(ISkillEventScheduleDataEditor) },
 
         #endregion
 
@@ -68,7 +70,21 @@ public static class SkillEditorDefine
 
     public static Type GetEditorType(Type type)
     {
-        return _EditorTypeDict[type];
+        if (_EditorTypeDict.TryGetValue(type, out var value))
+            return value;
+        value = Type.GetType($"{GetEditorName(type)}, {typeof(SkillEditorDefine).Assembly.FullName}");
+        if (value == null)
+            throw new Exception($"editor type is null, {type.Name}");
+        _EditorTypeDict.Add(type, value);
+        return value;
+    }
+    public static string GetEditorName(Type type)
+    {
+        return GetEditorName(type.Name);
+    }
+    public static string GetEditorName(string clName)
+    {
+        return $"{clName}Editor";
     }
 
     #region Ai
@@ -204,6 +220,8 @@ public static class SkillEditorDefine
             EnAtkLinkScheculeType.Buff => GetEditorType(typeof(SkillBuffScheduleAction)),
             EnAtkLinkScheculeType.Effect => GetEditorType(typeof(SkillEffectScheduleAction)),
             EnAtkLinkScheculeType.FlyItem => GetEditorType(typeof(SkillFlyItemScheduleAction)),
+            EnAtkLinkScheculeType.Behaviour => GetEditorType(typeof(SkillBehaviourScheduleAction)),
+            EnAtkLinkScheculeType.Event => GetEditorType(typeof(SkillEventScheduleAction)),
             _ => null,
         };
         var ins = Activator.CreateInstance(scheduleTypeType);

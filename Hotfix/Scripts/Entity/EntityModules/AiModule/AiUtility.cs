@@ -2,7 +2,7 @@
 
 public static class AiUtility
 {
-    public static IAiExecution CreateAiExecution(in EnAiExecutionType exeType, in IClassPoolUserData userData)
+    public static IAiExecution CreateAiExecution(in EnAiExecutionType exeType, in IClassPoolDestroy userData)
     {
         return exeType switch
         {
@@ -18,14 +18,14 @@ public static class AiUtility
         ClassPoolMgr.Instance.Push(aiExecution);
     }
 
-    public static void ExecuteAiDecision(in EnAiExecutionType exeType, in IClassPoolUserData userData)
+    public static void ExecuteAiDecision(in EnAiExecutionType exeType, in IClassPoolDestroy userData)
     {
         var execution = CreateAiExecution(in exeType, userData);
         execution.ExecuteAiNode();
         DestroyAiExecution(execution);
     }
 
-    public static IAiPerception CreatePerception(in EnAiPerceptionId perceptionId, IClassPoolUserData userData)
+    public static IAiPerception CreatePerception(in EnAiPerceptionId perceptionId, IClassPoolDestroy userData)
     {
         IAiPerception result = perceptionId switch
         {

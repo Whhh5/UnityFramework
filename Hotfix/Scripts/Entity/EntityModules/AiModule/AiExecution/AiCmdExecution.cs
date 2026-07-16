@@ -1,6 +1,6 @@
 
 
-public class AiCmdExecutionUserData : IClassPoolUserData
+public class AiCmdExecutionUserData : IClassPoolDestroy
 {
     public EnEntityCmd cmd;
     public int aiId;

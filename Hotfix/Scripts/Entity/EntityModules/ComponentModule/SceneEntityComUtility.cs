@@ -8,11 +8,12 @@ public static class SceneEntityComUtility
         {
             EnSceneEntityComType.Camera => ClassPoolMgr.Instance.Pull<EntityCameraComData>(userData),
             EnSceneEntityComType.Rigidbody => ClassPoolMgr.Instance.Pull<SceneEntityRigidbodyComData>(userData),
-            EnSceneEntityComType.Property => ClassPoolMgr.Instance.Pull<SceneEntityPropertyComData>(userData),
+            EnSceneEntityComType.Attribute => ClassPoolMgr.Instance.Pull<SceneEntityAttributeComData>(userData),
             EnSceneEntityComType.AI => ClassPoolMgr.Instance.Pull<EntityAIComData>(userData),
             EnSceneEntityComType.Animation => ClassPoolMgr.Instance.Pull<EntityAnimComData>(userData),
             EnSceneEntityComType.Buff => ClassPoolMgr.Instance.Pull<EntityBuffComData>(userData),
             EnSceneEntityComType.Cmd => ClassPoolMgr.Instance.Pull<EntityCmdComData>(userData),
+            EnSceneEntityComType.Spine => ClassPoolMgr.Instance.Pull<EntitySpineComData>(userData),
             _ => null,
         };
     }

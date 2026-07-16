@@ -1,7 +1,18 @@
 using UnityEngine;
 
 
-public abstract class EffectEntityData : GameEntityData<EffectEntity>
+
+public class EffectEntityUserData : GameEntityUserData
+{
+    public int effectCfgID;
+    public override void OnPoolDestroy()
+    {
+        base.OnPoolDestroy();
+        effectCfgID
+            = -1;
+    }
+}
+public class EffectEntityData : GameEntityData<EffectEntity, EffectEntityUserData>
 {
     public sealed override EnLoadTarget LoadTarget
     {
@@ -11,7 +22,7 @@ public abstract class EffectEntityData : GameEntityData<EffectEntity>
             return (EnLoadTarget)effectCfg.nAssetID;
         }
     }
-    private int _EffectID = -1;
+    protected int _EffectID = -1;
     public bool IsPlaying { get; private set; } = false;
 
     public override void OnPoolDestroy()
@@ -21,12 +32,9 @@ public abstract class EffectEntityData : GameEntityData<EffectEntity>
             = -1;
         IsPlaying = false;
     }
-    public override void OnPoolInit(GameEntityDataUserData userData)
+    protected override void OnPoolInit(EffectEntityUserData userData)
     {
-        base.OnPoolInit(userData);
-
-        var data = userData as EffectDataUserData;
-        _EffectID = data.effectCfgID;
+        _EffectID = userData.effectCfgID;
     }
 
     public void Play()
@@ -60,6 +68,7 @@ public abstract class EffectEntity : GameEntity<EffectEntityData>
     protected override void Awake()
     {
         base.Awake();
+
         UpdateMaxTime();
 
         //_MainParticleSystem.Simulate(0, true, false);

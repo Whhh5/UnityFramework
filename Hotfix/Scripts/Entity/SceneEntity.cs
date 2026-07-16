@@ -1,26 +1,20 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using WeChatWASM;
 
 
-public class MonsterEntityDataUserData : GameEntityDataUserData
+public abstract class SceneEntityUserData : GameEntityUserData
 {
-    public int monsterCfgId;
     public override void OnPoolDestroy()
     {
         base.OnPoolDestroy();
-        monsterCfgId
-            = -1;
     }
 }
 public abstract class SceneEntityData<T, TUserData> : SceneEntityData<T>
     where T : SceneEntity
-    where TUserData : MonsterEntityDataUserData
+    where TUserData : SceneEntityUserData
 {
     protected abstract void OnPoolInit(TUserData userData);
-    protected sealed override void OnPoolInit(MonsterEntityDataUserData userData)
+    protected sealed override void OnPoolInit(SceneEntityUserData userData)
     {
         base.OnPoolInit(userData);
         OnPoolInit(userData as TUserData);
@@ -29,81 +23,38 @@ public abstract class SceneEntityData<T, TUserData> : SceneEntityData<T>
 public abstract class SceneEntityData<T> : SceneEntityData
     where T : SceneEntity
 {
-
+    protected T _SceneEntity = null;
+    public override void OnGOCreate()
+    {
+        base.OnGOCreate();
+        _SceneEntity = _Entity as T;
+    }
+    public override void OnGODestroy()
+    {
+        base.OnGODestroy();
+        _SceneEntity = null;
+    }
 }
-public abstract class SceneEntityData : GameEntityData<SceneEntity, MonsterEntityDataUserData>, ICameraTarget
+public abstract class SceneEntityData : GameEntityData<SceneEntity, SceneEntityUserData>
 {
-    private EnSceneEntityStatus _SceneEntityStatus;
-    private EnGameLayerInt _EnemyLayerInt;
-    private EnGameLayerInt _FriendLayerInt;
-    private EnGameLayerInt _LayerInt;
-    private int _MonsterCfgId;
 
-    protected virtual Vector3 HitPositionOffset { get; } = Vector3.up;
-    private Vector3 _HitPosition;
-
-    private Dictionary<EnSceneEntityComType, IEntity3DComData> _EntityComs = new();
+    private readonly Dictionary<EnSceneEntityComType, IEntity3DComData> _EntityComs = new();
     
     private EnSceneEntityControllerType _ControllerType = EnSceneEntityControllerType.None;
-    public virtual ref readonly Vector3 GetHitPosition()
-    {
-        return ref _HitPosition;
-    }
 
-    public override EnLoadTarget LoadTarget
-    {
-        get
-        {
-            var cfg = GameSchedule.Instance.GetMonsterCfg0(_MonsterCfgId);
-            return (EnLoadTarget)cfg.nAssetCfgID;
-        }
-    }
     public override void Destroy()
     {
         base.Destroy();
-        _EnemyLayerInt 
-            = _FriendLayerInt 
-            = _LayerInt
-            = EnGameLayerInt.None;
-        _SceneEntityStatus = EnSceneEntityStatus.None;
+
         _ControllerType =  EnSceneEntityControllerType.None;
     }
 
-    protected override void OnPoolInit(MonsterEntityDataUserData userData)
+    protected override void OnPoolInit(SceneEntityUserData userData)
     {
-        _MonsterCfgId = userData.monsterCfgId;
-        var monsterCfg = GameSchedule.Instance.GetMonsterCfg0(userData.monsterCfgId);
-        for (int i = 0; i < monsterCfg.arrEnemyLayer.Length; i++)
-            _EnemyLayerInt |= (EnGameLayerInt)(1 << monsterCfg.arrEnemyLayer[i]);
-        for (int i = 0; i < monsterCfg.arrFriendLayer.Length; i++)
-            _FriendLayerInt |= (EnGameLayerInt)(1 << monsterCfg.arrFriendLayer[i]);
-        for (int i = 0; i < monsterCfg.arrLayer.Length; i++)
-            _LayerInt |= (EnGameLayerInt)(1 << monsterCfg.arrLayer[i]);
 
-        _SceneEntityStatus = EnSceneEntityStatus.Normalize;
     }
 
-    public ref readonly int GetMonsterCfgId()
-    {
-        return ref _MonsterCfgId;
-    }
-    public ref readonly EnSceneEntityStatus GetSceneEntityStatus()
-    {
-        return ref _SceneEntityStatus;
-    }
 
-    public ref readonly EnGameLayerInt GetEnemyLayer()
-    {
-        return ref _EnemyLayerInt;
-    }
-    public ref readonly EnGameLayerInt GetFriendLayer()
-    {
-        return ref _FriendLayerInt;
-    }
-    public ref readonly EnGameLayerInt GetLayer()
-    {
-        return ref _LayerInt;
-    }
 
     public void AddControllerType(in EnSceneEntityControllerType controllerType)
     {
@@ -118,26 +69,6 @@ public abstract class SceneEntityData : GameEntityData<SceneEntity, MonsterEntit
     public bool IsCanController(in EnSceneEntityControllerType controllerType)
     {
         return controllerType >= _ControllerType;
-    }
-
-    public override void SetPosition(in Vector3 worldPos)
-    {
-        base.SetPosition(worldPos);
-        UpdateHitPosition();
-    }
-    public override void SetLocalRotation(in Vector3 localRotation)
-    {
-        base.SetLocalRotation(in localRotation);
-        UpdateHitPosition();
-    }
-
-    private void UpdateHitPosition()
-    {
-        ref readonly var curPos = ref GetWorldPos();
-        _HitPosition = curPos
-            + Forword * HitPositionOffset.z
-            + Up * HitPositionOffset.y
-            + Right * HitPositionOffset.x;
     }
 
     public override void OnEnable()
@@ -235,30 +166,6 @@ public abstract class SceneEntityData : GameEntityData<SceneEntity, MonsterEntit
     }
     #endregion
 
-    public Vector3 GetTopPoint()
-    {
-        return WorldPos + new Vector3(0, 2, 0);
-    }
-
-    public bool IsCameraTargetValid()
-    {
-        return _IsLoadSuccess;
-    }
-
-    public Vector3 GetCameraTargetWorldPos()
-    {
-        return WorldPos + new Vector3(-5, 10, -5);
-    }
-
-    public Vector3 GetCameraTargetOffsetPos()
-    {
-        return Vector3.zero;
-    }
-
-    public Vector3 GetCameraLookAtPos()
-    {
-        return WorldPos + Vector3.up * 1;
-    }
 }
 
 public abstract class SceneEntity<T> : SceneEntity
@@ -269,21 +176,17 @@ public abstract class SceneEntity<T> : SceneEntity
         return _EntityData as T;
     }
 }
-public abstract class SceneEntity : GameEntity, IEntityAnimCom, ISceneEntityRigidbodyCom, IEntityCameraCom
+public abstract class SceneEntity : GameEntity
 {
     public static implicit operator int(SceneEntity entity3D)
     {
         return entity3D._Entity3DData.EntityID;
     }
     private SceneEntityData _Entity3DData = null;
-    private Animator _Anim = null;
-    private Rigidbody _Rigidbody = null;
 
     protected override void Awake()
     {
         base.Awake();
-        _Anim = GetComponent<Animator>();
-        _Rigidbody = GetComponent<Rigidbody>();
     }
     public override void LoadCompeletion()
     {
@@ -291,23 +194,4 @@ public abstract class SceneEntity : GameEntity, IEntityAnimCom, ISceneEntityRigi
         base.LoadCompeletion();
     }
 
-    public Animator GetAnimator()
-    {
-        return _Anim;
-    }
-
-    public Rigidbody GetRigidbody()
-    {
-        return _Rigidbody;
-    }
-
-    public void IncrementRotationOffset(Vector3 quaternion)
-    {
-        
-    }
-
-    public void IncrementRadiusOffset(float radius)
-    {
-        
-    }
 }

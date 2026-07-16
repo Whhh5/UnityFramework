@@ -19,7 +19,7 @@ public interface IABBAssetLoader2
 {
     public UniTask Initialization();
     public void Destroy();
-    public UniTask<T> LoadAssetAsync<T>(int assetID)
+    public UniTask<T> LoadAssetAsync<T>(int assetID, CancellationToken token)
         where T : Object;
 
     public T LoadAsset<T>(int assetID)

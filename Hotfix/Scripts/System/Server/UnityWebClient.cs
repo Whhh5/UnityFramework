@@ -58,7 +58,7 @@ public class UnityWebClient : IUnityClient
         catch (Exception ex)
         {
             isConnected = false;
-            Debug.LogError($"WebSocket 连接失败: {ex.Message}");
+            Debug.LogWarning($"WebSocket 连接失败: {ex.Message}");
         }
     }
 

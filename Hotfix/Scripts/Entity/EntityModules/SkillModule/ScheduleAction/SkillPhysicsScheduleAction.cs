@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
-using static SkillLinkPlayableAdapter;
+﻿using System.Collections.Generic;
 
 
 public class PhysicsOverlapCallbackCustomData : IPhysicsColliderCallbackCustomData
@@ -38,7 +35,7 @@ public class SkillPhysicsScheduleAction : ISkillScheduleAction
     private float _AtkSchedule;
     private int _AtkValue;
     private int _EffectID; // 击中特效
-    private IEntityBuffParams[] _BuffInfoList;
+    private IEntityBuffData[] _BuffInfoList;
     private IPhysicsResolve _PhysicsResolve;
     public EnTypeId GetTypeDefineId() => EnTypeId.SkillPhysicsScheduleAction;
     public EnAtkLinkScheculeType GetScheduleType() => EnAtkLinkScheculeType.Physics;
@@ -74,14 +71,14 @@ public class SkillPhysicsScheduleAction : ISkillScheduleAction
         eventList.Add(item1);
     }
 
-    private void ScheduleEvent(int entityID, IClassPoolUserData userData)
+    private void ScheduleEvent(int entityID, IClassPoolDestroy userData)
     {
         var data = new PhysicsOverlapCallbackCustomData()
         {
             atkValue = _AtkValue,
             entityID = entityID,
         };
-        var layer = SceneEntityMgr.Instance.GetEntityEnemyLayer(entityID);
+        var layer = MonsterUtility.GetEntityEnemyLayer(entityID);
         PhysicsMgr.Instance.PhysicsOverlap(in _PhysicsResolve, in entityID, in layer, PhysicsOverlapCallback, data);
     }
 

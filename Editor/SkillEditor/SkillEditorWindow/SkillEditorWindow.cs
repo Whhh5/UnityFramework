@@ -183,11 +183,11 @@ public class SkillEditorWindow : EditorWindow
 
             EditorGUILayout.BeginHorizontal();
             {
-                if (GUILayout.Button("保存", style2, GUILayout.Height(30)))
+                if (GUILayout.Button("保存", GUILayout.Height(30)))
                 {
-
+                    Save();
                 }
-                if (GUILayout.Button("保存全部", style2, GUILayout.Height(30)))
+                if (GUILayout.Button("保存全部", GUILayout.Height(30)))
                 {
                     Save();
                 }
@@ -195,11 +195,11 @@ public class SkillEditorWindow : EditorWindow
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.BeginHorizontal();
             {
-                if (GUILayout.Button("打开保存历史面板", style2, GUILayout.Height(30)))
+                if (GUILayout.Button("打开保存历史面板", GUILayout.Height(30)))
                 {
                     _IsHistoryPanelShow = !_IsHistoryPanelShow;
                 }
-                if (GUILayout.Button("打开历史存文件夹", style2, GUILayout.Height(30)))
+                if (GUILayout.Button("打开历史存文件夹", GUILayout.Height(30)))
                 {
                     EditorUtil.OpenFolder(GetHistorySaveDirectory());
                 }
@@ -324,15 +324,15 @@ public class SkillEditorWindow : EditorWindow
                 EnSkillType.Loop => EnTypeId.SkillLoopPlayableAdapter,
                 _ => EnTypeId.None,
             };
-            if(skillTypeId == EnTypeId.None)
+            if (skillTypeId == EnTypeId.None)
                 return;
-            
+
             var newSkillCfg = ExcelEditorUtil.CreateTypeInstance<SkillCfg>();
             ExcelEditorUtil.SetCfgValue(newSkillCfg, nameof(newSkillCfg.nSkillID), skillId);
             ExcelEditorUtil.SetCfgValue(newSkillCfg, nameof(newSkillCfg.nTypeId), (int)skillTypeId);
             ExcelEditorUtil.SetCfgValue(newSkillCfg, nameof(newSkillCfg.arrParams), Array.Empty<int>());
             ExcelEditorUtil.AddCfg(newSkillCfg);
-            
+
             var list = skillGroup.ToList();
             list.Add(skillId);
             skillGroup = list.ToArray();
@@ -357,6 +357,7 @@ public class SkillEditorWindow : EditorWindow
             return;
 
         var skillCfg = ExcelEditorUtil.GetCfg<SkillCfg>(skillId);
+
         var playableTypeId = skillCfg.nTypeId;
         var skillEditor = SkillEditorDefine.GetPlayableAdapterEditor((EnTypeId)playableTypeId);
         var userData = new SkillPlayableAdapterUserData()
@@ -376,6 +377,37 @@ public class SkillEditorWindow : EditorWindow
         if (_IsDebugModel)
             EnterDebugModel();
     }
+    private void DrawSkillInfo(int skillId)
+    {
+        EditorGUILayout.BeginHorizontal();
+        {
+            var skillCfg = ExcelEditorUtil.GetCfg<SkillCfg>(skillId);
+            EditorGuiUtil.LabelField("id:", $"{skillCfg.nSkillID}", 50);
+            EditorGuiUtil.LabelField("cltype:", $"{(EnTypeId)skillCfg.nTypeId}", 200);
+
+            var name = EditorGuiUtil.TextField("name:", skillCfg.strName, 100);
+            if (!string.Equals(name, skillCfg.strName))
+                ExcelEditorUtil.SetCfgValue(skillCfg, nameof(SkillCfg.strName), name);
+            var isRootMotion = EditorGuiUtil.Toggle("motion", skillCfg.bApplyRootMotion > 0, 20);
+            if (isRootMotion != skillCfg.bApplyRootMotion > 0)
+                ExcelEditorUtil.SetCfgValue(skillCfg, nameof(SkillCfg.bApplyRootMotion), isRootMotion ? 1 : 0);
+            var layer = (EnAnimLayerBit)EditorGuiUtil.EnumFlagsField("layer:", (EnAnimLayerBit)skillCfg.nAnimLayer, 100);
+            if (layer != (EnAnimLayerBit)skillCfg.nAnimLayer)
+                ExcelEditorUtil.SetCfgValue(skillCfg, nameof(SkillCfg.nAnimLayer), (int)layer);
+            var isIk = EditorGuiUtil.Toggle("isik:", skillCfg.bIsIK > 0, 20);
+            if (isIk != skillCfg.bIsIK > 0)
+                ExcelEditorUtil.SetCfgValue(skillCfg, nameof(SkillCfg.bIsIK), isIk ? 1 : 0);
+            var level = (EnEntitySkillLevel)EditorGuiUtil.EnumPopup("level:", (EnEntitySkillLevel)skillCfg.nLevel, 100);
+            if (level != (EnEntitySkillLevel)skillCfg.nLevel)
+                ExcelEditorUtil.SetCfgValue(skillCfg, nameof(SkillCfg.nLevel), (int)level);
+            var mixerTime = EditorGuiUtil.FloatField("mixer time:", skillCfg.fMixerTime, 100);
+            if (mixerTime != skillCfg.fMixerTime)
+                ExcelEditorUtil.SetCfgValue(skillCfg, nameof(SkillCfg.fMixerTime), mixerTime);
+
+            GUILayout.FlexibleSpace();
+        }
+        EditorGUILayout.EndHorizontal();
+    }
 
     private void OnGuiCenterMonsterSkillSetting()
     {
@@ -385,6 +417,14 @@ public class SkillEditorWindow : EditorWindow
         }
         else
         {
+            if (_CurSkillId > 0)
+            {
+                DrawSkillInfo(_CurSkillId);
+                GUILayout.Space(10);
+                EditorGuiUtil.DrawLinkHor(2);
+                GUILayout.Space(10);
+            }
+
             _ContentScrollPos = EditorGUILayout.BeginScrollView(_ContentScrollPos);
             {
                 _CurSkillEditor?.OnSkillEditorGUI();
@@ -444,8 +484,8 @@ public class SkillEditorWindow : EditorWindow
         {
             var data = skillEditor.SerializeToIntArray();
             var skillCfg = ExcelEditorUtil.GetCfg<SkillCfg>(skillId);
-            if (ABBUtil.ArrayElementEquals(skillCfg.arrParams, data?.ToArray()))
-                continue;
+            //if (ABBUtil.ArrayElementEquals(skillCfg.arrParams, data?.ToArray()))
+            //    continue;
             changeLog.AppendLine("{");
             changeLog.AppendLine($"\t SkillId:   {skillId}");
             changeLog.AppendLine($"\t\t arrParams: {JsonConvert.SerializeObject(skillCfg.arrParams)}");

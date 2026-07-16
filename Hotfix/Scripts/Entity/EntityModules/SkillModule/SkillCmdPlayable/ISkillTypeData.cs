@@ -3,7 +3,7 @@
 
 
 public interface ISkillTypeData<T> : IClassPoolInit<T>
-    where T: class, IClassPoolUserData
+    where T: class, IClassPoolDestroy
 {
 
 }

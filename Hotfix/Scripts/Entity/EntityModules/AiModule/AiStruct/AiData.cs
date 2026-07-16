@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-public class AiDataUserData : IClassPoolUserData
+public class AiDataUserData : IClassPoolDestroy
 {
     public int aiId;
     public int entityId;

@@ -59,7 +59,7 @@ public static class ExcelEditorUtil
         for (int i = 0; i < files.Length; i++)
         {
             var fileInfo = new FileInfo(files[i]);
-            if(fileInfo.Name.StartsWith(excelName))
+            if (fileInfo.Name.StartsWith(excelName))
                 return fileInfo.FullName;
         }
         return null;
@@ -90,6 +90,18 @@ public static class ExcelEditorUtil
     {
         var cfgList = ReadEditorCfgList<TCfg>();
         cfgList.Add(cfg);
+    }
+    public static void RemoveCfgByIndex<TCfg>(int index)
+        where TCfg : ICfg
+    {
+        var cfgList = ReadEditorCfgList<TCfg>();
+        cfgList.RemoveAt(index);
+    }
+    public static void RemoveCfgByIndex<TCfg>(TCfg cfg)
+        where TCfg : ICfg
+    {
+        var cfgList = ReadEditorCfgList<TCfg>();
+        cfgList.Remove(cfg);
     }
     private static List<T> ReadEditorCfgList<T>()
         where T : ICfg
@@ -144,11 +156,31 @@ public static class ExcelEditorUtil
                 if (!skillCatalog.field2ColList.TryGetValue(field.Name, out var col))
                     goto next;
                 var excelStr = workSheet.GetValue<string>(i, col) ?? "";
-                if (!(field.FieldType.IsValueType && string.IsNullOrWhiteSpace(excelStr)))
+                if (field.FieldType.IsValueType)
                 {
-                    var jsonStr = field.FieldType == typeof(string) ? excelStr : JsonConvert.DeserializeObject(excelStr, field.FieldType);
-                    var value = Convert.ChangeType(jsonStr, field.FieldType);
-                    field.SetValue(insSkillCfgEditor, value);
+                    if (!string.IsNullOrWhiteSpace(excelStr))
+                    {
+                        var jsonStr = JsonConvert.DeserializeObject(excelStr, field.FieldType);
+                        var value = Convert.ChangeType(jsonStr, field.FieldType);
+                        field.SetValue(insSkillCfgEditor, value);
+                    }
+                }
+                else
+                {
+                    if (string.IsNullOrWhiteSpace(excelStr))
+                    {
+                        if (field.FieldType.IsArray)
+                        {
+                            var value = Array.CreateInstance(field.FieldType.GetElementType(), 0);
+                            field.SetValue(insSkillCfgEditor, value);
+                        }
+                    }
+                    else
+                    {
+                        var jsonStr = field.FieldType == typeof(string) ? excelStr : JsonConvert.DeserializeObject(excelStr, field.FieldType);
+                        var value = Convert.ChangeType(jsonStr, field.FieldType);
+                        field.SetValue(insSkillCfgEditor, value);
+                    }
                 }
             }
             result.Add(insSkillCfgEditor);
@@ -256,7 +288,10 @@ public static class ExcelEditorUtil
                 var field = fields[k];
                 if (!skillCatalog.field2ColList.TryGetValue(field.Name, out var col))
                     continue;
-                var value = field.GetValue(rowDatas) ?? (field.FieldType.IsValueType ? Activator.CreateInstance(field.FieldType) : null);
+                var value = field.GetValue(rowDatas) ??
+                    (field.FieldType.IsArray ? Array.CreateInstance(field.FieldType, 0)
+                    : field.FieldType == typeof(string) ? ""
+                    : Activator.CreateInstance(field.FieldType));
                 var jsonStr = field.FieldType == typeof(string) ? value : JsonConvert.SerializeObject(value);
                 workSheet.SetValue(curRow, col, jsonStr);
             }

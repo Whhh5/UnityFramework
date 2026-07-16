@@ -23,7 +23,7 @@ public sealed class ClassPoolMgr : Singleton<ClassPoolMgr>
         var data = Pull<T>(null);
         return data;
     }
-    public T Pull<T>(IClassPoolUserData userData)
+    public T Pull<T>(IClassPoolDestroy userData)
         where T : IClassPool, new()
     {
         var type = typeof(T);

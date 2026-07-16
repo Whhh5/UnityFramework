@@ -44,31 +44,31 @@ public static class EntityUtility
 
     public static void MoveEntity(in int entityId, in Vector3 moveDir, in float length, in bool force = false)
     {
-        var proCom = SceneEntityMgr.Instance.GetEntityCom<SceneEntityPropertyComData>(in entityId, EnSceneEntityComType.Property);
-        if (!force && !proCom.GetIsCanMove())
-            return;
-        ref var speed = ref proCom.GetMoveSpeed();
+        //var proCom = SceneEntityMgr.Instance.GetEntityCom<SceneEntityPropertyComData>(in entityId, EnSceneEntityComType.Property);
+        //if (!force && !proCom.GetIsCanMove())
+        //    return;
+        //ref var speed = ref proCom.GetMoveSpeed();
 
-        var rigidCom = SceneEntityMgr.Instance.GetEntityCom<SceneEntityRigidbodyComData>(in entityId, EnSceneEntityComType.Rigidbody);
-        rigidCom.MoveIncrement(speed * ABBUtil.GetTimeDelta() * moveDir.normalized * length);
+        //var rigidCom = SceneEntityMgr.Instance.GetEntityCom<SceneEntityRigidbodyComData>(in entityId, EnSceneEntityComType.Rigidbody);
+        //rigidCom.MoveIncrement(speed * ABBUtil.GetTimeDelta() * moveDir.normalized * length);
 
-        var monsterCfg = MonsterUtility.GetMonsterCfg(in entityId);
-        var cmd = length > 0.7f ? monsterCfg.nRunCmdId : monsterCfg.nWalkCmdId;
-        if (!SceneEntityMgr.Instance.HasCmd(in entityId, in cmd))
-            SceneEntityMgr.Instance.AddCmd(in entityId, in cmd);
+        //var monsterCfg = MonsterUtility.GetMonsterCfg(in entityId);
+        //var cmd = length > 0.7f ? monsterCfg.nRunCmdId : monsterCfg.nWalkCmdId;
+        //if (!SceneEntityMgr.Instance.HasCmd(in entityId, in cmd))
+        //    SceneEntityMgr.Instance.AddCmd(in entityId, in cmd);
     }
     public static void RotationEntity(in int entityId, in Vector3 lookAt, in bool force = false)
     {
-        var proCom = SceneEntityMgr.Instance.GetEntityCom<SceneEntityPropertyComData>(in entityId, EnSceneEntityComType.Property);
-        if (!force && !proCom.GetIsCanRotate())
-            return;
-        var rotation = EntityMgr.Instance.GetEntityRotation(in entityId);
+        //var proCom = SceneEntityMgr.Instance.GetEntityCom<SceneEntityPropertyComData>(in entityId, EnSceneEntityComType.Property);
+        //if (!force && !proCom.GetIsCanRotate())
+        //    return;
+        //var rotation = EntityMgr.Instance.GetEntityRotation(in entityId);
 
-        var rot = Quaternion.LookRotation(lookAt);
-        ref readonly var speed = ref proCom.GetRotationSpeed();
-        var lerpRot = Quaternion.SlerpUnclamped(Quaternion.Euler(rotation), rot, speed * ABBUtil.GetTimeDelta());
+        //var rot = Quaternion.LookRotation(lookAt);
+        //ref readonly var speed = ref proCom.GetRotationSpeed();
+        //var lerpRot = Quaternion.SlerpUnclamped(Quaternion.Euler(rotation), rot, speed * ABBUtil.GetTimeDelta());
 
-        EntityMgr.Instance.SetEntityRotation(in entityId, lerpRot.eulerAngles);
+        //EntityMgr.Instance.SetEntityRotation(in entityId, lerpRot.eulerAngles);
     }
 
     public static Vector3 CalculateMoveDir(in int entityId, in Vector3 entityDir, in Vector3 forward)
@@ -95,7 +95,7 @@ public static class EntityUtility
 
     static public bool IsValid(int entityID)
     {
-        if (!SceneEntityMgr.Instance.EntityIsValid(entityID))
+        if (!MonsterUtility.EntityIsValid(entityID))
             return false;
         if (SceneEntityMgr.Instance.HasEntityCom(entityID, EnSceneEntityComType.Life))
         {

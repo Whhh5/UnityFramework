@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Text;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -81,6 +82,14 @@ public static class EditorUtil
     {
         return _CurKeyCode.Contains(key);
     }
+    public static float GetTextWidth(string text)
+    {
+        if (string.IsNullOrEmpty(text)) return 0f;
+        GUIContent content = new GUIContent(text);
+        Vector2 size = EditorStyles.label.CalcSize(content);
+        return size.x;
+    }
+
 
     #region view model
 
@@ -281,7 +290,7 @@ public static class EditorUtil
     {
         var type = target.GetType();
         var fieldInfo = type.GetField(target.ToString());
-        var att = fieldInfo.GetCustomAttribute<EditorFieldNameAttribute>();
+        var att = fieldInfo?.GetCustomAttribute<EditorFieldNameAttribute>();
         var name = att?.fieldName ?? target.ToString();
         return name;
     }
@@ -597,9 +606,31 @@ public static class EditorGuiUtil
         DrawEnum(default(T), callback, label, isShow);
     }
 
-    public static void DrawEnum<T>(T defValue, Action<T> callback, string label = null, Func<T, bool> isShow = null,
+    public static void DrawEnum(Type type, Enum defValue, Action<Enum> callback, string label = null, Func<Enum, bool> isShow = null,
         params GUILayoutOption[] options)
-        where T : Enum
+    {
+        var btnName = string.IsNullOrEmpty(label) ? EditorUtil.GetEnumName(defValue) : label;
+
+        if (!GUILayout.Button(btnName, options))
+            return;
+
+        var values = Enum.GetValues(type);
+        var menu = new GenericMenu();
+        for (var i = 0; i < values.Length; i++)
+        {
+            var value = values.GetValue(i);
+            var eObj = (Enum)value;
+            if (isShow != null && !isShow(eObj))
+                continue;
+            var name = EditorUtil.GetEnumName(eObj);
+            menu.AddItem(new GUIContent(name), object.Equals(eObj, defValue), () => { callback.Invoke(eObj); });
+        }
+
+        menu.ShowAsContext();
+    }
+    public static void DrawEnum<T>(T defValue, Action<T> callback, string label = null, Func<T, bool> isShow = null,
+    params GUILayoutOption[] options)
+    where T : Enum
     {
         var btnName = string.IsNullOrEmpty(label) ? EditorUtil.GetEnumName(defValue) : label;
 
@@ -920,21 +951,21 @@ public static class EditorGuiUtil
             switch (Event.current.type)
             {
                 case EventType.MouseDown:
-                {
-                    Event.current.Use();
-                }
+                    {
+                        Event.current.Use();
+                    }
                     break;
                 case EventType.MouseDrag:
-                {
-                    end += Event.current.delta.x / rect.width * (max - min);
-                    //Debug.Log($"        {Event.current.delta}");
-                    Event.current.Use();
-                }
+                    {
+                        end += Event.current.delta.x / rect.width * (max - min);
+                        //Debug.Log($"        {Event.current.delta}");
+                        Event.current.Use();
+                    }
                     break;
                 case EventType.MouseUp:
-                {
-                    Event.current.Use();
-                }
+                    {
+                        Event.current.Use();
+                    }
                     break;
                 default:
                     break;
@@ -946,21 +977,21 @@ public static class EditorGuiUtil
             switch (Event.current.type)
             {
                 case EventType.MouseDown:
-                {
-                    Event.current.Use();
-                }
+                    {
+                        Event.current.Use();
+                    }
                     break;
                 case EventType.MouseDrag:
-                {
-                    start += Event.current.delta.x / rect.width * max;
-                    //Debug.Log($"        {Event.current.delta}");
-                    Event.current.Use();
-                }
+                    {
+                        start += Event.current.delta.x / rect.width * max;
+                        //Debug.Log($"        {Event.current.delta}");
+                        Event.current.Use();
+                    }
                     break;
                 case EventType.MouseUp:
-                {
-                    Event.current.Use();
-                }
+                    {
+                        Event.current.Use();
+                    }
                     break;
                 default:
                     break;
@@ -1179,5 +1210,82 @@ public static class EditorGuiUtil
     {
         DrawAreaDelAndAddBtn(in rect, count, rectInfos, indexInf, delAction,
             btnRect => { EditorGuiUtil.DrawCreateBtn<T>(btnRect, addAction); });
+    }
+
+    public static void LabelField(string name, string content, float width)
+    {
+        var size = GUI.skin.label.CalcSize(new GUIContent() { text = name });
+        EditorGUILayout.BeginHorizontal();
+        {
+            EditorGUILayout.LabelField(name, GUILayout.Width(size.x));
+            EditorGUILayout.LabelField(content, GUILayout.Width(width));
+        }
+        EditorGUILayout.EndHorizontal();
+    }
+    public static string TextField(string name, string content, float width)
+    {
+        var size = GUI.skin.label.CalcSize(new GUIContent() { text = name });
+        EditorGUILayout.BeginHorizontal();
+
+        EditorGUILayout.LabelField(name, GUILayout.Width(size.x));
+        var str = EditorGUILayout.TextField(content, GUILayout.Width(width));
+
+        EditorGUILayout.EndHorizontal();
+        return str;
+    }
+    public static bool Toggle(string name, bool isOn, float width)
+    {
+        var size = GUI.skin.label.CalcSize(new GUIContent() { text = name });
+        EditorGUILayout.BeginHorizontal();
+
+        EditorGUILayout.LabelField(name, GUILayout.Width(size.x));
+        var str = EditorGUILayout.Toggle(isOn, GUILayout.Width(width));
+
+        EditorGUILayout.EndHorizontal();
+        return str;
+    }
+    public static Enum EnumFlagsField(string name, Enum isOn, float width)
+    {
+        var size = GUI.skin.label.CalcSize(new GUIContent() { text = name });
+        EditorGUILayout.BeginHorizontal();
+
+        EditorGUILayout.LabelField(name, GUILayout.Width(size.x));
+        var str = EditorGUILayout.EnumFlagsField(isOn, GUILayout.Width(width));
+
+        EditorGUILayout.EndHorizontal();
+        return str;
+    }
+    public static Enum EnumPopup(string name, Enum isOn, float width)
+    {
+        var size = GUI.skin.label.CalcSize(new GUIContent() { text = name });
+        EditorGUILayout.BeginHorizontal();
+
+        EditorGUILayout.LabelField(name, GUILayout.Width(size.x));
+        var str = EditorGUILayout.EnumPopup(isOn, GUILayout.Width(width));
+
+        EditorGUILayout.EndHorizontal();
+        return str;
+    }
+    public static int IntField(string name, int isOn, float width)
+    {
+        var size = GUI.skin.label.CalcSize(new GUIContent() { text = name });
+        EditorGUILayout.BeginHorizontal();
+
+        EditorGUILayout.LabelField(name, GUILayout.Width(size.x));
+        var str = EditorGUILayout.IntField(isOn, GUILayout.Width(width));
+
+        EditorGUILayout.EndHorizontal();
+        return str;
+    }
+    public static float FloatField(string name, float isOn, float width)
+    {
+        var size = GUI.skin.label.CalcSize(new GUIContent() { text = name });
+        EditorGUILayout.BeginHorizontal();
+
+        EditorGUILayout.LabelField(name, GUILayout.Width(size.x));
+        var str = EditorGUILayout.FloatField(isOn, GUILayout.Width(width));
+
+        EditorGUILayout.EndHorizontal();
+        return str;
     }
 }

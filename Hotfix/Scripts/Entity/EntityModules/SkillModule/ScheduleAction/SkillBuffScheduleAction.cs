@@ -26,7 +26,7 @@ public class SkillBuffScheduleAction : ISkillScheduleAction
     private float _StartSchedule;
     private bool _IsSectionBuff = true;
     private float _EndSchedule;
-    private IEntityBuffParams _BuffDataParams;
+    private IEntityBuffData _BuffDataParams;
     public EnTypeId GetTypeDefineId() => EnTypeId.SkillBuffScheduleAction;
 
     public EnAtkLinkScheculeType GetScheduleType() => EnAtkLinkScheculeType.Buff;
@@ -48,14 +48,14 @@ public class SkillBuffScheduleAction : ISkillScheduleAction
         DeserializeFromIntArray(userData.arrParams, userData.startIndex, userData.count, userData);
     }
 
-    private void ScheduleEvent(int entityID, IClassPoolUserData userData)
+    private void ScheduleEvent(int entityID, IClassPoolDestroy userData)
     {
         var addKey = BuffMgr.Instance.AddEntityBuff(entityID, entityID, _BuffDataParams);
         if (BuffMgr.Instance.GetBuffType(_BuffDataParams.GetBuff()) != EnBuffType.Time)
             _AddBuffKey = addKey;
 
     }
-    private void ScheduleEvent2(int entityID, IClassPoolUserData userData)
+    private void ScheduleEvent2(int entityID, IClassPoolDestroy userData)
     {
         RemoveEntityBuff();
     }

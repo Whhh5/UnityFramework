@@ -118,6 +118,8 @@ public class GameManager : MonoBehaviour
         {
             foreach (var item in list)
             {
+                if (!item.IsUpdate())
+                    continue;
                 item.Update();
             }
         }
@@ -161,7 +163,7 @@ public class GameManager : MonoBehaviour
                 list[^i].Destroy();
             }
         }
-        Debug.Log(" --------------------- ֹͣ Destroy end -----------------------");
+        Debug.Log(" --------------------- Destroy end -----------------------");
         //ABBGOMgr.Instance.DestroyGO(m_GameManagerGoID);
         _GameManagerGoID = -1;
     }

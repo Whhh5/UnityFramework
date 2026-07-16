@@ -43,7 +43,7 @@ public class SkillTimelinePhysicsCylinderEvent : SkillVirtualTimelinePhysicsEven
     public override void OnVirtualTimelineEvent()
     {
         var worldPos = EntityMgr.Instance.GetEntityWorldPos(in _EntityId);
-        var layer = SceneEntityMgr.Instance.GetEntityEnemyLayer(in _EntityId);
+        var layer = MonsterUtility.GetEntityEnemyLayer(in _EntityId);
         ref readonly var count = ref SkillPhysicsMgr.Instance.CylinderCast(in worldPos, Vector3.up * _Height, in _Radius, in layer);
 
         if (count > 0)

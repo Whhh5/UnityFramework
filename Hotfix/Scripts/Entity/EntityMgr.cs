@@ -4,11 +4,11 @@ using System.Collections.Generic;
 
 public class EntityMgr : Singleton<EntityMgr>
 {
-    private Dictionary<int, GameEntityData> m_EntityDataMap = new();
+    private Dictionary<int, GameEntityData> _EntityDataMap = new();
 
     public GameEntityData GetEntityData(in int entityID)
     {
-        if (!m_EntityDataMap.TryGetValue(entityID, out var entityData))
+        if (!_EntityDataMap.TryGetValue(entityID, out var entityData))
             return null;
         return entityData;
     }
@@ -21,30 +21,30 @@ public class EntityMgr : Singleton<EntityMgr>
     }
     public bool IsValid(in int entityID)
     {
-        var result = m_EntityDataMap.ContainsKey(entityID);
+        var result = _EntityDataMap.ContainsKey(entityID);
         return result;
     }
 
     public int CreateEntityData(in int typeId)
     {
-        var userData = ClassPoolMgr.Instance.Pull<GameEntityDataUserData>();
+        var userData = ClassPoolMgr.Instance.Pull<GameEntityUserData>();
         var entityId = CreateEntityData(in typeId, in userData);
         ClassPoolMgr.Instance.Push(userData);
         return entityId;
     }
 
-    public int CreateEntityData(in int typeId, in GameEntityDataUserData userData)
+    public int CreateEntityData(in int typeId, in GameEntityUserData userData)
     {
         var entityId = ABBUtil.GetTempKey();
         userData.entityId = entityId;
         var entityData = TypeDefine.CreateInstance<GameEntityData>(typeId, userData);
         entityData.Create();
         entityData.OnEnable();
-        m_EntityDataMap.Add(entityId, entityData);
+        _EntityDataMap.Add(entityId, entityData);
         return entityId;
     }
 
-    public int CreateEntityData<T>(in GameEntityDataUserData userData)
+    public int CreateEntityData<T>(in GameEntityUserData userData)
         where T : GameEntityData, new()
     {
         var entityID = ABBUtil.GetTempKey();
@@ -53,25 +53,25 @@ public class EntityMgr : Singleton<EntityMgr>
         entityData.SetLoadStatus(EnLoadStatus.Start);
         entityData.Create();
         entityData.OnEnable();
-        m_EntityDataMap.Add(entityID, entityData);
+        _EntityDataMap.Add(entityID, entityData);
         return entityID;
     }
 
     public int CreateEntityData<T>()
         where T : GameEntityData, new()
     {
-        var userData = ClassPoolMgr.Instance.Pull<GameEntityDataUserData>();
+        var userData = ClassPoolMgr.Instance.Pull<GameEntityUserData>();
         var entityID = CreateEntityData<T>(userData);
         ClassPoolMgr.Instance.Push(in userData);
         return entityID;
     }
     public void RecycleEntityData(in int entityID)
     {
-        if (!m_EntityDataMap.TryGetValue(entityID, out var entityData))
+        if (!_EntityDataMap.TryGetValue(entityID, out var entityData))
             return;
         if (entityData.IsLoadSuccess)
             UnloadEntity(entityID);
-        m_EntityDataMap.Remove(entityID);
+        _EntityDataMap.Remove(entityID);
         if (entityData.GetActive())
             entityData.OnDisable();
         entityData.Destroy();
@@ -95,17 +95,20 @@ public class EntityMgr : Singleton<EntityMgr>
         if (loadKey != entityData.LoadKey)
         {
             ABBGOMgr.Instance.DestroyGO(goID);
-            //Debug.LogError(entityID);
             return;
         }
         entityData.SetLoadStatus(EnLoadStatus.Success);
         entityData.SetGOID(goID);
         entityData.SetIsLoadSuccess(true);
-        entityData.OnGOCreate();
         var go = ABBGOMgr.Instance.GetGo(goID);
         var goEntity = go.GetComponent<GameEntity>();
+        entityData.OnGOCreate();
         goEntity.SetEntityID(entityID);
         goEntity.LoadCompeletion();
+
+#if UNITY_EDITOR
+        go.name = $"{go.name}_{entityID}";
+#endif
     }
     public void UnloadEntity(int entityID)
     {
@@ -207,6 +210,11 @@ public class EntityMgr : Singleton<EntityMgr>
         var entityData = GetEntityData(in entityId);
         ref readonly var worldPos = ref entityData.GetWorldPos();
         return ref worldPos;
+    }
+    public Vector2 GetEntityWorldPos2D(in int entityId)
+    {
+        ref readonly var worldPos = ref GetEntityWorldPos(in entityId);
+        return (Vector2)worldPos;
     }
     public T GetEntityComponent<T>(in int entityId)
     {

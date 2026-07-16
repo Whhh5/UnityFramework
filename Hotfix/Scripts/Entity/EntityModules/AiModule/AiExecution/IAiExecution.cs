@@ -5,7 +5,7 @@ public interface IAiExecutionUserData : ISerializeToIntArray<AiCommonUserData>
 
 }
 public interface IAiExecution<T> : IAiExecution, IClassPoolInit<T>
-    where T : IClassPoolUserData
+    where T : IClassPoolDestroy
 {
 
 }

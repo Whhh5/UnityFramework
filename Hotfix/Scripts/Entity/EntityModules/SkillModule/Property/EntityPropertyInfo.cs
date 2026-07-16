@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public class EntityPropertyInfoUserData : IClassPoolUserData
+public class EntityPropertyInfoUserData : IClassPoolDestroy
 {
     public EnEntityProperty target = EnEntityProperty.None;
     public int[] arrParams = null;

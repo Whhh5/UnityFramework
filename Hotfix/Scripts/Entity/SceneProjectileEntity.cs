@@ -1,4 +1,4 @@
-public class SceneProjectileEntityDataUserData : GameEntityDataUserData
+public class SceneProjectileEntityDataUserData : GameEntityUserData
 {
     public int projectileCfgId;
 

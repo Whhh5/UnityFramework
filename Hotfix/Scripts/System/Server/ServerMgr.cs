@@ -53,7 +53,7 @@ public class ServerMgr : Singleton<ServerMgr>, INetCliectReceive
 
         if (!_client.GetIsConnected())
         {
-            Debug.LogError("服务器连接失败");
+            Debug.LogWarning("服务器连接失败");
         }
     }
     public override void Destroy()
@@ -80,7 +80,7 @@ public class ServerMgr : Singleton<ServerMgr>, INetCliectReceive
     private void Disconnect()
     {
         // 断开连接
-        _client.Disconnect();
+        _client?.Disconnect();
     }
 
     public void OnNetMessageReceived(string message)

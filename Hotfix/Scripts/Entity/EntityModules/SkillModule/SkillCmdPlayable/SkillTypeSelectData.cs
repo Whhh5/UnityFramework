@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-public class SkillTypeSelectDataUserData : IClassPoolUserData
+public class SkillTypeSelectDataUserData : IClassPoolDestroy
 {
     public int[] arrParams = null;
 

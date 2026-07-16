@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
@@ -26,7 +27,7 @@ public static class UIUtil
 
 
     private readonly static Dictionary<int, int> _Image2Sprite = new();
-    public static async void LoadSprite(this Image img, int assetID)
+    public static async void LoadSprite(this Image img, int assetID, CancellationToken token)
     {
         var id = img.GetInstanceID();
         if (_Image2Sprite.TryGetValue(id, out var curAssetID))
@@ -37,14 +38,14 @@ public static class UIUtil
         }
 
         _Image2Sprite.Add(id, assetID);
-        var sprite = await ABBLoadMgr.Instance.LoadAsync<Sprite>(assetID);
+        var sprite = await ABBLoadMgr.Instance.LoadAsync<Sprite>(assetID, token);
         if (_Image2Sprite.TryGetValue(id, out curAssetID))
             if (assetID != curAssetID)
                 return;
 
         img.sprite = sprite;
     }
-    public static async UniTask LoadSpriteAsync(this Image img, int assetID)
+    public static async UniTask LoadSpriteAsync(this Image img, int assetID, CancellationToken token)
     {
         var id = img.GetInstanceID();
         if (_Image2Sprite.TryGetValue(id, out var curAssetID))
@@ -55,7 +56,7 @@ public static class UIUtil
         }
 
         _Image2Sprite.Add(id, assetID);
-        var sprite = await ABBLoadMgr.Instance.LoadAsync<Sprite>(assetID);
+        var sprite = await ABBLoadMgr.Instance.LoadAsync<Sprite>(assetID, token);
         if (_Image2Sprite.TryGetValue(id, out curAssetID))
             if (assetID != curAssetID)
                 return;

@@ -16,6 +16,7 @@ public static class SkillDebugModelUtil
         { EnAtkLinkScheculeType.Behaviour, new Color(0, 1, 1, 0.2f) },
         { EnAtkLinkScheculeType.Effect, new Color(1, 1, 0, 0.2f) },
         { EnAtkLinkScheculeType.FlyItem, new Color(1f, 0.5f, 0.5f, 0.2f) },
+        { EnAtkLinkScheculeType.Event, new Color(0.5f, 0.5f, 0, 0.2f) },
     };
     public static float GetTrackStartPosY(in Rect mainRect, in EnAtkLinkScheculeType scheduleType)
     {

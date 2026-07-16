@@ -28,7 +28,7 @@ public class SkillTimelinePhysicsSphereEvent : SkillVirtualTimelinePhysicsEvent
     public override void OnVirtualTimelineEvent()
     {
         ref readonly var entityPos = ref EntityMgr.Instance.GetEntityWorldPos(in _EntityId);
-        ref readonly var entityEnemyLayer = ref SceneEntityMgr.Instance.GetEntityEnemyLayer(in _EntityId);
+        ref readonly var entityEnemyLayer = ref MonsterUtility.GetEntityEnemyLayer(in _EntityId);
         var pos = entityPos + _OffsetPos;
         ref readonly var entityListCount = ref SkillPhysicsMgr.Instance.SphereCast(in pos, _Radius, in entityEnemyLayer);
 

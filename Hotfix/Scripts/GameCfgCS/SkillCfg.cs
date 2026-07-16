@@ -13,13 +13,13 @@ public class SkillCfg : ICfg
 	// 是否启用根运动
 	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 bApplyRootMotion;
 	// 
-	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32[] arrLayer;
-	// 
-	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 bIdleLayerPlay;
+	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 nAnimLayer;
 	// 
 	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 bIsIK;
 	// 指令登等级
 	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 nLevel;
+	// 过渡时间
+	[Newtonsoft.Json.JsonProperty()] public readonly System.Single fMixerTime;
 	public System.Int32 GetID()
 	{
 		return nSkillID;

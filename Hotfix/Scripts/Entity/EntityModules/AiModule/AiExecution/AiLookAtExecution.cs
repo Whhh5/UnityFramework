@@ -1,7 +1,7 @@
 
 using UnityEngine;
 
-public class AiLookAtExecutionUserData : IClassPoolUserData
+public class AiLookAtExecutionUserData : IClassPoolDestroy
 {
     public int aiId;
     public Vector3 lookAtDir;

@@ -48,7 +48,7 @@ public class SkillEffectScheduleAction : ISkillScheduleAction
     {
     }
 
-    public void ScheduleEvent(int entityID, IClassPoolUserData userData)
+    public void ScheduleEvent(int entityID, IClassPoolDestroy userData)
     {
         var pos = EntityMgr.Instance.GetEntityWorldPosOffset(in entityID, _OffsetPos);
         var rot = EntityMgr.Instance.GetEntityRotationOffset(entityID, _OffsetRot);

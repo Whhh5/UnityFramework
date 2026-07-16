@@ -17,7 +17,7 @@ public class AiDecisionGeneratorTestInput : IClassPoolDestroy
 public class AiDecisionGeneratorTestExecutionInfo : IClassPoolDestroy
 {
     public EnAiExecutionType executionType;
-    public IClassPoolUserData userData;
+    public IClassPoolDestroy userData;
     public void OnPoolDestroy()
     {
         ClassPoolMgr.Instance.Push(userData);

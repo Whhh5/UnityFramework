@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class AiMoveExecutionUserData : IClassPoolUserData
+public class AiMoveExecutionUserData : IClassPoolDestroy
 {
     public int aiId;
     public Vector3 dir;

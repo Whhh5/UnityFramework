@@ -2,12 +2,11 @@
 using UnityEngine;
 
 public interface IBuffInfo<T> : IBuffInfo
-    where T : class
 {
     public void Execute(T buffInfo);
     void IBuffInfo.Execute(IClassPool buffInfo)
     {
-        Execute(buffInfo as T);
+        Execute((T)buffInfo);
     }
 }
 public interface IBuffInfo : IClassPoolInit
@@ -22,7 +21,7 @@ public class BuffDefaultInfo : IBuffInfo
     public void OnPoolDestroy()
     { }
 
-    public void OnPoolInit<T>(T userData) where T : IClassPoolUserData
+    public void OnPoolInit<T>(T userData) where T : IClassPoolDestroy
     { }
 }
 public interface IBuffTimeInfo
@@ -36,16 +35,16 @@ public class BuffTimeInfo : IBuffInfo<IBuffTimeInfo>
     public float time = 0;
 
 
-    public void OnPoolInit<T>(T userData) where T : IClassPoolUserData
+    public void OnPoolInit<T>(T userData) where T : IClassPoolDestroy
     {
         startTime = ABBUtil.GetGameTimeSeconds();
     }
 
     public void Execute(IBuffTimeInfo buffInfo)
     {
-        startTime = ABBUtil.GetGameTimeSeconds();
+        var curTime = ABBUtil.GetGameTimeSeconds();
         time = Mathf.Max(time, buffInfo.GetTime());
-        endTime = startTime + time;
+        endTime = curTime + time;
     }
 
     public void OnPoolDestroy()

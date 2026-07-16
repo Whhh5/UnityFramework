@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 
@@ -57,7 +58,7 @@ public sealed class EntityAnimComData : Entity3DComDataGO<IEntityAnimCom>, IUpda
     #endregion
 
 
-    private ISkillPlayableAdapter GetSkillPlayableAdapter(int skillId)
+    private ISkillPlayableAdapter CreateSkillPlayableAdapter(int skillId)
     {
         var skillCfg = GameSchedule.Instance.GetSkillCfg0(skillId);
         var customData = ClassPoolMgr.Instance.Pull<SkillPlayableAdapterUserData>();
@@ -82,7 +83,7 @@ public sealed class EntityAnimComData : Entity3DComDataGO<IEntityAnimCom>, IUpda
                 _CreateAddList.Add(skillId);
                 return;
             }
-            var skillAdapter = GetSkillPlayableAdapter(skillId);
+            var skillAdapter = CreateSkillPlayableAdapter(skillId);
             AddSkillData(skillAdapter);
             ConnectLayerInput(skillId, skillAdapter, skillAdapter.GetOutputLayer());
             skillAdapter.ExecutePlayable();
@@ -143,7 +144,7 @@ public sealed class EntityAnimComData : Entity3DComDataGO<IEntityAnimCom>, IUpda
             var level2 = SkillMgr.Instance.GetSkillLevel(itemSkillId);
             if (level2 < level)
                 continue;
-            if (skillCfg.bIdleLayerPlay <= 0)
+            if ((skillCfg.nAnimLayer & (int)EnAnimLayerBit.Base) > 0)
                 return false;
             for (var index = 0; index < skillPlayableAdapters.Count; index++)
             {
@@ -152,15 +153,8 @@ public sealed class EntityAnimComData : Entity3DComDataGO<IEntityAnimCom>, IUpda
                     continue;
 
                 var skillCfg2 = GameSchedule.Instance.GetSkillCfg0(itemSkillId);
-                if (skillCfg2.arrLayer == null)
-                    continue;
-                for (var i = 0; i < skillCfg2.arrLayer.Length; i++)
-                {
-                    var itemLayer = skillCfg2.arrLayer[i];
-                    var value = Array.FindIndex(skillCfg.arrLayer, layer => layer == itemLayer);
-                    if (value >= 0)
-                        return false;
-                }
+                if ((skillCfg.nAnimLayer & skillCfg2.nAnimLayer) > 0)
+                    return false;
             }
         }
         return true;
@@ -206,14 +200,15 @@ public sealed class EntityAnimComData : Entity3DComDataGO<IEntityAnimCom>, IUpda
 
     private int ConnectLayerInput(int skillId, ISkillPlayableAdapter skillAdapter, EnAnimLayer layer)
     {
+        var skillCfg = GameSchedule.Instance.GetSkillCfg0(skillId);
         if (!_PlayableGraph.TryGetLayerMixerInfo(layer, out var layerInfo))
         {
             layerInfo = _PlayableGraph.CreateLayerMixerInfo(layer);
-            _PlayableGraph.AddMixerLayer(layer);
+            _PlayableGraph.AddMixerLayer(layer, skillCfg.fMixerTime);
         }
         else if (layerInfo.IsStatus(EnAnimLayerStatus.Exiting))
         {
-            _PlayableGraph.AddMixerLayer(layer);
+            _PlayableGraph.AddMixerLayer(layer, skillCfg.fMixerTime);
         }
 
         int portID;
@@ -223,8 +218,8 @@ public sealed class EntityAnimComData : Entity3DComDataGO<IEntityAnimCom>, IUpda
             var mainAdapter2 = from.GetMainPlayableAdapter();
             RemoveAdapter(mainAdapter2);
             from.Complete();
-
-            var mixerAdapter = _PlayableGraph.CreateMixerPlayableAdapter(from, skillAdapter, GlobalConfig.Float02, MixerComplete);
+            
+            var mixerAdapter = _PlayableGraph.CreateMixerPlayableAdapter(from, skillAdapter, skillCfg.fMixerTime, MixerComplete);
             portID = layerInfo.Connect(mixerAdapter);
         }
         else
@@ -287,9 +282,16 @@ public sealed class EntityAnimComData : Entity3DComDataGO<IEntityAnimCom>, IUpda
         _PlayableGraph.SetApplyRootMotion(applyRootMotion);
     }
 
-
+    private readonly List<IPlayableAdapter> _TempAdapterKeys = new(10);
     public void Update()
     {
+        _TempAdapterKeys.Clear();
+        _TempAdapterKeys.AddRange(_Adapter2ConnectInfo.Keys);
+
+        for (int i = 0; i < _TempAdapterKeys.Count; i++)
+        {
+            _TempAdapterKeys[i].OnUpdate();
+        }
         for (var i = 0; i < _NoLoopPlayableList.Count; i++)
         {
             var item = _NoLoopPlayableList[i];

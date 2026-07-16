@@ -8,6 +8,7 @@ public sealed class EntityBuffComData : Entity3DComData
     public override EnSceneEntityComType GetComType() => EnSceneEntityComType.Buff;
     public override void OnPoolDestroy()
     {
+        ClearBuffs();
         base.OnPoolDestroy();
     }
     public override void OnPoolInit(Entity3DComDataUserData userData)
@@ -22,5 +23,9 @@ public sealed class EntityBuffComData : Entity3DComData
     public void RemoveBuff(int addKey)
     {
 
+    }
+    public void ClearBuffs()
+    {
+        BuffMgr.Instance.RemoveEntityBuffByEntityID(in _EntityId);
     }
 }

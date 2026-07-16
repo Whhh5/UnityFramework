@@ -74,7 +74,7 @@ public class SkillFlyItemScheduleAction : ISkillScheduleAction
     {
     }
 
-    private async void ScheduleInvoke(int entityId, IClassPoolUserData userData)
+    private async void ScheduleInvoke(int entityId, IClassPoolDestroy userData)
     {
         var entityData = EntityMgr.Instance.GetEntityData(in entityId);
         var startPos = CalculateUtility.GetPos(entityData.WorldPos, entityData.Forword, entityData.Up, entityData.Right,

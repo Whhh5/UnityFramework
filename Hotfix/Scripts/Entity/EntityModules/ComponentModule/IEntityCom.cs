@@ -8,8 +8,9 @@ public enum EnSceneEntityComType
     Camera,
     CharacterController,
     Rigidbody,
-    Property,
+    Attribute,
     Cmd,
+    Spine,
 }
 public interface IEntity3DComData : IClassPool
 {
@@ -22,7 +23,7 @@ public interface IEntity3DComData : IClassPool
     public void OnDisable();
 }
 public interface IEntity3DComData<T> : IEntity3DComData, IClassPoolInit<T>
-    where T : class, IClassPoolUserData
+    where T : class, IClassPoolDestroy
 {
 
 }

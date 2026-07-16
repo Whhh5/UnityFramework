@@ -20,7 +20,7 @@ public class SkillLinkPlayableAdapter : SkillPlayableAdapter<SkillPlayableAdapte
         ISerializeToIntArray.ParseToValue(in datas, in start, in count, ref localIndex, out _BuffInfoList, in userData);
     }
     private SkillStageInfo[] _DataList = null;
-    private IEntityBuffParams[] _BuffInfoList = null;
+    private IEntityBuffData[] _BuffInfoList = null;
 
     public override EnTypeId GetTypeDefineId() => EnTypeId.SkillLinkPlayableAdapter;
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using UnityEngine;
@@ -40,6 +41,7 @@ public class CfgKeyInfo
 public partial class GameSchedule : Singleton<GameSchedule>
 {
     public override EnSingletonOrder SingletonOrder => EnSingletonOrder.GameSchedule;
+
     public override async UniTask AwakeAsync()
     {
         await base.AwakeAsync();
@@ -64,7 +66,7 @@ public partial class GameSchedule : Singleton<GameSchedule>
             var type = this.GetType();
             var cfgType = Type.GetType(name);
             var loadTarget = Enum.Parse<EnLoadTarget>($"Json_{name}");
-            var obj = await ReadCfgAsync(loadTarget, cfgType);
+            var obj = await ReadCfgAsync(loadTarget, cfgType, GetToken());
             var fieldName = $"m_{name}";
             var fileInfo = type.GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
             if (fileInfo == null)
@@ -100,9 +102,9 @@ public partial class GameSchedule : Singleton<GameSchedule>
     //    var cfg = ReadCfg(fileName, typeof(T));
     //    return cfg as T[];
     //}
-    public static async UniTask<object> ReadCfgAsync(EnLoadTarget loadType, Type type)
+    public static async UniTask<object> ReadCfgAsync(EnLoadTarget loadType, Type type, CancellationToken token)
     {
-        var ass = await ABBLoadMgr.Instance.LoadAsync<TextAsset>(loadType);
+        var ass = await ABBLoadMgr.Instance.LoadAsync<TextAsset>(loadType, token);
 
         var arrType = Array.CreateInstance(type, 0).GetType();
 

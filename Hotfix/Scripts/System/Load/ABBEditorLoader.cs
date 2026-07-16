@@ -6,6 +6,7 @@ using Cysharp.Threading.Tasks;
 using System.IO;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Threading;
 
 public class ABBEditorLoader : IABBAssetLoader2
 {
@@ -29,12 +30,12 @@ public class ABBEditorLoader : IABBAssetLoader2
         _AssetDic.Clear();
     }
 
-    public async UniTask<T> LoadAssetAsync<T>(int assetID) where T : Object
+    public async UniTask<T> LoadAssetAsync<T>(int assetID, CancellationToken token) where T : Object
     {
         var cfg = _AssetDic[assetID];
         var obj = UnityEditor.AssetDatabase.LoadAssetAtPath<T>(cfg.strPath);
         var delay = ABBUtil.GetRange(0, 3);
-        await UniTask.DelayFrame(delay);
+        await UniTask.DelayFrame(delay, cancellationToken: token);
         if (obj == null)
             return null;
         return obj;

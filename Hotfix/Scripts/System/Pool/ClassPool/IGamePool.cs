@@ -9,7 +9,7 @@ public interface IClassPoolInit : IClassPool
     void IClassPool.PoolRelease() { }
 }
 public interface IClassPoolInit<T> : IClassPoolInit, IClassPool<T>
-    where T : IClassPoolUserData
+    where T : IClassPoolDestroy
 {
 }
 public interface IClassPoolDestroy : IClassPoolInit
@@ -23,7 +23,7 @@ public interface IClassPoolNone : IClassPoolDestroy
 public interface IClassPool
 {
     public void PoolConstructor();
-    public void OnPoolInit<T>(T userData) where T : IClassPoolUserData;
+    public void OnPoolInit<T>(T userData) where T : IClassPoolDestroy;
     public void OnPoolEnable();
 
     public void OnPoolDestroy();
@@ -32,7 +32,7 @@ public interface IClassPool
 }
 
 public interface IClassPool<T> : IClassPool
-    where T : IClassPoolUserData
+    where T : IClassPoolDestroy
 {
     public void OnPoolInit(T userData);
 
@@ -44,7 +44,7 @@ public interface IClassPool<T> : IClassPool
     }
 }
 public interface IClassPool2<T> : IClassPool
-    where T : IClassPoolUserData
+    where T : IClassPoolDestroy
 {
     public void OnPoolInit(in T userData);
 

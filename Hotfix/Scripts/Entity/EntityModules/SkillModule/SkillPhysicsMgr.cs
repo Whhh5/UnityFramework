@@ -53,7 +53,7 @@ public class SkillPhysicsMgr : Singleton<SkillPhysicsMgr>
                 continue;
 
             var entityId = (int)entity;
-            if (!SceneEntityMgr.Instance.EntityIsValid(in entityId))
+            if (!MonsterUtility.EntityIsValid(in entityId))
                 continue;
 
             _EntityRaycastHitIndexs[_LastCastEntityCount] = i;

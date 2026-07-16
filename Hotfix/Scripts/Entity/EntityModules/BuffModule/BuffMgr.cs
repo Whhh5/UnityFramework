@@ -2,7 +2,15 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-
+public class EntityBuffAddEventBuff : IClassPoolDestroy
+{
+    public int count;
+    public void OnPoolDestroy()
+    {
+        count
+            = -1;
+    }
+}
 public class BuffMgr : Singleton<BuffMgr>
 {
     #region struct
@@ -59,7 +67,7 @@ public class BuffMgr : Singleton<BuffMgr>
     private Dictionary<int, HashSet<int>> _BuffDataID2AddKey = new();
 
     private Dictionary<int, EntityBuffInfo> _Entity2BuffInfo = new();
-    private Dictionary<int, ISkillEntityBuff> _ID2BuffDataDic = new();
+    private Dictionary<int, IEntityBuff> _ID2BuffDataDic = new();
 
     //private List<int> _TimeBuffKeys = new(10);
     private Dictionary<EnBuffType, Dictionary<int, IBuffInfo>> _BuffTypeList = new();
@@ -79,7 +87,7 @@ public class BuffMgr : Singleton<BuffMgr>
     {
         throw new System.NotImplementedException();
     }
-    public int AddEntityBuff(int sourceEntityID, int targetEntityID, IEntityBuffParams buffParams)
+    public int AddEntityBuff(int sourceEntityID, int targetEntityID, IEntityBuffData buffParams)
     {
         var buff = buffParams.GetBuff();
         if (!SceneEntityMgr.Instance.HasEntityCom(targetEntityID, EnSceneEntityComType.Buff))
@@ -96,13 +104,13 @@ public class BuffMgr : Singleton<BuffMgr>
         {
             buffDataID = CreateEntityBuffData(sourceEntityID, targetEntityID, buff);
             var buffData = GetBuffData(buffDataID);
-            buffData.OnEnable(addKey, buffParams);
+            buffData.AddKey(addKey, buffParams);
             entityBuffInfo.AddBuff(buff, buffDataID);
         }
         else
         {
             var buffData = GetBuffData(buffDataID);
-            buffData.ReOnEnable(addKey, buffParams);
+            buffData.ReaddKey(addKey, buffParams);
         }
 
         var buffInfo = ClassPoolMgr.Instance.Pull<AddBuffInfo>();
@@ -119,13 +127,18 @@ public class BuffMgr : Singleton<BuffMgr>
         addKeyList.Add(addKey);
 
         UpdateBuffTypeInfo(buffDataID, buffParams);
-        //var buffCom = Entity3DMgr.Instance.GetEntityCom<EntityBuffComData>(targetEntityID);
-        //buffCom.AddBuff(addKey);
+
+        var buffData2 = GetBuffData(buffDataID);
+        var evUd = ClassPoolMgr.Instance.Pull<EntityBuffAddEventBuff>();
+        evUd.count = buffData2.GetCount();
+        EventMgr.Instance.FireExecute(EnABBEvent.EVENT_ENTITY_BUFF_Add, (int)buff, targetEntityID, evUd);
+        ClassPoolMgr.Instance.Push(evUd);
+
 
         return addKey;
     }
     private List<int> _TempList = new(10);
-    public void RemoveEntityBuffByEntityID(int entityID)
+    public void RemoveEntityBuffByEntityID(in int entityID)
     {
         if (!_Entity2BuffInfo.TryGetValue(entityID, out var buffInfo))
             return;
@@ -159,31 +172,33 @@ public class BuffMgr : Singleton<BuffMgr>
         //var animCom = Entity3DMgr.Instance.GetEntityCom<EntityBuffComData>(addInfo.entityID);
         //animCom.RemoveBuff(addBuffKey);
         _AddKeyData.Remove(addBuffKey);
+        var entityId = addInfo.entityID;
+        var buff = addInfo.buff;
+        ClassPoolMgr.Instance.Push(addInfo);
 
-
-        if (!_Entity2BuffInfo.TryGetValue(addInfo.entityID, out var entityBuffInfo))
+        if (!_Entity2BuffInfo.TryGetValue(entityId, out var entityBuffInfo))
             return;
 
-        if (!entityBuffInfo.TryGetBuffDataID(addInfo.buff, out var buffDataID))
+        if (!entityBuffInfo.TryGetBuffDataID(buff, out var buffDataID))
             return;
 
         var buffData = GetBuffData(buffDataID);
 
-        buffData.OnDisable(addBuffKey);
+        buffData.RemoveKey(addBuffKey);
 
-        if (buffData.IsRemove())
+        if (buffData.IsClear())
         {
-            entityBuffInfo.RemoveBuff(addInfo.buff);
+            buffData.Clear();
+            entityBuffInfo.RemoveBuff(buff);
             if (entityBuffInfo.Count == 0)
             {
-                _Entity2BuffInfo.Remove(addInfo.entityID);
+                _Entity2BuffInfo.Remove(entityId);
                 ClassPoolMgr.Instance.Push(entityBuffInfo);
             }
             RemoveBuffTypeInfo(buffDataID);
             RemoveEntityBuffData(buffDataID);
         }
 
-        ClassPoolMgr.Instance.Push(addInfo);
     }
     public bool ContainsBuff(int addBuffKey)
     {
@@ -219,17 +234,17 @@ public class BuffMgr : Singleton<BuffMgr>
             return EnBuff.None;
         return buffInfo.buff;
     }
-    private ISkillEntityBuff GetBuffData(int buffDataID)
+    private IEntityBuff GetBuffData(int buffDataID)
     {
         return _ID2BuffDataDic[buffDataID];
     }
-    private ISkillEntityBuff GetBuffData(int entityID, EnBuff buff)
+    private IEntityBuff GetBuffData(int entityID, EnBuff buff)
     {
         var buffDataID = _Entity2BuffInfo[entityID].GetBuffDataID(buff);
         var data = _ID2BuffDataDic[buffDataID];
         return data;
     }
-    public ISkillEntityBuff GetBuffDataByAddKey(int addKey)
+    public IEntityBuff GetBuffDataByAddKey(int addKey)
     {
         if (!_AddKeyData.TryGetValue(addKey, out var addInfo))
             return null;

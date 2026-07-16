@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 
-public delegate void SkillItemEventInfoEvent(int entityID, IClassPoolUserData userData);
-public class SkillItemEventInfo : IClassPoolUserData
+public delegate void SkillItemEventInfoEvent(int entityID, IClassPoolDestroy userData);
+public class SkillItemEventInfo : IClassPoolDestroy
 {
     public float schedule;
-    public IClassPoolUserData userData;
+    public IClassPoolDestroy userData;
     public SkillItemEventInfoEvent onEvent;
 
     public void OnPoolDestroy()
@@ -43,7 +43,7 @@ public class SkillStageInfo : IClassPoolInit<ISerializeToIntArrayUserData>, ISer
     private float _CanNextTime;
     private float _AtkEndTime;
     private bool _IsAutoRemove = true;
-    private IEntityBuffParams[] _BuffInfoList = null;
+    private IEntityBuffData[] _BuffInfoList = null;
     private ISkillScheduleAction[] _ArrAtkLinkSchedule = null;
     public EnTypeId GetTypeDefineId() => EnTypeId.SkillItemInfo;
 

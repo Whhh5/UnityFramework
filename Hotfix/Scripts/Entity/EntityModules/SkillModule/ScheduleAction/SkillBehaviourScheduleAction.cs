@@ -54,7 +54,7 @@ public class SkillBehaviourScheduleAction : ISkillScheduleAction
         eventList.Add(eventData);
     }
 
-    public void ScheduleEvent(int entityID, IClassPoolUserData userData)
+    public void ScheduleEvent(int entityID, IClassPoolDestroy userData)
     {
         _SkillBehaviour.Execute(entityID);
     }

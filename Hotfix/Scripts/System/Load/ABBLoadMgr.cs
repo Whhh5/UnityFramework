@@ -53,17 +53,17 @@ public class ABBLoadMgr : Singleton<ABBLoadMgr>
     {
         return GetLoader(GlobalConfigSO.Instance.LoaderType);
     }
-    public async UniTask<T> LoadAsync<T>(EnLoadTarget loadTarget)
+    public async UniTask<T> LoadAsync<T>(EnLoadTarget loadTarget, CancellationToken token)
         where T : Object
     {
-        var result = await LoadAsync<T>((int)loadTarget);
+        var result = await LoadAsync<T>((int)loadTarget, token);
         return result;
     }
-    public async UniTask<T> LoadAsync<T>(int assetCfgID)
+    public async UniTask<T> LoadAsync<T>(int assetCfgID, CancellationToken token)
         where T : Object
     {
         var loader = GetLoader();
-        var result = await loader.LoadAssetAsync<T>(assetCfgID);
+        var result = await loader.LoadAssetAsync<T>(assetCfgID, token);
         return result;
     }
 

@@ -63,8 +63,9 @@ public class PlayerController : Singleton<PlayerController>
     public override void Update()
     {
         base.Update();
-
-        if (!SceneEntityMgr.Instance.EntityIsValid(in _CurControllerEntityId))
+        if (_CurControllerEntityId <= 0)
+            return;
+        if (!MonsterUtility.EntityIsValid(in _CurControllerEntityId))
             return;
 
         if(!SceneEntityMgr.Instance.IsCanController(in _CurControllerEntityId, EnSceneEntityControllerType.Player))

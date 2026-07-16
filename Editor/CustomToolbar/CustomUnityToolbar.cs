@@ -84,6 +84,14 @@ public static class CustomUnityToolbar
             var att = type.GetCustomAttribute<CustomUnityToolbarAttribute>();
             if (att == null)
                 continue;
+            switch (att.order)
+            {
+                case EnCustomUnityToolbarOrder.BuildAssetbundle:
+                case EnCustomUnityToolbarOrder.BuildBundle:
+                    continue;
+                default:
+                    break;
+            }
             if (!_BtnList.TryGetValue(att.toolbarType, out var list))
             {
                 list = new();
@@ -128,8 +136,8 @@ public static class CustomUnityToolbar
                 var root = m_currentToolbar.GetType().GetField("m_Root", BindingFlags.NonPublic | BindingFlags.Instance);
                 var rawRoot = root.GetValue(m_currentToolbar);
                 var mRoot = rawRoot as VisualElement;
-                RegisterCallback("ToolbarZoneLeftAlign", FlexDirection.Row, () => GUIToolbar(EnCustomUnityToolbarType.Left));
-                RegisterCallback("ToolbarZoneRightAlign", FlexDirection.RowReverse, () => GUIToolbar(EnCustomUnityToolbarType.Right));
+                RegisterCallback("ToolbarZoneLeftAlign", FlexDirection.RowReverse, () => GUIToolbar(EnCustomUnityToolbarType.Left));
+                RegisterCallback("ToolbarZoneRightAlign", FlexDirection.Row, () => GUIToolbar(EnCustomUnityToolbarType.Right));
 
                 void RegisterCallback(string root, FlexDirection dir, Action cb)
                 {
@@ -164,8 +172,11 @@ public static class CustomUnityToolbar
         if (!_BtnList.TryGetValue(barType, out var list))
             return;
 
+        //if (barType == EnCustomUnityToolbarType.Left)
+        //    GUILayout.FlexibleSpace();
+        //else
+        //    GUILayout.Space(100);
         GUILayout.BeginHorizontal();
-        GUILayout.Space(100);
         for (int i = 0; i < list.Count; i++)
         {
             var item = list[i];
@@ -175,8 +186,12 @@ public static class CustomUnityToolbar
                 item.instace.OnClick();
             }
         }
-        GUILayout.Space(100);
+
         GUILayout.EndHorizontal();
+        //if (barType == EnCustomUnityToolbarType.Left)
+        //    GUILayout.Space(100);
+        //else
+        //    GUILayout.FlexibleSpace();
     }
 
     private static readonly string _BuffClassPath = "Assets/AbbFramework/Scripts/EntityBuff";
@@ -252,7 +267,7 @@ public static class CustomUnityToolbar
         content.AppendLine("{");
 
 
-        content.AppendLine($"\tpublic static {typeof(ISkillEntityBuff)} CreateBuffData({_BuffEnumName} buff, {typeof(IClassPoolUserData)} data)");
+        content.AppendLine($"\tpublic static {typeof(IEntityBuff)} CreateBuffData({_BuffEnumName} buff, {typeof(IClassPoolDestroy)} data)");
         content.AppendLine("\t{");
         content.AppendLine($"\t\treturn buff switch");
         content.AppendLine($"\t\t{{");
@@ -287,27 +302,27 @@ public static class CustomUnityToolbar
             var dataName = $"{className}Data";
             fileContent.AppendLine("using UnityEngine;");
 
-            fileContent.AppendLine($"public class {dataName} : {nameof(IEntityBuffParams)}");
-            fileContent.AppendLine($"public void {nameof(IEntityBuffParams.OnPoolDestroy)}()");
+            fileContent.AppendLine($"public class {dataName} : {nameof(IEntityBuffData)}");
+            fileContent.AppendLine($"public void {nameof(IEntityBuffData.OnPoolDestroy)}()");
             fileContent.AppendLine($"{{");
             fileContent.AppendLine($"}}");
 
-            fileContent.AppendLine($"public void {nameof(IEntityBuffParams.DeserializeFromIntArray)}({nameof(ISerializeToIntArrayUserData)} userData)");
+            fileContent.AppendLine($"public void {nameof(IEntityBuffData.DeserializeFromIntArray)}({nameof(ISerializeToIntArrayUserData)} userData)");
             fileContent.AppendLine($"{{");
-            fileContent.AppendLine($"    {nameof(IEntityBuffParams.DeserializeFromIntArray)}(userData.{nameof(ISerializeToIntArrayUserData.arrParams)}, userData.{nameof(ISerializeToIntArrayUserData.startIndex)}, userData.{nameof(ISerializeToIntArrayUserData.count)}, userData);");
+            fileContent.AppendLine($"    {nameof(IEntityBuffData.DeserializeFromIntArray)}(userData.{nameof(ISerializeToIntArrayUserData.arrParams)}, userData.{nameof(ISerializeToIntArrayUserData.startIndex)}, userData.{nameof(ISerializeToIntArrayUserData.count)}, userData);");
             fileContent.AppendLine($"}}");
 
             fileContent.AppendLine($"public EnBuff GetBuff() => EnBuff.NoMovement;");
-            fileContent.AppendLine($"public EnTypeId {nameof(IEntityBuffParams.GetTypeDefineId)}() => {nameof(EnTypeId)}.{dataName};");
+            fileContent.AppendLine($"public EnTypeId {nameof(IEntityBuffData.GetTypeDefineId)}() => {nameof(EnTypeId)}.{dataName};");
 
-            fileContent.AppendLine($"public List<int> {nameof(IEntityBuffParams.SerializeToInt)}()");
+            fileContent.AppendLine($"public List<int> {nameof(IEntityBuffData.SerializeToInt)}()");
             fileContent.AppendLine($"    return null;");
             fileContent.AppendLine($"}}");
-            fileContent.AppendLine($"public void {nameof(IEntityBuffParams.DeserializeFromIntArray)}(int[] datas, int start, int count, {nameof(ISerializeToIntArrayUserData)} userData)");
+            fileContent.AppendLine($"public void {nameof(IEntityBuffData.DeserializeFromIntArray)}(int[] datas, int start, int count, {nameof(ISerializeToIntArrayUserData)} userData)");
             fileContent.AppendLine($"}}");
 
             fileContent.AppendLine($"}}");
-            fileContent.AppendLine($"public class {className} : {typeof(SkillEntityBuff)}<{dataName}>");
+            fileContent.AppendLine($"public class {className} : {typeof(EntityBuff)}<{dataName}>");
             fileContent.AppendLine("{");
             fileContent.AppendLine("\t");
             fileContent.AppendLine("}");

@@ -99,6 +99,7 @@ public interface IPlayableAdapter : IClassPool
     public bool IsLoop();
 
     // life
+    public void OnUpdate();
     public void OnPlayableCreate();
     public void OnGraphStart(Playable playable);
     public void OnGraphStop(Playable playable);
@@ -246,11 +247,16 @@ public abstract class PlayableAdapter<T> : IPlayableAdapter, IClassPool<T>
         return _SkillId;
     }
 
+    public void OnUpdate()
+    {
+
+    }
+
     public virtual void OnPlayableCreate()
     {
     }
 
-	public virtual void OnGraphStart(Playable playable)
+    public virtual void OnGraphStart(Playable playable)
     {
     }
 

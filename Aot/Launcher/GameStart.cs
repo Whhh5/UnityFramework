@@ -1,8 +1,6 @@
-using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.Networking;
 using WeChatWASM;
 
 public enum EnLoaderType
@@ -23,11 +21,11 @@ public class GameStart : MonoBehaviour
 
     private void Awake()
     {
-        WX.InitSDK(sdkID=>
-        {
-            Debug.LogWarning($"WXSDKID: {sdkID}");
-        });
-        WX.ReportGameStart();
+        //WX.InitSDK(sdkID=>
+        //{
+        //    Debug.LogWarning($"WXSDKID: {sdkID}");
+        //});
+        //WX.ReportGameStart();
 
         _UpdateGameController.Add(EnLoaderType.Assetbundle, new HotfixMgr());
         _UpdateGameController.Add(EnLoaderType.Editor, new HotfixTest());

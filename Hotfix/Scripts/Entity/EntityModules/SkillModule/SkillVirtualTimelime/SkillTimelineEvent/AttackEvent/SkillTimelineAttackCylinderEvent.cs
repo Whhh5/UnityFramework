@@ -33,7 +33,7 @@ public class SkillTimelineAttackCylinderEvent : SkillTimelineAttackRangeEvent
     {
         var worldPos = GetCaculateCastWorldPos();
         var rotation = GetCaculateCastRotation();
-        ref readonly var layer = ref SceneEntityMgr.Instance.GetEntityEnemyLayer(in _EntityId);
+        ref readonly var layer = ref MonsterUtility.GetEntityEnemyLayer(in _EntityId);
         ref readonly var count = ref SkillPhysicsMgr.Instance.CylinderCast(in worldPos, Vector3.up * _Height, in _Radius, in layer);
         return count;
     }

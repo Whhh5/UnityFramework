@@ -47,11 +47,16 @@ public class SkillPlayableAdapterDrawStageDebugModelEditor : ISkillDebugModelEdi
         _DrawSkillEditorInfoList.Clear();
         _KeyCode.Clear();
         _DataList = null;
+        _StageTimeList.Clear();
     }
     public void OnDebugModelEnterEditor(GameObject go)
     {
-        var anim = go.GetComponent<Animator>();
-        _GraphEditor = PlayableGraph.Create($"custom-{anim.name}");
+        if (!go.TryGetComponent<Animator>(out var anim))
+        {
+            anim = go.AddComponent<Animator>();
+        }
+
+        _GraphEditor = PlayableGraph.Create($"custom-{go.name}");
         _GraphEditor.SetTimeUpdateMode(DirectorUpdateMode.Manual);
         var sourcePort = AnimationPlayableOutput.Create(_GraphEditor, $"{anim.name}-output", anim);
         var mixerPlayable = AnimationMixerPlayable.Create(_GraphEditor);
@@ -83,7 +88,6 @@ public class SkillPlayableAdapterDrawStageDebugModelEditor : ISkillDebugModelEdi
         _GraphEditor.Evaluate(0);
     }
 
-    private Vector2 _ShowStageInfoScrollPos = Vector2.zero;
     public void OnGuiDebugModelUpdateEditor()
     {
         UpdateKeyCodeState();

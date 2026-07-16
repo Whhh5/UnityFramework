@@ -23,7 +23,7 @@ public class SkillLoopPlayableAdapter : SkillPlayableAdapter<SkillPlayableAdapte
 
 
     private SkillStageInfo[] _DataList = null;
-    private IEntityBuffParams[] _BuffInfoList = null;
+    private IEntityBuffData[] _BuffInfoList = null;
     public override EnTypeId GetTypeDefineId() => EnTypeId.SkillLoopPlayableAdapter;
 
 
@@ -91,6 +91,17 @@ public class SkillLoopPlayableAdapter : SkillPlayableAdapter<SkillPlayableAdapte
     }
     public override void RemovePlayable()
     {
+        //if (CurAtkLinkStageData.ScheduleEventIsValid())
+        //{
+        //    var curAttackItem = CurAtkLinkStageData.GetCurScheduleItem();
+        //    //var schedule = GetPlaySchedule() % GetUnitTime() / GetUnitTime();
+        //    var schedule = GetPlaySchedule01();
+        //    if (schedule >= curAttackItem.schedule)
+        //    {
+        //        curAttackItem.onEvent.Invoke(_EntityID, curAttackItem.userData);
+        //        CurAtkLinkStageData.NextEventAction();
+        //    }
+        //}
         CurAtkLinkStageData.OnDisable(_EntityID);
         foreach (var addKey in _BuffAddKeyList)
         {
@@ -173,10 +184,8 @@ public class SkillLoopPlayableAdapter : SkillPlayableAdapter<SkillPlayableAdapte
         m_PlayableAdapter = to;
     }
 
-    public override bool OnPrepareFrame(Playable playable, FrameData info)
+    public override void OnUpdate()
     {
-        if (!base.OnPrepareFrame(playable, info))
-            return false;
         if (_StepIndex == EnCmdStep.Step1 && ABBUtil.GetGameTimeSeconds() - _LastExecuteTime > GlobalConfig.Float02)
         {
             if (_LoopCount != GetPlayCount())
@@ -198,14 +207,14 @@ public class SkillLoopPlayableAdapter : SkillPlayableAdapter<SkillPlayableAdapte
         if (CurAtkLinkStageData.ScheduleEventIsValid())
         {
             var curAttackItem = CurAtkLinkStageData.GetCurScheduleItem();
-            var schedule = GetPlaySchedule() % GetUnitTime() / GetUnitTime();
-            if (schedule > curAttackItem.schedule)
+            //var schedule = GetPlaySchedule() % GetUnitTime() / GetUnitTime();
+            var schedule = GetPlaySchedule01();
+            if (schedule >= curAttackItem.schedule)
             {
                 curAttackItem.onEvent.Invoke(_EntityID, curAttackItem.userData);
                 CurAtkLinkStageData.NextEventAction();
             }
         }
-        return true;
     }
     private int GetCount()
     {

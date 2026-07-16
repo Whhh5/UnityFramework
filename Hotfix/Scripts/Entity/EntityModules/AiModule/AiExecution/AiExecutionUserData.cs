@@ -1,4 +1,4 @@
-public class AiExecutionUserData : IClassPoolUserData
+public class AiExecutionUserData : IClassPoolDestroy
 {
     public int aiId;
     public void OnPoolDestroy()

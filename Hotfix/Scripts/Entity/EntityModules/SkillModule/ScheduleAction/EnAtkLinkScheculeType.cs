@@ -12,5 +12,7 @@ public enum EnAtkLinkScheculeType
     Behaviour,
     [EditorFieldName("飞行物")]
     FlyItem,
+    [EditorFieldName("事件")]
+    Event,
     EnumCount,
 }

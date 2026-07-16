@@ -33,7 +33,7 @@ public class SkillPlayableAdapterDrawBuffEditor
                 GUILayout.Space(SkillEditorDefine.TabWidth);
                 if ((buffInfoList?.Length ?? 0) == 0)
                 {
-                    EditorGUILayout.HelpBox("ѡ��һ��buff", MessageType.Warning);
+                    EditorGUILayout.HelpBox("select buff", MessageType.Warning);
                 }
                 else
                 {
