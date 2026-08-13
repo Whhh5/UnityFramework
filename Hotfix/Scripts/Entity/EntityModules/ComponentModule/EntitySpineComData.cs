@@ -45,7 +45,7 @@ public class EntitySpineComData : Entity3DComDataGO<IEntitySpineCom>
             var isLoop = GetAnimIsLoop(_CurAnimId);
             if (isLoop)
             {
-                GameMonsterUtility.ExitStatus(_EntityId, _LinkStatus, EnGameSpineCompleteStatus.Force);
+                //GameMonsterUtility.ExitStatus(_EntityId, _LinkStatus, EnGameSpineCompleteStatus.Force);
             }
         }
         _Token?.Cancel();
@@ -106,7 +106,7 @@ public class EntitySpineComData : Entity3DComDataGO<IEntitySpineCom>
         {
             if (isLoop)
             {
-                GameMonsterUtility.ExitStatus(_EntityId, _LinkStatus, EnGameSpineCompleteStatus.Force);
+                //GameMonsterUtility.ExitStatus(_EntityId, _LinkStatus, EnGameSpineCompleteStatus.Force);
             }
             if (_Token != null)
             {
@@ -140,11 +140,11 @@ public class EntitySpineComData : Entity3DComDataGO<IEntitySpineCom>
             _Token = null;
             if (isCancel)
             {
-                GameMonsterUtility.ExitStatus(_EntityId, _LinkStatus, EnGameSpineCompleteStatus.Force);
+                //GameMonsterUtility.ExitStatus(_EntityId, _LinkStatus, EnGameSpineCompleteStatus.Force);
             }
             else
             {
-                GameMonsterUtility.ExitStatus(_EntityId, _LinkStatus, EnGameSpineCompleteStatus.Normal);
+                //GameMonsterUtility.ExitStatus(_EntityId, _LinkStatus, EnGameSpineCompleteStatus.Normal);
             }
 
         }

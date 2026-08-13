@@ -1,7 +1,8 @@
-using UnityEngine.Playables;
-using UnityEngine.Animations;
-using UnityEngine.PlayerLoop;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Animations;
+using UnityEngine.Playables;
 
 public class PlayableClipAdapterUserData : PlayableAdapterUserData
 {
@@ -18,31 +19,64 @@ public class PlayableClipAdapter : PlayableAdapter<PlayableClipAdapterUserData>
     private int _ClipID = -1;
     private float _ClipLength = -1;
     private EnAnimLayer _AnimLayer = EnAnimLayer.None;
+
+    private float _StartTime;
+    private CancellationTokenSource _LoadToken;
+    private LoadHandle _ClipLoadHandle;
+
     public override void OnPoolDestroy()
     {
-        _ClipPlayable.Destroy();
+        _LoadToken?.Cancel();
+        if(_ClipLoadHandle.IsValid())
+            ABBLoadMgr.Instance.Unload(_ClipLoadHandle);
+        if (_ClipPlayable.IsValid())
+            _ClipPlayable.Destroy();
         AnimMgr.Instance.RecycleClip(_ClipID);
         base.OnPoolDestroy();
         _ClipID = -1;
         _ClipLength = -1;
+        _StartTime = -1;
+        _LoadToken = null;
+        _ClipLoadHandle = default;
     }
     public override void OnPoolInit(PlayableClipAdapterUserData userData)
     {
         base.OnPoolInit(userData);
 
+        _StartTime = GameUtility.GetGameTime();
         _ClipID = userData.clipID;
-        var clipCfg = GameSchedule.Instance.GetClipCfg0(_ClipID); 
+        var clipCfg = GameSchedule.Instance.GetClipCfg0(_ClipID);
         _AnimLayer = (EnAnimLayer)clipCfg.nLayer;
-        var clip = AnimMgr.Instance.GetClip(_ClipID);
-        _ClipLength = clip.length;
-        _ClipPlayable = AnimationClipPlayable.Create(_Graph.GetGraph(), clip);
-        _ClipPlayable.SetApplyFootIK(false);
-        _ClipPlayable.SetApplyPlayableIK(false);
-        AddConnectRootAdapter(_ClipPlayable, GlobalConfig.Int0, GlobalConfig.Float1);
+        _ClipLength = clipCfg.fLength;
+
+        LoadClipAsync(userData.clipID);
+    }
+    private async void LoadClipAsync(int clipId)
+    {
+        _LoadToken = new();
+        var clipCfg = GameSchedule.Instance.GetClipCfg0(clipId);
+        var (isCancel, handle) = await ABBLoadMgr.Instance.LoadAsync<AnimationClip>((EnLoadTarget)clipCfg.nAssetID, _LoadToken.Token)
+            .SuppressCancellationThrow();
+
+        if (!isCancel)
+        {
+            _ClipLoadHandle = handle;
+            await UniTask.SwitchToMainThread(cancellationToken: _LoadToken.Token);
+
+            var clip = handle.GetObject<AnimationClip>();
+            _ClipPlayable = AnimationClipPlayable.Create(_Graph.GetGraph(), clip);
+            _ClipPlayable.SetApplyFootIK(false);
+            _ClipPlayable.SetApplyPlayableIK(false);
+            AddConnectRootAdapter(_ClipPlayable, GlobalConfig.Int0, GlobalConfig.Float1);
+            var time = GetPlayTime();
+            _ClipPlayable.SetTime(time);
+            _LoadToken = null;
+        }
     }
     public override float GetPlayTime()
     {
-        return (float)_ClipPlayable.GetTime();
+        var curTime = GameUtility.GetGameTime();
+        return curTime - _StartTime;
     }
     public override float GetUnitTime()
     {

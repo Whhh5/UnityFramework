@@ -303,9 +303,10 @@ public static class ExcelEditorUtil
 
         excelPackage.Save();
 
-        var result = EditorUtility.DisplayDialog($"{typeof(T)}", "success", "ok", "open");
-        if (!result)
-            excelPackage.File.OpenFile();
+        //var result = EditorUtility.DisplayDialog($"{typeof(T)}", "success", "ok", "open");
+        //if (!result)
+        //    excelPackage.File.OpenFile();
+        Debug.Log($"save excel: {typeof(T)}");
 
         excelPackage.Dispose();
     }

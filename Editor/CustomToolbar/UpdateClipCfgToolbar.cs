@@ -4,10 +4,14 @@ using UnityEngine;
 
 
 [CustomUnityToolbarAttribute("Update ClipCfg", EnCustomUnityToolbarType.Left,
-    EnCustomUnityToolbarOrder.ExportExcel)]
+    EnCustomUnityToolbarOrder.UpdateClipCfg)]
 public class UpdateClipCfgToolbar : ICustomUnityToolbar
 {
     public void OnClick()
+    {
+        OnClick2();
+    }
+    public static void OnClick2()
     {
         var isChanged = false;
         var assCfgCount = ExcelEditorUtil.GetCfgCount<AssetCfg>();
@@ -42,14 +46,15 @@ public class UpdateClipCfgToolbar : ICustomUnityToolbar
             ExcelEditorUtil.SetCfgValue(ins, nameof(ClipCfg.nLayer), (int)EnAnimLayer.Body);
             ExcelEditorUtil.AddCfg(ins);
         }
-        for (var i = 0; i < clipCfgCount; i++)
+        var clipCfgCount2 = ExcelEditorUtil.GetCfgCount<ClipCfg>();
+        for (var i = 0; i < clipCfgCount2; i++)
         {
             var clipCfg = ExcelEditorUtil.GetCfgByIndex<ClipCfg>(i);
             var assetCfg = ExcelEditorUtil.GetCfg<AssetCfg>(clipCfg.nAssetID);
             var clipAsset = AssetDatabase.LoadAssetAtPath<AnimationClip>(assetCfg.strPath);
             if (clipAsset == null)
             {
-                Debug.LogError($"AnimationClip 资源不存在 path：{assetCfg.strPath}");
+                Debug.LogError($"AnimationClip 资源不存在 path：{clipCfg.nAssetID}:{assetCfg.strPath}");
                 continue;
             }
             if (clipCfg.bIsLoop != (clipAsset.isLooping ? 1 : 0))
@@ -69,7 +74,7 @@ public class UpdateClipCfgToolbar : ICustomUnityToolbar
             ExcelEditorUtil.SaveExcel<ClipCfg>();
     }
 
-    private int GetNextClipId()
+    private static int GetNextClipId()
     {
         var clipCfgCount = ExcelEditorUtil.GetCfgCount<ClipCfg>();
         var id = clipCfgCount + 1;

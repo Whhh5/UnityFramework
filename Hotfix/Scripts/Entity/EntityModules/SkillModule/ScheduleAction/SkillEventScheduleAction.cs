@@ -6,6 +6,7 @@ public enum EnSkillEventScheduleId
 {
     None,
     Attack = 100,
+    FlyDown = 150, // 落地
     Skill = 200,
     Die = 300,
     Summon = 400,

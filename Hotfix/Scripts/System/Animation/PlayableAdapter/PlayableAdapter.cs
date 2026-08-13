@@ -92,14 +92,15 @@ public interface IPlayableAdapter : IClassPool
     public float GetPlayTime();
     public EnAnimLayer GetOutputLayer();
     public int GetSkillId();
+    public bool IsLoop();
     public void SetSkillId(int skillId);
     public void Complete();
     public void SetSpeed(float speed);
     public bool IsPlayEnd();
-    public bool IsLoop();
 
     // life
     public void OnUpdate();
+    public void OnLoopUpdate();
     public void OnPlayableCreate();
     public void OnGraphStart(Playable playable);
     public void OnGraphStop(Playable playable);
@@ -123,6 +124,7 @@ public abstract class PlayableAdapter<T> : IPlayableAdapter, IClassPool<T>
     private Playable _RootPlayable;
     protected PlayableGraphAdapter _Graph = null;
     private int _SkillId = -1;
+    private bool _IsLoop;
 
     public virtual void OnPoolDestroy()
     {
@@ -130,6 +132,7 @@ public abstract class PlayableAdapter<T> : IPlayableAdapter, IClassPool<T>
         _IsValid = false;
         _Graph = null;
         _SkillId = -1;
+        _IsLoop = false;
     }
     public virtual void OnPoolInit(T userData)
     {
@@ -141,12 +144,6 @@ public abstract class PlayableAdapter<T> : IPlayableAdapter, IClassPool<T>
     {
 
     }
-
-    public void OnPoolEnable()
-    {
-
-    }
-
 
     public virtual void PoolRelease()
     {
@@ -209,9 +206,9 @@ public abstract class PlayableAdapter<T> : IPlayableAdapter, IClassPool<T>
         SetSpeed(0);
     }
     // 是否循环
-    public virtual bool IsLoop()
+    public bool IsLoop()
     {
-        return false;
+        return _IsLoop;
     }
     // 循环一次需要的时间
     public abstract float GetUnitTime();
@@ -241,13 +238,15 @@ public abstract class PlayableAdapter<T> : IPlayableAdapter, IClassPool<T>
     public void SetSkillId(int skillId)
     {
         _SkillId = skillId;
+        var skillCfg = GameSchedule.Instance.GetSkillCfg0(skillId);
+        _IsLoop = skillCfg.bIsLoop > 0;
     }
     public virtual int GetSkillId()
     {
         return _SkillId;
     }
 
-    public void OnUpdate()
+    public virtual void OnUpdate()
     {
 
     }
@@ -287,6 +286,11 @@ public abstract class PlayableAdapter<T> : IPlayableAdapter, IClassPool<T>
 
     public virtual void ProcessFrame(Playable playable, FrameData info, object playerData)
     {
+    }
+
+    public virtual void OnLoopUpdate()
+    {
+        
     }
 
 

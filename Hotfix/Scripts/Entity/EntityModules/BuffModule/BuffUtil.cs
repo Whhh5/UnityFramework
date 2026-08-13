@@ -11,6 +11,7 @@ public partial class BuffUtil
 			EnBuff.ShatteredArmor => ClassPoolMgr.Instance.Pull<EntityShatteredArmorBuff>(data),
 			EnBuff.Freeze => ClassPoolMgr.Instance.Pull<EntityFreezeBuff>(data),
 			EnBuff.Electric => ClassPoolMgr.Instance.Pull<EntityElectricBuff>(data),
+			EnBuff.Bleed => ClassPoolMgr.Instance.Pull<EntityBleedBuff>(data),
             _ => default,
 		};
 	}

@@ -1,5 +1,6 @@
 
 using System;
+using UnityEngine;
 
 public partial class SkillRandomPlayableAdapterEditor : SkillRandomPlayableAdapter, ISkillEditor, ISkillPlayableAdapterGetStageList
 {
@@ -26,5 +27,24 @@ public partial class SkillRandomPlayableAdapterEditor : SkillRandomPlayableAdapt
     {
         get => this.GetFieldValue<SkillStageInfoEditor[]>(nameof(_SkillStageList));
         set => this.SetFieldValue(nameof(_SkillStageList), value);
+    }
+
+    public override EnAnimLayerBit GetAnimationLayers()
+    {
+        var result = EnAnimLayerBit.None;
+        foreach (var item in _SkillStageList)
+        {
+            var clipId = item.GetClipID();
+            if (clipId <= 0)
+                continue;
+            var clipCfg = ExcelEditorUtil.GetCfg<ClipCfg>(item.GetClipID());
+            if (clipCfg == null)
+            {
+                Debug.LogError($"clip no exist {item.GetClipID()}");
+                continue;
+            }
+            result |= (EnAnimLayerBit)(1 << clipCfg.nLayer);
+        }
+        return result;
     }
 }

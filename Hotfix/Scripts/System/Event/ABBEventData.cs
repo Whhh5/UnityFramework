@@ -26,10 +26,6 @@ public class ABBEventData : IClassPool<ABBEventDataUserData>
         m_EventType = userData.abbevent;
     }
 
-    public void OnPoolEnable()
-    {
-    }
-
     public void PoolRelease()
     {
     }

@@ -14,5 +14,7 @@ public enum EnAtkLinkScheculeType
     FlyItem,
     [EditorFieldName("事件")]
     Event,
+    [EditorFieldName("音效")]
+    Audio,
     EnumCount,
 }

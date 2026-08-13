@@ -15,9 +15,9 @@ public partial class SkillEffectScheduleActionEditor : SkillEffectScheduleAction
     private void DrawBaseField()
     {
         EditorGuiUtil.DrawCfgField<EffectCfg>(nameof(_EffectID), _EffectID, selectId => _EffectID = selectId, SkillEditorDefine.FieldWidth);
-        _Schedule = EditorGUILayout.FloatField(new GUIContent("����ʱ��"), _Schedule);
-        _OffsetPos = EditorGUILayout.Vector3Field(new GUIContent("λ��ƫ��"), _OffsetPos);
-        _OffsetRot = EditorGUILayout.Vector3Field(new GUIContent("��תƫ��"), _OffsetRot);
+        _Schedule = EditorGUILayout.FloatField(new GUIContent(nameof(_Schedule)), _Schedule);
+        _OffsetPos = EditorGUILayout.Vector3Field(new GUIContent(nameof(_OffsetPos)), _OffsetPos);
+        _OffsetRot = EditorGUILayout.Vector3Field(new GUIContent(nameof(_OffsetRot)), _OffsetRot);
     }
 
     [EditorField(nameof(_EffectID))]

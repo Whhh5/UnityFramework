@@ -28,7 +28,7 @@ public class EntityMgr : Singleton<EntityMgr>
     public int CreateEntityData(in int typeId)
     {
         var userData = ClassPoolMgr.Instance.Pull<GameEntityUserData>();
-        var entityId = CreateEntityData(in typeId, in userData);
+        var entityId = CreateEntityData(in typeId, userData);
         ClassPoolMgr.Instance.Push(userData);
         return entityId;
     }
@@ -38,7 +38,7 @@ public class EntityMgr : Singleton<EntityMgr>
         var entityId = ABBUtil.GetTempKey();
         userData.entityId = entityId;
         var entityData = TypeDefine.CreateInstance<GameEntityData>(typeId, userData);
-        entityData.Create();
+        entityData.SetLoadStatus(EnLoadStatus.Start);
         entityData.OnEnable();
         _EntityDataMap.Add(entityId, entityData);
         return entityId;
@@ -47,14 +47,13 @@ public class EntityMgr : Singleton<EntityMgr>
     public int CreateEntityData<T>(in GameEntityUserData userData)
         where T : GameEntityData, new()
     {
-        var entityID = ABBUtil.GetTempKey();
-        userData.entityId = entityID;
+        var entityId = ABBUtil.GetTempKey();
+        userData.entityId = entityId;
         var entityData = ClassPoolMgr.Instance.Pull<T>(userData);
         entityData.SetLoadStatus(EnLoadStatus.Start);
-        entityData.Create();
         entityData.OnEnable();
-        _EntityDataMap.Add(entityID, entityData);
-        return entityID;
+        _EntityDataMap.Add(entityId, entityData);
+        return entityId;
     }
 
     public int CreateEntityData<T>()
@@ -62,7 +61,7 @@ public class EntityMgr : Singleton<EntityMgr>
     {
         var userData = ClassPoolMgr.Instance.Pull<GameEntityUserData>();
         var entityID = CreateEntityData<T>(userData);
-        ClassPoolMgr.Instance.Push(in userData);
+        ClassPoolMgr.Instance.Push(userData);
         return entityID;
     }
     public void RecycleEntityData(in int entityID)
@@ -85,7 +84,13 @@ public class EntityMgr : Singleton<EntityMgr>
         entityData.SetLoadStatus(EnLoadStatus.Loading);
         var loadKey = ABBUtil.GetTempKey();
         entityData.SetLoadKey(loadKey);
-        var goID = await ABBGOMgr.Instance.CreateGOAsync(entityData.LoadTarget, entityData.ParentTran);
+        var (isCancel, goID) = await ABBGOMgr.Instance.CreateGOAsync(entityData.LoadTarget, entityData.GetParent())
+            .SuppressCancellationThrow();
+        if (isCancel)
+        {
+            entityData.SetLoadStatus(EnLoadStatus.Failed);
+            return;
+        }
         if (goID < 0)
         {
             entityData.SetLoadStatus(EnLoadStatus.Failed);
@@ -101,10 +106,11 @@ public class EntityMgr : Singleton<EntityMgr>
         entityData.SetGOID(goID);
         entityData.SetIsLoadSuccess(true);
         var go = ABBGOMgr.Instance.GetGo(goID);
-        var goEntity = go.GetComponent<GameEntity>();
-        entityData.OnGOCreate();
+        if (!go.TryGetComponent<GameEntity>(out var goEntity))
+            throw new System.Exception($"gameobject no exist component : {typeof(GameEntity)}");
         goEntity.SetEntityID(entityID);
         goEntity.LoadCompeletion();
+        entityData.OnGOCreate(goEntity);
 
 #if UNITY_EDITOR
         go.name = $"{go.name}_{entityID}";
@@ -177,6 +183,11 @@ public class EntityMgr : Singleton<EntityMgr>
         var entityData = GetEntityData(in entityId);
         ref readonly var scale = ref entityData.GetLocalScale();
         return ref scale;
+    }
+    public void SetEntityScale(in int entityId, in Vector3 scale)
+    {
+        var entityData = GetEntityData(in entityId);
+        entityData.SetLocalScale(scale);
     }
     public void SetEntityRotation(in int sceneEntityId, in Vector3 rotation)
     {

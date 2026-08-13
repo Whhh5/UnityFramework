@@ -1,8 +1,5 @@
-using Codice.CM.Common;
-using Cysharp.Threading.Tasks;
-using System.Collections;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public class VirtualTimelineInfo : IClassPoolDestroy
@@ -114,7 +111,7 @@ public class VirtualTimelineMgr : Singleton<VirtualTimelineMgr>
             if (progress01 == 1)
             {
                 timelineInfo.timeline.OnVirtualTimelineEnd(in localTime, in timeDelta);
-                ABBEventMgr.Instance.FireExecute(EnABBEvent.OnTimelineEnd, timelineId);
+                EventMgr.Instance.FireExecute(EnABBEvent.OnTimelineEnd, timelineId);
 
                 RemoveTimeline(in timelineInfo.timelineId);
             }

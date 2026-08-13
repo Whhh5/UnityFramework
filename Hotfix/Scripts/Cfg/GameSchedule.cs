@@ -42,6 +42,17 @@ public partial class GameSchedule : Singleton<GameSchedule>
 {
     public override EnSingletonOrder SingletonOrder => EnSingletonOrder.GameSchedule;
 
+    private readonly Dictionary<EnLoadTarget, LoadHandle> _CfgLoadHandles = new();
+
+    public override void Destroy()
+    {
+        foreach (var (_, handle) in _CfgLoadHandles)
+        {
+            ABBLoadMgr.Instance.Unload(handle);
+        }
+        base.Destroy();
+        _CfgLoadHandles.Clear();
+    }
     public override async UniTask AwakeAsync()
     {
         await base.AwakeAsync();
@@ -102,9 +113,15 @@ public partial class GameSchedule : Singleton<GameSchedule>
     //    var cfg = ReadCfg(fileName, typeof(T));
     //    return cfg as T[];
     //}
-    public static async UniTask<object> ReadCfgAsync(EnLoadTarget loadType, Type type, CancellationToken token)
+
+    public async UniTask<object> ReadCfgAsync(EnLoadTarget loadType, Type type, CancellationToken token)
     {
-        var ass = await ABBLoadMgr.Instance.LoadAsync<TextAsset>(loadType, token);
+        if (!_CfgLoadHandles.TryGetValue(loadType, out var hande))
+        {
+            hande = await ABBLoadMgr.Instance.LoadAsync<TextAsset>(loadType, token);
+        }
+
+        var ass = hande.GetObject<TextAsset>();
 
         var arrType = Array.CreateInstance(type, 0).GetType();
 
@@ -112,15 +129,6 @@ public partial class GameSchedule : Singleton<GameSchedule>
         //Debug.Log($"gameschedule 2, cfg2 = {cfg2}");
         var cfg = JsonConvert.DeserializeObject(ass.text, arrType);
 
-        return cfg;
-    }
-    public static object ReadCfg(EnLoadTarget loadType, Type type)
-    {
-        var ass = ABBLoadMgr.Instance.Load<TextAsset>(loadType);
-
-        var arrType = Array.CreateInstance(type, 0).GetType();
-
-        var cfg = JsonConvert.DeserializeObject(ass.text, arrType);
         return cfg;
     }
 }

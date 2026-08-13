@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using System;
 using Cysharp.Threading.Tasks;
 using PlasticPipe.Server;
+using Codice.Client.BaseCommands.Fileinfo;
 
 public static class AssetbundleToolEditor
 {
@@ -26,6 +27,40 @@ public static class AssetbundleToolEditor
         if (!Directory.Exists(outputPath))
             Directory.CreateDirectory(outputPath);
 
+        var logStr = new StringBuilder();
+        var checkDic = new Dictionary<EnLoadTarget, string>();
+        var isContinue = true;
+        for (int i = 0; i < abBuilds.Count; i++)
+        {
+            var abInfo = abBuilds[i];
+            var namebuilder = new StringBuilder();
+            foreach (var item in abInfo.assetNames)
+            {
+                namebuilder.Append($"{item},");
+                var name = LoadConfigEditor.GetLoadTargetName(item);
+                if (!Enum.TryParse<EnLoadTarget>(name, out var loadTarget))
+                {
+                    Debug.LogError($"资源不存在 删除或者重新生成 enloadtarget：{item}");
+                    isContinue = false;
+                }
+                else if(checkDic.TryGetValue(loadTarget, out var path))
+                {
+                    Debug.LogError($"资源 loadtarget 名称重复 \n{item} \n{path}");
+                    isContinue = false;
+                }
+                else
+                {
+                    checkDic.Add(loadTarget, item);
+                }
+            }
+            logStr.AppendLine($"{i}: {abInfo.assetBundleName}: {namebuilder}");
+        }
+        Debug.Log(logStr);
+        if (!isContinue)
+        {
+            return;
+        }
+        //return;
         var buildOption = BuildAssetBundleOptions.None;
         var manifest = BuildPipeline.BuildAssetBundles(outputPath, abBuilds.ToArray(), buildOption, CurBuildTarget);
 
@@ -50,6 +85,8 @@ public static class AssetbundleToolEditor
 
         void DirLoop(string path)
         {
+            if (!Directory.Exists(path))
+                return;
             var curDir = new DirectoryInfo(path);
             var abBuild = CreateAbBulid(path, curDir);
             if (abBuild.assetNames.Length > 0)
@@ -212,8 +249,8 @@ public static class AssetbundleToolEditor
                 if (!Enum.TryParse<EnLoadTarget>(enumName, false, out var value))
                 {
                     Debug.LogError($"{assetPath} 获取 {enumName} 失败, 请检查 AssetCfg 或者 该资源是否要使用 assetbundle 加载");
+                    continue;
                 }
-                Debug.Log($"{enumName} => {(int)value}");
                 var data = new AssetInfo()
                 {
                     abID = abMap[build.assetBundleName],
@@ -249,23 +286,25 @@ public static class AssetbundleToolEditor
         var addressableNames = new List<string>(10);
         var assetNames = new List<string>(10);
 
-        var fileInfos = dirInfo.GetFiles();
+        var fileInfos = dirInfo.GetFiles("*", searchOption: SearchOption.TopDirectoryOnly);
         for (int i = 0; i < fileInfos.Length; i++)
         {
             var fileInfo = fileInfos[i];
-            var suffix = Path.GetExtension(fileInfo.FullName);
-            if (!AssetbundleBuilderSO.Instance.IsHotType(suffix))
+            if (!LoadConfigEditor.AssetIsValid(fileInfo.FullName))
                 continue;
             var unityPath = ABBUtil.GetUnityPathByFullPath(fileInfo.FullName);
             addressableNames.Add(addressableNames.Count.ToString());
             assetNames.Add(unityPath);
         }
 
-        //var num = Random.Range(0, 100);
+        //var num = Random.Range(0, 100); 	localName	1631619335	-510175944
+        var localName = ABBUtil.GetUnityPathByFullPath(dir);
+        var abName = AssetbundleUtil.GetAbNameByPath(localName);
+        //Debug.Log($"{localName} -> {dir}");
         return new AssetBundleBuild()
         {
             addressableNames = addressableNames.ToArray(),
-            assetBundleName = dirInfo.Name.ToLowerInvariant() + ".ab",
+            assetBundleName = abName,
             //assetBundleVariant = ,
             assetNames = assetNames.ToArray(),
         };

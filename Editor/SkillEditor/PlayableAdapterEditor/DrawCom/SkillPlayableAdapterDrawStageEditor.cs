@@ -23,6 +23,7 @@ public class SkillPlayableAdapterDrawStageEditor
                 dataList.Add(new SkillStageInfoEditor());
                 stageInfoEditors = dataList.ToArray();
                 _SatgeController.SetSkillStageInfoEditors(stageInfoEditors);
+                _DrawDataIndex = dataList.Count - 1;
             }
 
             EditorGUILayout.BeginHorizontal();
@@ -69,9 +70,9 @@ public class SkillPlayableAdapterDrawStageEditor
                     case 1:
                         {
                             var menu = new GenericMenu();
-                            menu.AddItem(new GUIContent($"�Ƴ� {index}"), false, () =>
+                            menu.AddItem(new GUIContent($"remove {index}"), false, () =>
                             {
-                                if (!EditorUtility.DisplayDialog("�Ƴ�", $"�Ƿ��Ƴ����ܽ׶� {index}", "ok", "cancel"))
+                                if (!EditorUtility.DisplayDialog("remove", $"index: {index}", "ok", "cancel"))
                                     return;
                                 if (index <= _DrawDataIndex)
                                     _DrawDataIndex--;

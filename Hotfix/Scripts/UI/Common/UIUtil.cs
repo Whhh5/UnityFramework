@@ -11,7 +11,7 @@ public static class UIUtil
         var canvasRect = UIMgr.Instance.GetCanvasRect();
         var uiCamera = CameraMgr.Instance.GetUICamera();
         var mainCamera = CameraMgr.Instance.GetMainCamera();
-        var screenPoint = RectTransformUtility.WorldToScreenPoint(mainCamera, worldPos);
+        var screenPoint = WorldToView(in worldPos);
         if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screenPoint, uiCamera, out var uiPos))
             return Vector2.zero;
         return uiPos;
@@ -24,52 +24,17 @@ public static class UIUtil
             return Vector2.zero;
         return uiPos;
     }
-
-
-    private readonly static Dictionary<int, int> _Image2Sprite = new();
-    public static async void LoadSprite(this Image img, int assetID, CancellationToken token)
+    public static Vector2 WorldToView(in Vector3 worldPos)
     {
-        var id = img.GetInstanceID();
-        if (_Image2Sprite.TryGetValue(id, out var curAssetID))
-        {
-            if (curAssetID == assetID)
-                return;
-            img.UnloadSprite();
-        }
-
-        _Image2Sprite.Add(id, assetID);
-        var sprite = await ABBLoadMgr.Instance.LoadAsync<Sprite>(assetID, token);
-        if (_Image2Sprite.TryGetValue(id, out curAssetID))
-            if (assetID != curAssetID)
-                return;
-
-        img.sprite = sprite;
+        var uiCamera = CameraMgr.Instance.GetUICamera();
+        var mainCamera = CameraMgr.Instance.GetMainCamera();
+        var screenPoint = RectTransformUtility.WorldToScreenPoint(uiCamera, worldPos);
+        return screenPoint;
     }
-    public static async UniTask LoadSpriteAsync(this Image img, int assetID, CancellationToken token)
+    public static Vector2 ViewToWorld(in Vector3 worldPos)
     {
-        var id = img.GetInstanceID();
-        if (_Image2Sprite.TryGetValue(id, out var curAssetID))
-        {
-            if (curAssetID == assetID)
-                return;
-            img.UnloadSprite();
-        }
-
-        _Image2Sprite.Add(id, assetID);
-        var sprite = await ABBLoadMgr.Instance.LoadAsync<Sprite>(assetID, token);
-        if (_Image2Sprite.TryGetValue(id, out curAssetID))
-            if (assetID != curAssetID)
-                return;
-
-        img.sprite = sprite;
-    }
-    public static void UnloadSprite(this Image img)
-    {
-        var id = img.GetInstanceID();
-        if (!_Image2Sprite.TryGetValue(id, out var assetID))
-            return;
-        _Image2Sprite.Remove(id);
-        img.sprite = null;
-        ABBLoadMgr.Instance.Unload(assetID);
+        var mainCamera = CameraMgr.Instance.GetMainCamera();
+        var screenPoint = mainCamera.ScreenToWorldPoint(worldPos);
+        return screenPoint;
     }
 }

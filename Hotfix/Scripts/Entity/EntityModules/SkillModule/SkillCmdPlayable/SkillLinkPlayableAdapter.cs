@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Playables;
 
-
 public class SkillLinkPlayableAdapter : SkillPlayableAdapter<SkillPlayableAdapterUserData>
 {
     public override List<int> SerializeToIntArray()
@@ -122,12 +121,12 @@ public class SkillLinkPlayableAdapter : SkillPlayableAdapter<SkillPlayableAdapte
         SetAttackIndex(targetIndex);
     }
 
-    public override bool OnPrepareFrame(Playable playable, FrameData info)
+    public override void OnUpdate()
     {
-        if (!base.OnPrepareFrame(playable, info))
-            return false;
+        base.OnUpdate();
+        _CurClipAdapter.OnUpdate();
 
-        if (curAttackData.ScheduleEventIsValid())
+        while (curAttackData.ScheduleEventIsValid())
         {
             var curAttackItem = curAttackData.GetCurScheduleItem();
             if (GetPlaySchedule01() >= curAttackItem.schedule)
@@ -135,8 +134,11 @@ public class SkillLinkPlayableAdapter : SkillPlayableAdapter<SkillPlayableAdapte
                 curAttackItem.onEvent(_EntityID, curAttackItem.userData);
                 curAttackData.NextEventAction();
             }
+            else
+            {
+                break;
+            }
         }
-        return true;
     }
 
     private float GetPlaySlider()
@@ -169,4 +171,14 @@ public class SkillLinkPlayableAdapter : SkillPlayableAdapter<SkillPlayableAdapte
         _CurClipAdapter = to;
     }
 
+    public override EnAnimLayerBit GetAnimationLayers()
+    {
+        var result = EnAnimLayerBit.None;
+        foreach (var item in _DataList)
+        {
+            var clipCfg = GameSchedule.Instance.GetClipCfg0(item.GetClipID());
+            result |= (EnAnimLayerBit)(1 << clipCfg.nLayer);
+        }
+        return result;
+    }
 }

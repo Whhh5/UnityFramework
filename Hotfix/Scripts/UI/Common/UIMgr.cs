@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -12,7 +14,12 @@ public enum EnUIWindowType
     Hint,
 }
 
-
+public enum EnWindowHideType
+{
+    None,
+    Close,
+    SelectItem,
+}
 public class UIMgr : SingletonMono<UIMgr>
 {
     [SerializeField]
@@ -24,9 +31,14 @@ public class UIMgr : SingletonMono<UIMgr>
     [SerializeField]
     private RectTransform m_UITipsRootRect = null;
 
-    private Dictionary<Type, int> m_Type2EntityDataID = new();
-    private Dictionary<EnUIWindowType, RectTransform> m_WindowType2Root = new();
-    protected override void Awake()
+    private readonly Dictionary<int, int> _WindowId2EntityDataID = new();
+    private readonly List<int> _WindowList = new();
+    private readonly Dictionary<EnUIWindowType, RectTransform> m_WindowType2Root = new();
+
+    private Shader _UITmpDissolveShader = null;
+    private Texture _NoiseTexture;
+    private Shader _UIImageShader;
+    protected override async void Awake()
     {
         base.Awake();
 
@@ -40,6 +52,29 @@ public class UIMgr : SingletonMono<UIMgr>
             //ShowWindow<CGameStartWindowData>();
             ABBUtil.LogError($"没有找到启动界面，请继承 {typeof(IStartLaunch)}");
         }
+
+        Debug.Log($"uimgrloadshader {_NoiseTexture} {_UITmpDissolveShader} {_UIImageShader}");
+        var noiseLoadhandle = await ABBLoadMgr.Instance.LoadAsync<Texture>(EnLoadTarget.Sp_Noise2, default);
+        _NoiseTexture = noiseLoadhandle.GetObject<Texture>();
+        var tmpDissolveShader = await ABBLoadMgr.Instance.LoadAsync<Shader>(EnLoadTarget.Shader_DistanceFieldDissolve_ScreenSpaceNoise, default);
+        _UITmpDissolveShader = tmpDissolveShader.GetObject<Shader>();
+        var imgDissolveShader = await ABBLoadMgr.Instance.LoadAsync<Shader>(EnLoadTarget.Shader_UI_Dissolve_ScreenSpaceNoise, default);
+        _UIImageShader = imgDissolveShader.GetObject<Shader>();
+
+        Debug.Log($"uimgrloadshader {_NoiseTexture} {_UITmpDissolveShader} {_UIImageShader}");
+    }
+
+    public Shader GetTmpDissolveShader()
+    {
+        return _UITmpDissolveShader;
+    }
+    public Shader GetImageDissolveShader()
+    {
+        return _UIImageShader;
+    }
+    public Texture GetNoiseTexture()
+    {
+        return _NoiseTexture;
     }
 
 
@@ -59,71 +94,100 @@ public class UIMgr : SingletonMono<UIMgr>
     {
         return m_MainCanvas.worldCamera;
     }
-    private T GetWindow<T>()
+    public T GetWindow<T>(int windowId)
         where T : UIWindowData
     {
-        var type = typeof(T);
-        var windowData = GetWindow(type);
+        var windowData = GetWindow(windowId);
         return windowData as T;
     }
-    private UIWindowData GetWindow(Type type)
+    private UIWindowData GetWindow(int windowId)
     {
-        if (!m_Type2EntityDataID.TryGetValue(type, out var entityID))
+        if (!_WindowId2EntityDataID.TryGetValue(windowId, out var entityID))
             return null;
         var windowData = EntityMgr.Instance.GetEntityData(entityID);
         return windowData as UIWindowData;
     }
-    public bool ContainsWindow<T>()
+    public bool ContainsWindow(int windowId)
+    {
+        return _WindowId2EntityDataID.ContainsKey(windowId);
+    }
+    public int ShowWindow<T>()
         where T : UIWindowData, new()
     {
-        return m_Type2EntityDataID.ContainsKey(typeof(T));
+        var userData = ClassPoolMgr.Instance.Pull<UIWindowUserData>();
+        var windowId = ShowWindow<T>(userData);
+        ClassPoolMgr.Instance.Push(userData);
+        return windowId;
     }
-    public void ShowWindow<T>(IClassPool userData = null)
-        where T: UIWindowData, new()
+
+    public int ShowWindow<T>(UIWindowUserData userData)
+        where T : UIWindowData, new()
     {
-        var type = typeof(T);
-        var dataID = EntityMgr.Instance.CreateEntityData<T>();
-        m_Type2EntityDataID.Add(type, dataID);
-        var windowData = GetWindow<T>();
+        var windowId = ABBUtil.GetTempKey();
+        userData.windowId = windowId;
+        var dataID = EntityMgr.Instance.CreateEntityData<T>(userData);
+        _WindowId2EntityDataID.Add(windowId, dataID);
+        _WindowList.Add(windowId);
+        var windowData = GetWindow<T>(windowId);
 
         if (windowData.WindowType == EnUIWindowType.Window)
             GameStateMgr.Instance.AddGameState(EnGameStatus.UIWindow);
 
-        windowData.OnShow(userData);
+        //windowData.OnShow(userData);
 
         if (!m_WindowType2Root.TryGetValue(windowData.WindowType, out var root))
             root = m_UIRootRect;
         windowData.SetParentTran(root);
-
         EntityMgr.Instance.LoadEntity(dataID);
-
+        return windowId;
     }
-    public void HideWindow<T>()
-        where T: UIWindowData
+    //public void HideWindow<T>()
+    //    where T: UIWindowData
+    //{
+    //    var type = typeof(T);
+    //    HideWindow(type);
+    //}
+    public bool IsValid(int windowId)
     {
-        var type = typeof(T);
-        HideWindow(type);
+        return _WindowId2EntityDataID.ContainsKey(windowId);
     }
-    private void HideWindow(Type type)
+    public void HideWindow(int windowId)
     {
-
-        var windowData = GetWindow(type);
+        HideWindow(windowId, EnWindowHideType.Close);
+    }
+    public async void HideWindow(int windowId, EnWindowHideType hideCode)
+    {
+        EventMgr.Instance.FireExecute(EnABBEvent.EVENT_WINDOW_HIDE, windowId, (int)hideCode);
+        var windowData = GetWindow(windowId);
 
         if (windowData.WindowType == EnUIWindowType.Window)
             GameStateMgr.Instance.RemoveGameState(EnGameStatus.UIWindow);
 
-        windowData.OnHide();
+        //windowData.OnHide();
+        _WindowList.Remove(windowId);
+        _WindowId2EntityDataID.Remove(windowId);
 
-        m_Type2EntityDataID.Remove(type);
-        EntityMgr.Instance.UnloadEntity(windowData.EntityID);
+        await windowData.HideAsync();
         EntityMgr.Instance.RecycleEntityData(windowData.EntityID);
-
     }
     public void HideAllWindow()
     {
-        var list = new List<Type>();
-        foreach (var item in m_Type2EntityDataID.Keys)
+        var list = new List<int>();
+        foreach (var item in _WindowId2EntityDataID.Keys)
             list.Add(item);
+        foreach (var item in list)
+            HideWindow(item);
+    }
+    public void HideAllWindow(EnUIWindowType windowType)
+    {
+        var list = new List<int>();
+        foreach (var (windowId, _) in _WindowId2EntityDataID)
+        {
+            var windowData = GetWindow(windowId);
+            if (windowData.WindowType != windowType)
+                continue;
+            list.Add(windowId);
+        }
         foreach (var item in list)
             HideWindow(item);
     }
@@ -137,18 +201,49 @@ public class UIMgr : SingletonMono<UIMgr>
         btn.onClick.RemoveListener(action);
     }
 
-    //public int CreateWindowItem<T>(RectTransform parent, IClassPoolUserData userData)
-    //    where T: UIWindowItemData, new()
-    //{
-    //    var entityID = EntityMgr.Instance.CreateEntityData<T>(userData);
-    //    var entityData = EntityMgr.Instance.GetEntityData<T>(entityID);
-    //    entityData.SetParentTran(parent);
-
-    //    EntityMgr.Instance.LoadEntity(entityID);
-    //    return entityID;
-    //}
-    public void DestroyWindowItem(int entityID)
+    public async UniTask<T> LoadWindowItemAsync<T>(EnLoadTarget loadTarget, RectTransform parent, CancellationToken token)
     {
-        EntityMgr.Instance.RecycleEntityData(entityID);
+        var goId = await ABBGOMgr.Instance.CreateGOAsync(loadTarget, parent);
+        if (token.IsCancellationRequested)
+        {
+            ABBGOMgr.Instance.DestroyGO(goId);
+            throw new OperationCanceledException();
+        }
+        var com = ABBGOMgr.Instance.GetGoCom<T>(goId);
+        if (com is not UIWindowItem windowITem)
+        {
+            throw new Exception($"{typeof(T)} is not {typeof(UIWindowItem)}");
+        }
+        windowITem.SetGoId(goId);
+        windowITem.LoadCompeletion();
+        return com;
+    }
+    public void UnloadWindowItem<T>(T item)
+    {
+        if (item is not UIWindowItem windowITem)
+        {
+            throw new Exception($"{item.GetType()} is not {typeof(UIWindowItem)}");
+        }
+        var goId = windowITem.GetGoId();
+        windowITem.Unload();
+        ABBGOMgr.Instance.DestroyGO(goId);
+    }
+    public bool IsTop(int windowId, EnUIWindowType windowType)
+    {
+        for (int i = 0; i < _WindowList.Count; i++)
+        {
+            var testWindowId = _WindowList[^(i + 1)];
+            var windowData = EntityMgr.Instance.GetEntityData<UIWindowData>(_WindowId2EntityDataID[testWindowId]);
+            if (windowData.WindowType != windowType)
+                continue;
+            return windowId == testWindowId;
+        }
+        return false;
+    }
+    public bool IsTop(int windowId)
+    {
+        var testWindowId = _WindowList[^1];
+        return windowId == testWindowId;
+
     }
 }

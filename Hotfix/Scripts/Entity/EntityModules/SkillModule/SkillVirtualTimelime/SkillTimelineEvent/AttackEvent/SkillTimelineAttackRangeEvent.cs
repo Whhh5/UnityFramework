@@ -99,7 +99,7 @@ public abstract class SkillTimelineAttackRangeEvent : ISkillTimelineAttackEvent
             eventData.attackerEntityId = _EntityId;
             eventData.hitEntityId = entityId;
             eventData.value = atkValue;
-            ABBEventMgr.Instance.FireExecute(EnABBEvent.EVENT_SKILL_ATTACK, eventData);
+            EventMgr.Instance.FireExecute(EnABBEvent.EVENT_SKILL_ATTACK, eventData);
             ClassPoolMgr.Instance.Push(eventData);
         }
     }

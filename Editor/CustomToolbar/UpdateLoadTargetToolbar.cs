@@ -8,5 +8,7 @@ public class UpdateLoadTargetToolbar : ICustomUnityToolbar
     public void OnClick()
     {
         LoadConfigEditor.CreateLoadConfigJson();
+        UpdateClipCfgToolbar.OnClick2();
+        UpdateAudioCfgToolbar.OnClick2();
     }
 }

@@ -114,10 +114,6 @@ public class PlayableGraphAdapter : IClassPool<PlayableGraphAdapterUserData>, IU
         output.SetSourcePlayable(_LayerMixerPlayable);
     }
 
-    public void OnPoolEnable()
-    {
-    }
-
     public void OnPoolDestroy()
     {
         UpdateMgr.Instance.Unregistener(this);

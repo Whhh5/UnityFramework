@@ -1,56 +1,66 @@
 using UnityEngine;
 
-public abstract class UIEntityData : GameEntityData
+public abstract class UIEntityData<TEntity, TUserData> : UIEntityData
+    where TEntity : UIEntity
+    where TUserData : GameEntityUserData
 {
-    private UIEntity m_UIEntity = null;
-    private Vector2 m_AnchoredPos2D;
-    public Vector2 AnchoredPos2D => m_AnchoredPos2D;
+    protected TEntity _UIEntity = null;
+    public override void OnGOCreate(GameEntity entity)
+    {
+        base.OnGOCreate(entity);
+        _UIEntity = entity as TEntity;
+    }
     public override void OnGODestroy()
     {
-        m_AnchoredPos2D = Vector2.zero;
-        m_UIEntity = null;
+        base.OnGODestroy();
+        _UIEntity = null;
+    }
+
+    public sealed override void OnPoolInit(GameEntityUserData userData)
+    {
+        base.OnPoolInit(userData);
+        OnPoolInit(userData as TUserData);
+    }
+
+    protected abstract void OnPoolInit(TUserData userData);
+}
+public abstract class UIEntityData : GameEntityData
+{
+    private UIEntity _UIEntity = null;
+    private Vector2 _AnchoredPos2D;
+    public Vector2 AnchoredPos2D => _AnchoredPos2D;
+    public override void OnGODestroy()
+    {
+        _AnchoredPos2D = Vector2.zero;
+        _UIEntity = null;
         base.OnGODestroy();
     }
-    public override void OnGOCreate()
+    public override void OnGOCreate(GameEntity entity)
     {
-        base.OnGOCreate();
-        m_UIEntity = _GameEntity as UIEntity;
+        base.OnGOCreate(entity);
+        _UIEntity = entity as UIEntity;
+
+        _UIEntity.SetAnchoredPos2D(in _AnchoredPos2D);
     }
-    public void SetAnchoredPos2D(Vector2 anchorPos)
+    public void SetAnchoredPos2D(in Vector2 anchorPos)
     {
-        m_AnchoredPos2D = anchorPos;
+        _AnchoredPos2D = anchorPos;
         if (_IsLoadSuccess)
-            m_UIEntity.SetAnchoredPos2D();
+            _UIEntity.SetAnchoredPos2D(in anchorPos);
     }
 }
 
 public abstract class UIEntity: GameEntity
 {
     private RectTransform m_Rect = null;
-    private UIEntityData m_UIEntityData = null;
-    private void OnDestroy()
-    {
-        m_Rect = null;
-    }
-    protected override void Awake()
-    {
-        base.Awake();
-        m_Rect = GetComponent<RectTransform>();
-    }
-    public override void OnUnload()
-    {
-        m_UIEntityData = null;
-        base.OnUnload();
-    }
     public override void LoadCompeletion()
     {
         base.LoadCompeletion();
-        m_UIEntityData = _EntityData as UIEntityData;
-        SetAnchoredPos2D();
+        m_Rect = GetComponent<RectTransform>();
     }
 
-    public void SetAnchoredPos2D()
+    public void SetAnchoredPos2D(in Vector2 localPos)
     {
-        m_Rect.anchoredPosition3D = m_UIEntityData.AnchoredPos2D;
+        m_Rect.anchoredPosition3D = localPos;
     }
 }

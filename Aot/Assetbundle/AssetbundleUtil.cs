@@ -9,6 +9,16 @@ using UnityEngine;
 
 public static class AssetbundleUtil
 {
+    public static string GetAbNameByPath(string path)
+    {
+        var hasCode = path.GetHashCode();
+        var name = Path.GetFileNameWithoutExtension(path);
+        return $"{name.ToLower()}{hasCode}.ab";
+    }
+    public static string GetAbName(string name)
+    {
+        return $"{name}.ab";
+    }
     public static string GetAbSoPath()
     {
         return Path.Combine("Assets/Framework/Editor/SO", "AbBuilderConfig.asset");

@@ -6,6 +6,10 @@ public class ClassPoolData : ClassData
 {
     private readonly List<IClassPool> _ListClass = new(GlobalConfig.Int5);
 
+    public bool Contains(IClassPool classType)
+    {
+        return _ListClass.Contains(classType);
+    }
     public void Push(IClassPool classType)
     {
         _ListClass.Add(classType);

@@ -21,7 +21,7 @@ public class ServerMgr : Singleton<ServerMgr>, INetCliectReceive
     private HashSet<int> _WaitSendKey = new();
     public override EnSingletonOrder SingletonOrder => EnSingletonOrder.Server;
 
-    private EnSocketType _SocketType = EnSocketType.Web;
+    private EnSocketType _SocketType = EnSocketType.TCP2;
 
     public string GetServerIp()
     {
@@ -37,7 +37,7 @@ public class ServerMgr : Singleton<ServerMgr>, INetCliectReceive
         return _SocketType switch
         {
             EnSocketType.Web => new UnityWebClient(),
-             EnSocketType.TCP2 => new UnityTcpClient2(),
+            EnSocketType.TCP2 => new UnityTcpClient2(),
             _ => null,
         };
     }
@@ -53,14 +53,15 @@ public class ServerMgr : Singleton<ServerMgr>, INetCliectReceive
 
         if (!_client.GetIsConnected())
         {
-            Debug.LogWarning("服务器连接失败");
+            Debug.Log("服务器连接失败");
         }
     }
     public override void Destroy()
     {
         Disconnect();
 
-        _client.OnDestroy();
+        if (_client != null)
+            _client.OnDestroy();
         _client = null;
 
         base.Destroy();
@@ -79,6 +80,8 @@ public class ServerMgr : Singleton<ServerMgr>, INetCliectReceive
 
     private void Disconnect()
     {
+        if (!_client.GetIsConnected())
+            return;
         // 断开连接
         _client?.Disconnect();
     }
@@ -86,6 +89,21 @@ public class ServerMgr : Singleton<ServerMgr>, INetCliectReceive
     public void OnNetMessageReceived(string message)
     {
         AddMessage($"服务器: {message}");
+        var testData = new ProtocolInfo
+        {
+            id = 37,
+            protocolID = EnProtocol.REQ_DOWNLOAD_FILE,
+            content = JsonConvert.SerializeObject(new REQ_DOWNLOAD_FILE
+            {
+                id = 37,
+                fileLocalPath = "path/path"
+            }),
+        };
+        var value = JsonConvert.SerializeObject(testData);
+        if (value == message)
+        {
+
+        }
         var protocolInfo = JsonConvert.DeserializeObject<ProtocolInfo>(message);
         switch (protocolInfo.protocolID)
         {
@@ -120,7 +138,10 @@ public class ServerMgr : Singleton<ServerMgr>, INetCliectReceive
             protocolID = EnProtocol.REQ_DOWNLOAD_FILE,
             content = JsonConvert.SerializeObject(sendData),
         };
-        _ = _client.SendMessageAsync(JsonConvert.SerializeObject(info));
+        var sendStr = JsonConvert.SerializeObject(info);
+
+        var info2 = JsonConvert.DeserializeObject<ProtocolInfo>(sendStr);
+        _ = _client.SendMessageAsync(sendStr);
 
         _WaitSendKey.Add(sendKey);
         await UniTask.WaitUntil(() => _RSPMap.ContainsKey(sendKey));
@@ -174,7 +195,7 @@ public class ServerMgr : Singleton<ServerMgr>, INetCliectReceive
 
     private void AddMessage(string message)
     {
-        Debug.LogWarning(message);
+        Debug.Log(message);
 
     }
 }

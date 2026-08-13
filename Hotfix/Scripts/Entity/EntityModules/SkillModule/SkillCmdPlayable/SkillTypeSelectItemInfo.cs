@@ -41,11 +41,6 @@ public class SkillTypeSelectItemInfo : IClassPool<ISerializeToIntArrayUserData>,
         DeserializeFromIntArray(userData.arrParams, userData.startIndex, userData.count, userData);
     }
 
-    public void OnPoolEnable()
-    {
-    }
-
-
     public void PoolConstructor()
     {
     }

@@ -1,0 +1,18 @@
+﻿<linker>
+  <!-- 保留 TrailRenderer 所在的模块 -->
+  <assembly fullname="UnityEngine.CoreModule">
+    <type fullname="UnityEngine.TrailRenderer" preserve="all"/>
+  </assembly>
+
+  <!-- 保险起见，把整个 CoreModule 里常用的渲染组件都保留 -->
+  <assembly fullname="UnityEngine.CoreModule">
+    <type fullname="UnityEngine.LineRenderer" preserve="all"/>
+    <type fullname="UnityEngine.Renderer" preserve="all"/>
+    <type fullname="UnityEngine.MeshRenderer" preserve="all"/>
+  </assembly>
+
+  <!-- 如果你还有其他 AB 包里的组件，按同样的格式加 -->
+  <assembly fullname="Assembly-CSharp">
+    <type fullname="*" preserve="all"/>
+  </assembly>
+</linker>

@@ -31,10 +31,6 @@ public class LayerMixerInfo : IClassPool<LayerMixerInfoUserData>
         _Layer = userData.layer;
     }
 
-    public void OnPoolEnable()
-    {
-    }
-
     public void PoolRelease()
     {
     }

@@ -89,7 +89,7 @@ public class CameraMgr : SingletonMono<CameraMgr>
         var cameraTarget = EntityMgr.Instance.GetEntityData<ICameraTarget>(in entityId);
         if (cameraTarget == null)
         {
-            ABBUtil.LogError($"SetCameraTarget failed, entityId:{entityId}, EntityData û��ʵ�ֽӿ�: {typeof(ICameraTarget)}");
+            ABBUtil.LogError($"SetCameraTarget failed, entityId:{entityId}, EntityData target: {typeof(ICameraTarget)}");
             return;
         }
         _CameraTarget = cameraTarget;

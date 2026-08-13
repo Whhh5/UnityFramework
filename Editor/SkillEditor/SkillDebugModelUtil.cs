@@ -29,7 +29,14 @@ public static class SkillDebugModelUtil
 
     public static Color GetTrackColor(in EnAtkLinkScheculeType scheduleType)
     {
-        return _TrackColors[scheduleType];
+        if (!_TrackColors.TryGetValue(scheduleType, out var color))
+        {
+            color.r = UnityEngine.Random.Range(0, 1f);
+            color.g = UnityEngine.Random.Range(0, 1f);
+            color.b = UnityEngine.Random.Range(0, 1f);
+            _TrackColors.Add(scheduleType, color);
+        }
+        return color;
     }
     public static float OnGuiStageBoxSliderController(
         in Rect mainRect

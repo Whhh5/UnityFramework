@@ -60,7 +60,7 @@ public class SkillTimelinePhysicsCylinderEvent : SkillVirtualTimelinePhysicsEven
                 eventData.hitEntityId = entityId;
                 eventData.timelineEventId = _TimelineEventId;
                 eventData.skillId = _SkillId;
-                ABBEventMgr.Instance.FireExecute(EnABBEvent.EVENT_SKILL_TIMELINE_PHYSICS, _SkillId, _TimelineEventId, eventData);
+                EventMgr.Instance.FireExecute(EnABBEvent.EVENT_SKILL_TIMELINE_PHYSICS, _SkillId, _TimelineEventId, eventData);
                 ClassPoolMgr.Instance.Push(eventData);
             }
             Debug.Log(atkLog);

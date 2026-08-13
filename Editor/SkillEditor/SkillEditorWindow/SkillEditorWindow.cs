@@ -42,6 +42,7 @@ public class SkillEditorWindow : EditorWindow
     }
     private void OnDisable()
     {
+        AudioEditorPlayer.StopAllClips();
         ExitDebugModel();
         EditorApplication.update -= OnEditorUpdate;
         _IsDebugModel
@@ -226,15 +227,24 @@ public class SkillEditorWindow : EditorWindow
 
                     EditorGUILayout.BeginHorizontal();
                     {
+                        var color = GUI.backgroundColor;
                         if (_CurMonsterId == monsterCfg.nMonsterID)
-                        {
-                            GUILayout.Toggle(true, "", GUILayout.Width(20));
-                        }
+                            GUI.backgroundColor = Color.cyan;
 
-                        if (GUILayout.Button($"{monsterCfg.nMonsterID}:{monsterCfg.strName}"))
+                        if (GUILayout.Button($"{monsterCfg.nMonsterID}:{monsterCfg.strName}", GUILayout.Height(30)))
                         {
+                            if (!_MonsterIsShowSkillList[i])
+                            {
+                                for (int j = 0; j < _MonsterIsShowSkillList.Count; j++)
+                                {
+                                    if (j == i)
+                                        continue;
+                                    _MonsterIsShowSkillList[j] = false;
+                                }
+                            }
                             _MonsterIsShowSkillList[i] = !_MonsterIsShowSkillList[i];
                         }
+                        GUI.backgroundColor = color;
                     }
                     EditorGUILayout.EndHorizontal();
                     if (!_MonsterIsShowSkillList[i])
@@ -272,18 +282,22 @@ public class SkillEditorWindow : EditorWindow
                 EditorGUILayout.BeginHorizontal();
                 {
                     GUILayout.Toggle(isToggle, "", GUILayout.Width(20));
-                    if (GUILayout.Button($"{skillId}:{skillCfg.strName}", GUILayout.ExpandWidth(true)))
+                    if (GUILayout.Button($"{skillId}:{skillCfg.strName}", GUILayout.ExpandWidth(true), GUILayout.Height(20)))
                     {
                         SetSkillEditorContent(monsterCfg.nMonsterID, skillCfg.nSkillID);
                     }
                 }
                 EditorGUILayout.EndHorizontal();
             }
-
-            if (GUILayout.Button("Add Skill"))
+            EditorGUILayout.BeginHorizontal();
             {
-                AddNewSkill(in monsterId);
+                GUILayout.FlexibleSpace();
+                if (GUILayout.Button("Add", GUILayout.Width(100), GUILayout.Height(30)))
+                {
+                    AddNewSkill(in monsterId);
+                }
             }
+            EditorGUILayout.EndHorizontal();
         }
         EditorGUILayout.EndVertical();
     }
@@ -337,6 +351,8 @@ public class SkillEditorWindow : EditorWindow
             list.Add(skillId);
             skillGroup = list.ToArray();
             ExcelEditorUtil.SetCfgValue(monsterCfg, nameof(monsterCfg.arrSkillGroup), skillGroup);
+
+            SetSkillEditorContent(monsterCfg.nMonsterID, skillId);
         }, null);
     }
 
@@ -381,6 +397,8 @@ public class SkillEditorWindow : EditorWindow
     {
         EditorGUILayout.BeginHorizontal();
         {
+            var layers = (_CurSkillEditor as ISkilAnimationLayers)?.GetAnimationLayers();
+
             var skillCfg = ExcelEditorUtil.GetCfg<SkillCfg>(skillId);
             EditorGuiUtil.LabelField("id:", $"{skillCfg.nSkillID}", 50);
             EditorGuiUtil.LabelField("cltype:", $"{(EnTypeId)skillCfg.nTypeId}", 200);
@@ -391,9 +409,9 @@ public class SkillEditorWindow : EditorWindow
             var isRootMotion = EditorGuiUtil.Toggle("motion", skillCfg.bApplyRootMotion > 0, 20);
             if (isRootMotion != skillCfg.bApplyRootMotion > 0)
                 ExcelEditorUtil.SetCfgValue(skillCfg, nameof(SkillCfg.bApplyRootMotion), isRootMotion ? 1 : 0);
-            var layer = (EnAnimLayerBit)EditorGuiUtil.EnumFlagsField("layer:", (EnAnimLayerBit)skillCfg.nAnimLayer, 100);
-            if (layer != (EnAnimLayerBit)skillCfg.nAnimLayer)
-                ExcelEditorUtil.SetCfgValue(skillCfg, nameof(SkillCfg.nAnimLayer), (int)layer);
+            EditorGuiUtil.EnumFlagsField("layer:", layers, 100);
+            if (layers != (EnAnimLayerBit)skillCfg.nAnimLayer)
+                ExcelEditorUtil.SetCfgValue(skillCfg, nameof(SkillCfg.nAnimLayer), (int)layers);
             var isIk = EditorGuiUtil.Toggle("isik:", skillCfg.bIsIK > 0, 20);
             if (isIk != skillCfg.bIsIK > 0)
                 ExcelEditorUtil.SetCfgValue(skillCfg, nameof(SkillCfg.bIsIK), isIk ? 1 : 0);
@@ -403,6 +421,9 @@ public class SkillEditorWindow : EditorWindow
             var mixerTime = EditorGuiUtil.FloatField("mixer time:", skillCfg.fMixerTime, 100);
             if (mixerTime != skillCfg.fMixerTime)
                 ExcelEditorUtil.SetCfgValue(skillCfg, nameof(SkillCfg.fMixerTime), mixerTime);
+            var isLoop = EditorGuiUtil.Toggle("is Loop:", skillCfg.bIsLoop > 0, 20);
+            if (isLoop != skillCfg.bIsLoop > 0)
+                ExcelEditorUtil.SetCfgValue(skillCfg, nameof(SkillCfg.bIsLoop), isLoop ? 1 : 0);
 
             GUILayout.FlexibleSpace();
         }

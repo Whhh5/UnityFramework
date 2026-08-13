@@ -23,12 +23,12 @@ public class HotfixMgr : IUpdateGame
     public async UniTask InitializationAsync()
     {
 
-        Debug.LogWarning("开始检查更新 Assetbundle");
+        Debug.Log("开始检查更新 Assetbundle");
         await CheckCatalogAsync();
-        Debug.LogWarning("开始加载程序集");
+        Debug.Log("开始加载程序集");
         await LoadAssemblyAsync();
         await LoadAssemblyMatadataAsync();
-        Debug.LogWarning("更新完成");
+        Debug.Log("更新完成");
 
     }
 
@@ -46,7 +46,7 @@ public class HotfixMgr : IUpdateGame
             var webCatalog = webCatalogList[i];
             var versionPath = AssetbundleUtil.GetCurPlatformAssetbundleVersionFilePath(webCatalog.abName);
 
-            var versionInfoStr = File.Exists(versionPath) ? await File.ReadAllTextAsync(versionPath) : "";
+            var versionInfoStr = File.Exists(versionPath) ? File.ReadAllText(versionPath) : "";
             var versionInfo = JsonConvert.DeserializeObject<AbVersionInfo>(versionInfoStr) ?? new();
             if (versionInfo.version == webCatalog.version)
                 continue;
@@ -94,8 +94,11 @@ public class HotfixMgr : IUpdateGame
     }
     private async UniTask LoadAssemblyAsync()
     {
-        var abPath = AssetbundleUtil.GetCurPlatformAssetbundlePath(GlobalConfigSO.Instance.HotfixAssetbundleName);
+        var abName = AssetbundleUtil.GetAbNameByPath(GlobalConfigSO.Instance.DllBytesDirectory);
+        var abPath = AssetbundleUtil.GetCurPlatformAssetbundlePath(abName);
         var ab = await AssetBundle.LoadFromFileAsync(abPath);
+        if (ab == null)
+            return;
 
         for (int i = 0; i < GlobalConfigSO.Instance.HotfixList.Length; i++)
         {
@@ -109,7 +112,7 @@ public class HotfixMgr : IUpdateGame
             // Assembly hotUpdateAss = null; // AppDomain.CurrentDomain.GetAssemblies().First(a => a.GetName().Name == name);
 #else
             Assembly hotUpdateAss = Assembly.Load(data.bytes);
-            Debug.LogWarning($"load hotfixassembly: {hotUpdateAss.FullName}");
+            Debug.Log($"load hotfixassembly: {hotUpdateAss.FullName}");
 #endif
         }
         ab.Unload(true);
@@ -117,8 +120,11 @@ public class HotfixMgr : IUpdateGame
 
     private async UniTask LoadAssemblyMatadataAsync()
     {
-        var metaDataAbPath = AssetbundleUtil.GetCurPlatformAssetbundlePath(GlobalConfigSO.Instance.HotfixMatadataAssetbundleName);
+        var abName = AssetbundleUtil.GetAbNameByPath(GlobalConfigSO.Instance.DllMatadataBytesDirectory);
+        var metaDataAbPath = AssetbundleUtil.GetCurPlatformAssetbundlePath(abName);
         var metadataAb = await AssetBundle.LoadFromFileAsync(metaDataAbPath);
+        if (metadataAb == null)
+            return;
         var metadataNames = metadataAb.GetAllAssetNames();
 
         for (int i = 0; i < metadataNames.Length; i++)

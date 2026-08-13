@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: BallSpiralMerge
+  m_Shader: {fileID: 4800000, guid: 2586bf056ba744c968df12cd5baa5309, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BallA:
+        m_Texture: {fileID: 2800000, guid: a6344b156d11c2e4db50e2b31a945d62, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BallB:
+        m_Texture: {fileID: 2800000, guid: b07dc3dfa86a2f049972ca324a90b863, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BallBig:
+        m_Texture: {fileID: 2800000, guid: 93d11fcf33e5acc44b003b5ba3bb402f, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _BigRadius: 0.15
+    - _EdgeMelt: 0.0424
+    - _FlowSpeed: 6
+    - _FusionSmoothness: 0.0504
+    - _MergeProgress: 0.993
+    - _NoiseScale: 7.2
+    - _SmallRadius: 0.075
+    - _SpiralRotations: 2.5
+    - _SpiralStrength: 2
+    - _VortexDistortion: 0.084
+    m_Colors:
+    - _BallAStart: {r: 0.4, g: 0.5, b: 0, a: 0}
+    - _BallBStart: {r: 0.6, g: 0.5, b: 0, a: 0}
+    - _MergeCenter: {r: 0.5, g: 0.5, b: 0, a: 0}
+  m_BuildTextureStacks: []

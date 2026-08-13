@@ -60,4 +60,23 @@ public partial class SkillLinkPlayableAdapterEditor : SkillLinkPlayableAdapter, 
         get => this.GetFieldValue(nameof(_BuffInfoList), default(IEntityBuffParamsEditor[]));
         set => this.SetFieldValue(nameof(_BuffInfoList), value);
     }
+
+    public override EnAnimLayerBit GetAnimationLayers()
+    {
+        var result = EnAnimLayerBit.None;
+        foreach (var item in _DataList)
+        {
+            var clipId = item.GetClipID();
+            if (clipId <= 0)
+                continue;
+            var clipCfg = ExcelEditorUtil.GetCfg<ClipCfg>(item.GetClipID());
+            if (clipCfg == null)
+            {
+                Debug.LogError($"clip no exist {item.GetClipID()}");
+                continue;
+            }
+            result |= (EnAnimLayerBit)(1 << clipCfg.nLayer);
+        }
+        return result;
+    }
 }

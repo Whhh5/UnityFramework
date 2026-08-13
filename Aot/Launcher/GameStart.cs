@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using WeChatWASM;
 
 public enum EnLoaderType
 {
@@ -16,6 +15,7 @@ public interface IUpdateGame
 
 public class GameStart : MonoBehaviour
 {
+    public static GameStart Instance = null;
     private Dictionary<EnLoaderType, IUpdateGame> _UpdateGameController = new();
 
 
@@ -26,7 +26,7 @@ public class GameStart : MonoBehaviour
         //    Debug.LogWarning($"WXSDKID: {sdkID}");
         //});
         //WX.ReportGameStart();
-
+        Instance = this;
         _UpdateGameController.Add(EnLoaderType.Assetbundle, new HotfixMgr());
         _UpdateGameController.Add(EnLoaderType.Editor, new HotfixTest());
     }

@@ -41,4 +41,9 @@ public class LayerMixerCmdPlayableAdapter : SkillPlayableAdapter<SkillPlayableAd
     {
         return _CurPlayableAdater.GetUnitTime();
     }
+
+    public override EnAnimLayerBit GetAnimationLayers()
+    {
+        throw new System.NotImplementedException();
+    }
 }

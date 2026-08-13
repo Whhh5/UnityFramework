@@ -22,10 +22,6 @@ public abstract class PlayableBehaviourAdapter : PlayableBehaviour, IClassPool<P
     {
 
     }
-
-    public void OnPoolEnable()
-    {
-    }
 }
 
 public class PlayableScriptBrhaviour : IPlayableBehaviour

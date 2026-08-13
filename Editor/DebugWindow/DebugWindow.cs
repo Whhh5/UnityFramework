@@ -1,8 +1,11 @@
-using UnityEngine;
-using UnityEditor;
-using System.Collections.Generic;
-using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using Cysharp.Threading.Tasks;
+using Newtonsoft.Json;
+using UnityEditor;
+using UnityEngine;
 
 public class DebugWindow : EditorWindow
 {
@@ -18,6 +21,7 @@ public class DebugWindow : EditorWindow
     private int _EntityId;
     private EnEntityCmd _CmdId;
 
+
     private void OnGUI()
     {
         EditorGUILayout.BeginHorizontal();
@@ -31,66 +35,24 @@ public class DebugWindow : EditorWindow
         }
         EditorGUILayout.EndHorizontal();
 
-        if (GUILayout.Button("create wave info", GUILayout.Width(200), GUILayout.Height(30)))
+        if (GUILayout.Button("test fussion", GUILayout.Width(100), GUILayout.Height(30)))
         {
-            var list = new List<GameBattleWaveMonsterInfo>()
+            if (Selection.assetGUIDs.Length > 0)
             {
-                //new GameBattleWaveMonsterInfo()
-                //{
-                //    monsterId = 1000101,
-                //    backRow = 1,
-                //    col = 0,
-                //    attValuesId = 201,
-                //},
-                //new GameBattleWaveMonsterInfo()
-                //{
-                //    monsterId = 1000102,
-                //    backRow = 1,
-                //    col = 1,
-                //    attValuesId = 201,
-                //},
-                //new GameBattleWaveMonsterInfo()
-                //{
-                //    monsterId = 1000103,
-                //    backRow = 1,
-                //    col = 2,
-                //    attValuesId = 201,
-                //},
-                //new GameBattleWaveMonsterInfo()
-                //{
-                //    monsterId = 1000104,
-                //    backRow = 1,
-                //    col = 4,
-                //    attValuesId = 201,
-                //},
-                //new GameBattleWaveMonsterInfo()
-                //{
-                //    monsterId = 1000201,
-                //    backRow = 1,
-                //    col = 5,
-                //    attValuesId = 201,
-                //},
-                new GameBattleWaveMonsterInfo()
+                var logStr = new StringBuilder();
+                for (int i = 0; i < Selection.assetGUIDs.Length; i++)
                 {
-                    monsterId = 1000301,
-                    backRow = 1,
-                    col = 3,
-                    attValuesId = 201,
-                },
-            };
-            var arrValue = new List<int>();
-            ISerializeToIntArray.SerializeToInt(ref arrValue, in list);
-            var array = arrValue.ToArray();
-            for (int i = 1; i <= 80; i++)
-            {
-                var cfg = ExcelEditorUtil.GetCfg<BattleWaveCfg>(i);
-                ExcelEditorUtil.SetCfgValue(cfg, nameof(BattleWaveCfg.arrMonsterInfos), array);
+                    var guid = Selection.assetGUIDs[i];
+                    var path = AssetDatabase.GUIDToAssetPath(guid);
+                    var hasCode = path.GetHashCode();
+                    logStr.AppendLine($"{path}:{hasCode}");
+                }
+                Debug.Log(logStr);
             }
-            ExcelEditorUtil.SaveExcel<BattleWaveCfg>();
         }
-        if (GUILayout.Button("add", GUILayout.Width(100), GUILayout.Height(30)))
+        if (GUILayout.Button("check temp monster icon", GUILayout.Width(100), GUILayout.Height(30)))
         {
-
+            CheckMonsterTempIcon();
         }
 
         inDir = EditorGUILayout.Vector3Field("inDir", inDir);
@@ -106,7 +68,7 @@ public class DebugWindow : EditorWindow
             if (GUILayout.Button($"update ball", GUILayout.Width(100), GUILayout.Height(30)))
             {
                 var count = ExcelEditorUtil.GetCfgCount<SkillBallCfg>();
-                var tempType = typeof(GameBattleSkillBall_1001Data);
+                var tempType = typeof(GameBattleSkillBall1001Data);
                 for (int i = 0; i < count; i++)
                 {
                     var cfg = ExcelEditorUtil.GetCfgByIndex<SkillBallCfg>(i);
@@ -116,7 +78,7 @@ public class DebugWindow : EditorWindow
                         .Replace("1001", $"{cfg.nBallId}"));
                     if (type == null)
                         continue;
-                    var method = type.GetMethod(nameof(GameBattleSkillBall_1001Data.GetStarSerializeArray));
+                    var method = type.GetMethod(nameof(GameBattleSkillBall1001Data.GetStarSerializeArray));
                     var result = (List<ISerializeToIntArray>)method.Invoke(null, null);
                     SkillBallStarLevelArray(cfg.nBallId, result);
                 }
@@ -125,7 +87,7 @@ public class DebugWindow : EditorWindow
             if (GUILayout.Button($"update ball part", GUILayout.Width(100), GUILayout.Height(30)))
             {
                 var count = ExcelEditorUtil.GetCfgCount<SkillBallPartCfg>();
-                var tempType = typeof(GameBattleSkillBallPart_1009Data);
+                var tempType = typeof(GameBattleSkillBallPart1009Data);
                 for (int i = 0; i < count; i++)
                 {
                     var cfg = ExcelEditorUtil.GetCfgByIndex<SkillBallPartCfg>(i);
@@ -135,13 +97,34 @@ public class DebugWindow : EditorWindow
                         .Replace("1009", $"{cfg.nPartId}"));
                     if (type == null)
                         continue;
-                    var method = type.GetMethod(nameof(GameBattleSkillBallPart_1009Data.GetStarSerializeArray));
+                    var method = type.GetMethod(nameof(GameBattleSkillBallPart1009Data.GetStarSerializeArray));
                     if (method == null)
                         continue;
                     var result = (List<ISerializeToIntArray>)method.Invoke(null, null);
                     SkillBallPartStarLevelArray(cfg.nPartId, result);
                 }
                 ExcelEditorUtil.SaveExcel<SkillBallPartCfg>();
+            }
+            if (GUILayout.Button($"update skill passicity", GUILayout.Width(100), GUILayout.Height(30)))
+            {
+                var count = ExcelEditorUtil.GetCfgCount<SkillPassivityCfg>();
+                var tempType = typeof(GameBattleSkillPassivity2001Data);
+                for (int i = 0; i < count; i++)
+                {
+                    var cfg = ExcelEditorUtil.GetCfgByIndex<SkillPassivityCfg>(i);
+
+                    var type = Type.GetType(
+                        $"{tempType.FullName}, {tempType.Assembly.FullName}"
+                        .Replace("2001", $"{cfg.nSkillPassivityId}"));
+                    if (type == null)
+                        continue;
+                    var method = type.GetMethod(nameof(GameBattleSkillPassivity2001Data.GetStarSerializeArray));
+                    if (method == null)
+                        continue;
+                    var result = (List<ISerializeToIntArray>)method.Invoke(null, null);
+                    SkillPassivityStarLevelArray(cfg.nSkillPassivityId, result);
+                }
+                ExcelEditorUtil.SaveExcel<SkillPassivityCfg>();
             }
         }
         EditorGUILayout.EndHorizontal();
@@ -176,6 +159,71 @@ public class DebugWindow : EditorWindow
 
         var cfg = ExcelEditorUtil.GetCfg<SkillBallPartCfg>(cfgId);
         ExcelEditorUtil.SetCfgValue(cfg, nameof(cfg.arrStarParams), jsonList.ToArray());
+    }
+    private void SkillPassivityStarLevelArray(int cfgId, List<ISerializeToIntArray> list)
+    {
+        var jsonList = new List<int>();
+        for (int i = 0; i < list?.Count; i++)
+        {
+            var ps = list[i].SerializeToIntArray();
+            jsonList.Add(ps.Count);
+            jsonList.AddRange(ps);
+        }
+        var json = JsonConvert.SerializeObject(jsonList);
+        Debug.Log(json);
+
+        var cfg = ExcelEditorUtil.GetCfg<SkillPassivityCfg>(cfgId);
+        ExcelEditorUtil.SetCfgValue(cfg, nameof(cfg.arrStarParams), jsonList.ToArray());
+    }
+    private async void CheckMonsterTempIcon()
+    {
+        var monsterCount = ExcelEditorUtil.GetCfgCount<MonsterCfg>();
+        for (int i = 0; i < monsterCount; i++)
+        {
+            var cfg = ExcelEditorUtil.GetCfgByIndex<MonsterCfg>(i);
+            if (cfg.nAssetCfgID <= 0)
+                continue;
+            var savePath = Path.Combine(Application.dataPath, "../", $"Assets/GameRes/HotfixRes/Images/UI/Icon", $"img_icon_monster_{cfg.nMonsterID}.png");
+            if (File.Exists(savePath))
+                continue;
+
+            // 复制贴图，开启可读（关键！原贴图不能直接编码）
+            var assetCfg = ExcelEditorUtil.GetCfg<AssetCfg>(cfg.nAssetCfgID);
+            if (assetCfg == null)
+                continue;
+            var go = AssetDatabase.LoadAssetAtPath<GameObject>(assetCfg.strPath);
+            if (go == null)
+                continue;
+            var icon = AssetPreview.GetAssetPreview(go);
+            var curTime = DateTime.Now;
+            await UniTask.WaitUntil(() => icon != null || (DateTime.Now - curTime).Seconds > 5);
+            if (icon == null)
+            {
+                Debug.LogError($"Preview load error: {go}");
+                continue;
+            }
+            Texture2D exportTex = CopyTexture2D(icon);
+
+            // 编码PNG
+            byte[] pngData = exportTex.EncodeToPNG();
+            System.IO.File.WriteAllBytes(savePath, pngData);
+
+        }
+        AssetDatabase.Refresh();
+    }
+
+    // 复制Texture，保证可读
+    private static Texture2D CopyTexture2D(Texture source)
+    {
+        RenderTexture rt = RenderTexture.GetTemporary(source.width, source.height);
+        Graphics.Blit(source, rt);
+
+        Texture2D newTex = new Texture2D(source.width, source.height, TextureFormat.RGBA32, false);
+        newTex.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
+        newTex.Apply();
+
+        RenderTexture.ReleaseTemporary(rt);
+        return newTex;
     }
     private void CreateScene()
     {

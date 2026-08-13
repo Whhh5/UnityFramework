@@ -10,7 +10,6 @@ using UnityEngine.Scripting;
 public class GameManager : MonoBehaviour
 {
     private int _GameManagerGoID = -1;
-    #region 生命周期管理
     private EnManagerFuncType _CurInitSatge = EnManagerFuncType.None;
     private readonly Dictionary<EnManagerFuncType, List<Singleton>> _ManagerList = new();
     private void SubManager(Singleton f_Manager)
@@ -62,7 +61,6 @@ public class GameManager : MonoBehaviour
                 var instance = instanceField.GetValue(null);
                 var monoBehaviour = instance as Singleton;
                 SubManager(monoBehaviour);
-                Debug.Log($"Register ======> {type}");
             }
         }
     }
@@ -74,8 +72,7 @@ public class GameManager : MonoBehaviour
     }
     private async void Start()
     {
-        Debug.Log(" --------------------- start Awake -----------------------");
-        // ���� awake
+        //Debug.Log(" --------------------- start Awake -----------------------");
         if (_ManagerList.TryGetValue(EnManagerFuncType.AwakeAsync, out var list))
         {
             var count = list.Count;
@@ -85,10 +82,10 @@ public class GameManager : MonoBehaviour
             }
         }
         _CurInitSatge |= EnManagerFuncType.AwakeAsync;
-        Debug.Log(" --------------------- Awake end -----------------------");
+        //Debug.Log(" --------------------- Awake end -----------------------");
 
 
-        Debug.Log(" --------------------- start Start -----------------------");
+        //Debug.Log(" --------------------- start Start -----------------------");
         if (_ManagerList.TryGetValue(EnManagerFuncType.OnEnableAsync, out list))
         {
             var count = list.Count;
@@ -98,7 +95,7 @@ public class GameManager : MonoBehaviour
             }
         }
         _CurInitSatge |= EnManagerFuncType.OnEnableAsync;
-        Debug.Log(" ---------------------  Start end -----------------------");
+        //Debug.Log(" ---------------------  Start end -----------------------");
 
 
         _GameManagerGoID = await ABBGOMgr.Instance.CreateGOAsync(EnLoadTarget.Pre_GameManager, null);
@@ -143,7 +140,7 @@ public class GameManager : MonoBehaviour
     private void OnApplicationQuit()
     {
         // start
-        Debug.Log(" --------------------- OnDisable -----------------------");
+        //Debug.Log(" --------------------- OnDisable -----------------------");
         _CurInitSatge &= ~EnManagerFuncType.OnEnableAsync;
         if (_ManagerList.TryGetValue(EnManagerFuncType.OnEnableAsync, out var list))
         {
@@ -152,9 +149,9 @@ public class GameManager : MonoBehaviour
                 list[^i].OnDisable();
             }
         }
-        Debug.Log(" --------------------- OnDisable -----------------------");
+        //Debug.Log(" --------------------- OnDisable -----------------------");
         // awake
-        Debug.Log(" --------------------- Destroy -----------------------");
+        //Debug.Log(" --------------------- Destroy -----------------------");
         _CurInitSatge &= ~EnManagerFuncType.AwakeAsync;
         if (_ManagerList.TryGetValue(EnManagerFuncType.AwakeAsync, out list))
         {
@@ -163,9 +160,8 @@ public class GameManager : MonoBehaviour
                 list[^i].Destroy();
             }
         }
-        Debug.Log(" --------------------- Destroy end -----------------------");
+        //Debug.Log(" --------------------- Destroy end -----------------------");
         //ABBGOMgr.Instance.DestroyGO(m_GameManagerGoID);
         _GameManagerGoID = -1;
     }
-    #endregion
 }

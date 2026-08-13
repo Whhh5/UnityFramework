@@ -10,18 +10,13 @@ public enum EnAnimClip
 public class AnimMgr : Singleton<AnimMgr>
 {
     public override EnManagerFuncType FuncType => base.FuncType;
-    public AnimationClip GetClip(int clipID)
-	{
-        var clipCfg = GameSchedule.Instance.GetClipCfg0(clipID);
-		var clip = ABBLoadMgr.Instance.Load<AnimationClip>(clipCfg.nAssetID);
-		return clip;
-	}
 	public void RecycleClip(int clipID)
 	{
 
 	}
     public AvatarMask GetLayerAvatar(EnAnimLayer layerAvatarID)
     {
+        return null;
         var avatarCfg = GameSchedule.Instance.GetAnimLayerCfg0((int)layerAvatarID);
         var mask = ABBLoadMgr.Instance.Load<AvatarMask>(avatarCfg.nAssetID);
         return mask;

@@ -11,6 +11,12 @@ public class BuffCfg : ICfg
 	// 
 	[Newtonsoft.Json.JsonProperty()] public readonly System.String strEnumNameEditor;
 	// 
+	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 nNameLangId;
+	// 
+	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 nStyleNameLangId;
+	// 
+	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 nDescLangId;
+	// 
 	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 nIconAssetID;
 	// 
 	[Newtonsoft.Json.JsonProperty()] public readonly System.String strDesc;

@@ -34,11 +34,11 @@ public class SkillLoopPlayableAdapter : SkillPlayableAdapter<SkillPlayableAdapte
     private float _LastExecuteTime = float.NaN;
     private SkillStageInfo CurAtkLinkStageData => _DataList[(int)_StepIndex];
     private int _EntityID = -1;
-    private IPlayableAdapter m_PlayableAdapter = null;
+    private IPlayableAdapter _PlayableAdapter = null;
     private int _LoopCount = GlobalConfig.IntM1;
     public override void OnPoolDestroy()
     {
-        IPlayableAdapter.Destroy(m_PlayableAdapter);
+        IPlayableAdapter.Destroy(_PlayableAdapter);
         foreach (var item in _DataList)
             ClassPoolMgr.Instance.Push(item);
 
@@ -52,7 +52,7 @@ public class SkillLoopPlayableAdapter : SkillPlayableAdapter<SkillPlayableAdapte
 
         _BuffAddKeyList.Clear();
         _Graph = null;
-        m_PlayableAdapter = null;
+        _PlayableAdapter = null;
 
         _LoopCount
             = _EntityID
@@ -70,12 +70,12 @@ public class SkillLoopPlayableAdapter : SkillPlayableAdapter<SkillPlayableAdapte
         _StepIndex = EnCmdStep.Step0;
         _LastExecuteTime = ABBUtil.GetGameTimeSeconds();
 
-        m_PlayableAdapter = _Graph.CreateClipPlayableAdapter(CurAtkLinkStageData.GetClipID());
-        AddConnectRootAdapter(m_PlayableAdapter);
+        _PlayableAdapter = _Graph.CreateClipPlayableAdapter(CurAtkLinkStageData.GetClipID());
+        AddConnectRootAdapter(_PlayableAdapter);
     }
     public override EnAnimLayer GetOutputLayer()
     {
-        var layer = m_PlayableAdapter.GetOutputLayer();
+        var layer = _PlayableAdapter.GetOutputLayer();
         return layer;
     }
     public override void ExecutePlayable()
@@ -117,12 +117,12 @@ public class SkillLoopPlayableAdapter : SkillPlayableAdapter<SkillPlayableAdapte
     }
     public override float GetPlayTime()
     {
-        var time = m_PlayableAdapter.GetPlayTime();
+        var time = _PlayableAdapter.GetPlayTime();
         return time;
     }
     public override float GetUnitTime()
     {
-        var time = m_PlayableAdapter.GetUnitTime();
+        var time = _PlayableAdapter.GetUnitTime();
         return time;
     }
 
@@ -137,7 +137,7 @@ public class SkillLoopPlayableAdapter : SkillPlayableAdapter<SkillPlayableAdapte
     public override int GetPlayCount()
     {
         //return base.GetPlayCount();
-        var time = m_PlayableAdapter.GetPlayTime() / m_PlayableAdapter.GetUnitTime();
+        var time = _PlayableAdapter.GetPlayTime() / _PlayableAdapter.GetUnitTime();
         return Mathf.FloorToInt(time);
     }
     public override void ReexecutePlayable()
@@ -154,12 +154,12 @@ public class SkillLoopPlayableAdapter : SkillPlayableAdapter<SkillPlayableAdapte
         _StepIndex++;
         CurAtkLinkStageData.OnEnable(_Graph);
 
-        var from = m_PlayableAdapter;
+        var from = _PlayableAdapter;
         var to = _Graph.CreateClipPlayableAdapter(CurAtkLinkStageData.GetClipID());
         from.Complete();
         DisconnectRootAdapter();
-        m_PlayableAdapter = _Graph.CreateMixerPlayableAdapter(from, to, GlobalConfig.Float02, MixerComplete);
-        ConnectRootAdapter(m_PlayableAdapter);
+        _PlayableAdapter = _Graph.CreateMixerPlayableAdapter(from, to, GlobalConfig.Float02, MixerComplete);
+        ConnectRootAdapter(_PlayableAdapter);
     }
     public override void CancelPlayable()
     {
@@ -167,12 +167,12 @@ public class SkillLoopPlayableAdapter : SkillPlayableAdapter<SkillPlayableAdapte
         CurAtkLinkStageData.OnDisable(_EntityID);
         _StepIndex++;
         CurAtkLinkStageData.OnEnable(_EntityID);
-        var from = m_PlayableAdapter;
+        var from = _PlayableAdapter;
         var to = _Graph.CreateClipPlayableAdapter(CurAtkLinkStageData.GetClipID());
         from.Complete();
         DisconnectRootAdapter();
-        m_PlayableAdapter = _Graph.CreateMixerPlayableAdapter(from, to, GlobalConfig.Float02, MixerComplete);
-        ConnectRootAdapter(m_PlayableAdapter);
+        _PlayableAdapter = _Graph.CreateMixerPlayableAdapter(from, to, GlobalConfig.Float02, MixerComplete);
+        ConnectRootAdapter(_PlayableAdapter);
     }
     private void MixerComplete(PlayableMixerAdapter mixer, IPlayableAdapter from, IPlayableAdapter to)
     {
@@ -181,11 +181,13 @@ public class SkillLoopPlayableAdapter : SkillPlayableAdapter<SkillPlayableAdapte
         IPlayableAdapter.Destroy(from);
         IPlayableAdapter.Destroy(mixer);
         ConnectRootAdapter(to);
-        m_PlayableAdapter = to;
+        _PlayableAdapter = to;
     }
 
     public override void OnUpdate()
     {
+        base.OnUpdate();
+        _PlayableAdapter.OnUpdate();
         if (_StepIndex == EnCmdStep.Step1 && ABBUtil.GetGameTimeSeconds() - _LastExecuteTime > GlobalConfig.Float02)
         {
             if (_LoopCount != GetPlayCount())
@@ -216,9 +218,24 @@ public class SkillLoopPlayableAdapter : SkillPlayableAdapter<SkillPlayableAdapte
             }
         }
     }
+    public override void OnLoopUpdate()
+    {
+        base.OnLoopUpdate();
+        ReexecutePlayable();
+    }
     private int GetCount()
     {
         return _DataList.Length;
     }
 
+    public override EnAnimLayerBit GetAnimationLayers()
+    {
+        var result = EnAnimLayerBit.None;
+        foreach (var item in _DataList)
+        {
+            var clipCfg = GameSchedule.Instance.GetClipCfg0(item.GetClipID());
+            result |= (EnAnimLayerBit)(1 << clipCfg.nLayer);
+        }
+        return result;
+    }
 }

@@ -6,10 +6,11 @@ public class EntityBurnBuffData : EntityBuffData, IBuffTimeInfo
 {
     public float duration;
     public EnDamageType damageType;
-    public float damageValuePercentage;
+    public float damageValuePercentage01;
     public int maxDamageValue;
     public float interval;
     public int maxCount;
+    public EnEntityAttributeId targetAttribute;
 
     public override EnBuff GetBuff() => EnBuff.Burn;
 
@@ -20,10 +21,11 @@ public class EntityBurnBuffData : EntityBuffData, IBuffTimeInfo
         var list = new List<int>();
         ISerializeToIntArray.SerializeToInt(ref list, damageType);
         ISerializeToIntArray.SerializeToInt(ref list, in duration);
-        ISerializeToIntArray.SerializeToInt(ref list, in damageValuePercentage);
+        ISerializeToIntArray.SerializeToInt(ref list, in damageValuePercentage01);
         ISerializeToIntArray.SerializeToInt(ref list, in maxDamageValue);
         ISerializeToIntArray.SerializeToInt(ref list, in interval);
         ISerializeToIntArray.SerializeToInt(ref list, in maxCount);
+        ISerializeToIntArray.SerializeToInt(ref list, targetAttribute);
         return list;
     }
     public override void DeserializeFromIntArray(int[] datas, int start, int count, ISerializeToIntArrayUserData userData)
@@ -31,15 +33,31 @@ public class EntityBurnBuffData : EntityBuffData, IBuffTimeInfo
         var index = 0;
         ISerializeToIntArray.ParseToValue(in datas, in start, in count, ref index, out damageType);
         ISerializeToIntArray.ParseToValue(in datas, in start, in count, ref index, out duration);
-        ISerializeToIntArray.ParseToValue(in datas, in start, in count, ref index, out damageValuePercentage);
+        ISerializeToIntArray.ParseToValue(in datas, in start, in count, ref index, out damageValuePercentage01);
         ISerializeToIntArray.ParseToValue(in datas, in start, in count, ref index, out maxDamageValue);
         ISerializeToIntArray.ParseToValue(in datas, in start, in count, ref index, out interval);
         ISerializeToIntArray.ParseToValue(in datas, in start, in count, ref index, out maxCount);
+        ISerializeToIntArray.ParseToValue(in datas, in start, in count, ref index, out targetAttribute);
     }
 
     public float GetTime()
     {
         return duration;
+    }
+
+    public override void GetDescriptionList(ref List<DescriptionInfo> descInfos, EnDescriptionLevel level)
+    {
+        base.GetDescriptionList(ref descInfos, level);
+
+        var attName = LanguageUtility.GetLanguage_AttiributeName(targetAttribute);
+        var damageName = LanguageUtility.GetLanguage_DamageTypeName(damageType);
+
+        var info = ClassPoolMgr.Instance.Pull<DescriptionInfo>();
+        info.title = LanguageUtility.GetLanguage_BuffStyleName(GetBuff());
+        info.level = level;
+        info.content = string.Format(LanguageUtility.GetLanguage_BuffDescription(GetBuff()),
+            interval, damageValuePercentage01 * 100, attName, maxDamageValue, damageName, duration, maxCount);
+        descInfos.Add(info);
     }
 }
 public class EntityBurnBuff : EntityBuff<EntityBurnBuffData>, IUpdate
@@ -52,7 +70,7 @@ public class EntityBurnBuff : EntityBuff<EntityBurnBuffData>, IUpdate
 
     private int _BuffEntityId;
     private float _LastFireTime;
-    private int _TargetLimitHp = -1;
+    private EnEntityAttributeId _TargetAttribute;
     public override void OnPoolDestroy()
     {
         UpdateMgr.Instance.Unregistener(this);
@@ -64,8 +82,8 @@ public class EntityBurnBuff : EntityBuff<EntityBurnBuffData>, IUpdate
             = _DamageValuePercentage
             = _BuffEntityId
             = _MaxDamageValue
-            = _TargetLimitHp
             = -1;
+        _TargetAttribute = EnEntityAttributeId.None;
     }
     public override void OnPoolInit(EntityBuffDataUserData userData)
     {
@@ -73,36 +91,29 @@ public class EntityBurnBuff : EntityBuff<EntityBurnBuffData>, IUpdate
 
         var entityData = EntityMgr.Instance.GetEntityData<GameBattleMonsterEntityData>(_TargetEntityID);
         var worldPos = entityData.GetCenterPointWorldPos();
-        _BuffEntityId = GameEffectMgr.Instance.PlayEffect(EnGameEffectId.Eff_buff_fire, in worldPos);
+        _BuffEntityId = GameEffectMgr.Instance.PlayEffect(EnGameEffectId.Eff_buff_fire, in worldPos, entityData.GetVolume());
 
         UpdateMgr.Instance.Registener(this);
     }
     protected override void AddKey(int addKey, EntityBurnBuffData buffParams)
     {
         _DamageType = buffParams.damageType;
-        _DamageValuePercentage = buffParams.damageValuePercentage;
+        _DamageValuePercentage = buffParams.damageValuePercentage01;
         _Interval = buffParams.interval;
         _MaxCount = buffParams.maxCount;
         _MaxDamageValue = buffParams.maxDamageValue;
-
-        var proCom = SceneEntityMgr.Instance.GetEntityCom<SceneEntityAttributeComData>(_TargetEntityID, EnSceneEntityComType.Attribute);
-        _TargetLimitHp = proCom.GetValueInt(EnEntityAttributeId.LimitHp);
+        _TargetAttribute = buffParams.targetAttribute;
     }
     protected override void ReaddKey(int addKey, EntityBurnBuffData buffParams)
     {
-        if (buffParams.damageValuePercentage > _DamageValuePercentage)
-            _DamageValuePercentage = buffParams.damageValuePercentage;
+        if (buffParams.damageValuePercentage01 > _DamageValuePercentage)
+            _DamageValuePercentage = buffParams.damageValuePercentage01;
         if (buffParams.interval < _Interval)
             _Interval = buffParams.interval;
         if (buffParams.maxCount > _MaxCount)
             _MaxCount = buffParams.maxCount;
         if (buffParams.maxDamageValue > _MaxDamageValue)
             _MaxDamageValue = buffParams.maxDamageValue;
-
-        var proCom = SceneEntityMgr.Instance.GetEntityCom<SceneEntityAttributeComData>(_TargetEntityID, EnSceneEntityComType.Attribute);
-        var hp = proCom.GetValueInt(EnEntityAttributeId.LimitHp);
-        if (hp != _TargetLimitHp)
-            _TargetLimitHp = hp;
     }
 
     public void Update()
@@ -118,8 +129,10 @@ public class EntityBurnBuff : EntityBuff<EntityBurnBuffData>, IUpdate
             var posX = Random.Range(-0.5f, 0.5f);
             var posY = Random.Range(-0.5f, 0.5f);
             var count = Mathf.Min(Count, _MaxCount);
-            var damageValue = Mathf.Min(_MaxDamageValue, Mathf.CeilToInt(_TargetLimitHp * _DamageValuePercentage * count));
-            GameAttackMgr.Instance.Attack(_SourceEntityID, _TargetEntityID, damageValue, worldPos + new Vector2(posX, posY), _DamageType);
+            var proCom = SceneEntityMgr.Instance.GetEntityCom<SceneEntityAttributeComData>(_TargetEntityID, EnSceneEntityComType.Attribute);
+            var hp = proCom.GetValueInt(_TargetAttribute);
+            var damageValue = Mathf.Min(_MaxDamageValue, Mathf.CeilToInt(hp * _DamageValuePercentage * count));
+            GameAttackMgr.Instance.AttackMonster(_SourceEntityID, _TargetEntityID, damageValue, worldPos + new Vector2(posX, posY), _DamageType);
         }
     }
 }

@@ -91,9 +91,9 @@ public class ServerListQueue
         _HeadIndex = (_HeadIndex + count + _HeadSize) % _List.Length;
     }
 }
-public class UnityTcpClient2: IUnityClient
+public class UnityTcpClient2 : IUnityClient
 {
-    [SerializeField] private string serverIp = "192.168.1.110";
+    [SerializeField] private string serverIp = "127.0.0.1";
     [SerializeField] private int serverPort = 6598;
 
     private Socket _clientSocket;
@@ -130,7 +130,7 @@ public class UnityTcpClient2: IUnityClient
         {
             if (_isConnected)
             {
-                Debug.LogWarning("已经连接到服务器");
+                Debug.Log("已经连接到服务器");
                 return;
             }
 
@@ -145,16 +145,16 @@ public class UnityTcpClient2: IUnityClient
             // 触发连接成功事件
             _NetCliectReceive.OnNetConnected();
 
-            Debug.LogWarning("------>>> 服务器连接");
+            Debug.Log("------>>> 服务器连接");
             // 开始接收消息
             await ReceiveMessagesAsync();
-    }
+        }
         catch (Exception ex)
         {
             // 触发错误事件
             _NetCliectReceive.OnNetError($"连接失败: {ex.Message}");
             Disconnect();
-}
+        }
     }
 
     // 接收服务器消息
@@ -186,7 +186,7 @@ public class UnityTcpClient2: IUnityClient
                 _ServerBufferCache.AppendRange(buffer, 0, in bytesRead);
 
                 CheckoutMessage();
-        }
+            }
         }
         catch (OperationCanceledException)
         {
@@ -243,7 +243,12 @@ public class UnityTcpClient2: IUnityClient
             }
 
             byte[] data = Encoding.UTF8.GetBytes(message);
-            await _clientSocket.SendAsync(new ArraySegment<byte>(data), SocketFlags.None);
+            var lenArr = BitConverter.GetBytes(data.Length);
+            var sendArr = new byte[data.Length + lenArr.Length];
+            Array.Copy(lenArr, sendArr, lenArr.Length);
+            Array.Copy(data, 0, sendArr, lenArr.Length, data.Length);
+            var sendCount = await _clientSocket.SendAsync(new ArraySegment<byte>(sendArr), SocketFlags.None);
+            Debug.Log($"发送消息({data.Length}): {message}");
         }
         catch (SocketException ex)
         {
@@ -283,7 +288,7 @@ public class UnityTcpClient2: IUnityClient
         {
             _NetCliectReceive.OnNetError($"断开连接时发生错误: {ex.Message}");
         }
-        Debug.LogWarning("断开服务器连接");
+        Debug.Log("断开服务器连接");
     }
 
 }

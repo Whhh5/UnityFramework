@@ -23,7 +23,7 @@ public sealed class ClassPoolMgr : Singleton<ClassPoolMgr>
         var data = Pull<T>(null);
         return data;
     }
-    public T Pull<T>(IClassPoolDestroy userData)
+    public T Pull<T>(IClassPool userData)
         where T : IClassPool, new()
     {
         var type = typeof(T);
@@ -45,10 +45,15 @@ public sealed class ClassPoolMgr : Singleton<ClassPoolMgr>
             return;
         }
         var type = classData.GetType();
-        classData.OnPoolDestroy();
         var poolData = GetClassPoolData(type);
+        if (poolData.Contains(classData))
+        {
+            throw new Exception($"error {Time.frameCount}: {classData.GetHashCode()}");
+        }
+
+        classData.OnPoolDestroy();
         poolData.Push(classData);
     }
-    
+
 }
 

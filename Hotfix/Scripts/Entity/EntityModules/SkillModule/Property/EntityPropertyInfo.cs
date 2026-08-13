@@ -34,8 +34,4 @@ public abstract class EntityPropertyInfo : IClassPool<EntityPropertyInfoUserData
     public void PoolRelease()
     {
     }
-
-    public void OnPoolEnable()
-    {
-    }
 }

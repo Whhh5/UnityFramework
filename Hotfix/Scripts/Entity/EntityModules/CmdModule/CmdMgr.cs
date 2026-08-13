@@ -60,8 +60,7 @@ public class AnimCmdExecute : IEntityCmdExecute
     public void RemoveCmd(in int entityId, in EnEntityCmd cmd)
     {
         var cmdCfg = GameSchedule.Instance.GetCmdCfg0((int)cmd);
-        var animCom =
-            SceneEntityMgr.Instance.GetEntityCom<EntityAnimComData>(in entityId, EnSceneEntityComType.Animation);
+        var animCom = SceneEntityMgr.Instance.GetEntityCom<EntityAnimComData>(in entityId, EnSceneEntityComType.Animation);
         var skillId = cmdCfg.arrParams[0];
         animCom.RemoveSkill(in skillId);
     }

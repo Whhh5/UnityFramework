@@ -21,10 +21,6 @@ public class LayerMixerConnectInfo : IClassPool<PoolNaNUserData>
         skillId = -1;
     }
 
-    public void OnPoolEnable()
-    {
-    }
-
     public void OnPoolInit(PoolNaNUserData userData)
     {
     }

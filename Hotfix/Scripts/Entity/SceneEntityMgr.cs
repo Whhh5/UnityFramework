@@ -15,8 +15,8 @@ public class SceneEntityMgr : Singleton<SceneEntityMgr>
     public int CreateEntityData(in int typeId)
     {
         var userData = ClassPoolMgr.Instance.Pull<GameEntityUserData>();
-        var sceneEntityId = CreateEntityData(in typeId, in userData);
-        ClassPoolMgr.Instance.Push(in userData);
+        var sceneEntityId = CreateEntityData(in typeId, userData);
+        ClassPoolMgr.Instance.Push(userData);
         return sceneEntityId;
     }
     public int CreateEntityData<T>()
@@ -24,7 +24,7 @@ public class SceneEntityMgr : Singleton<SceneEntityMgr>
     {
         var userData = ClassPoolMgr.Instance.Pull<GameEntityUserData>();
         var entityID = CreateEntityData<T>(userData);
-        ClassPoolMgr.Instance.Push(in userData);
+        ClassPoolMgr.Instance.Push(userData);
         return entityID;
     }
     public int CreateEntityData<T>(GameEntityUserData userData)
@@ -54,6 +54,14 @@ public class SceneEntityMgr : Singleton<SceneEntityMgr>
     }
 
     #region Com
+    public T AddCom<T>(in int entityId, in EnSceneEntityComType comType)
+        where T : class, IEntity3DComData
+    {
+        var entityData = GetSceneEntityData(in entityId);
+        entityData.AddEntityCom(comType);
+        var com = entityData.GetEntityCom<T>(comType);
+        return com;
+    }
     public void AddCom(in int entityId, in EnSceneEntityComType comType)
     {
         var entityData = GetSceneEntityData(in entityId);
@@ -86,6 +94,17 @@ public class SceneEntityMgr : Singleton<SceneEntityMgr>
     #endregion
 
     #region cmd
+    public bool IsAddCmd(in int entityId, in int cmd)
+    {
+        return IsAddCmd(in entityId, (EnEntityCmd)cmd);
+    }
+    public bool IsAddCmd(in int entityId, in EnEntityCmd cmd)
+    {
+        var entityData = GetSceneEntityData(in entityId);
+        var cmdCom = entityData.GetEntityCom<EntityCmdComData>(EnSceneEntityComType.Cmd);
+        var result = cmdCom.IsAddCmd(in cmd);
+        return result;
+    }
     public void AddCmd(in int entityId, in EnEntityCmd cmd)
     {
         var entityData = GetSceneEntityData(in entityId);

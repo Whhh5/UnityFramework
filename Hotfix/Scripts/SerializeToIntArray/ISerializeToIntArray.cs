@@ -16,7 +16,9 @@ public interface ISerializeToIntArray<T> : ISerializeToIntArray, IClassPoolInit<
     void IClassPool<ISerializeToIntArrayUserData>.OnPoolInit(ISerializeToIntArrayUserData userData)
     {
         DeserializeFromIntArray(userData.arrParams, userData.startIndex, userData.count, userData);
-        OnPoolInit((T)userData);
+        if (userData is not T data)
+            return;
+        OnPoolInit(data);
     }
     public void OnPoolInit(T userData);
 }
@@ -27,7 +29,7 @@ public interface ISerializeToIntArray : IClassPoolInit
     public List<int> SerializeToIntArray();
     public void DeserializeFromIntArray(int[] datas, int start, int count, ISerializeToIntArrayUserData userData);
 
-    public static IClassPool GetTypeInstance(in int typeId, in IClassPoolDestroy userData)
+    public static IClassPool GetTypeInstance(in int typeId, in IClassPool userData)
     {
         var ins = TypeDefine.CreateInstance(in typeId, in userData);
         return ins;

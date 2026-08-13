@@ -1,13 +1,8 @@
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using UnityEditor;
 using System.IO;
-using Unity.Plastic.Newtonsoft.Json;
-using System;
-using System.Linq;
-using System.Reflection;
 using System.Text;
+using UnityEditor;
+using Object = UnityEngine.Object;
 
 public class LoadConfigEditor
 {
@@ -22,19 +17,33 @@ public class LoadConfigEditor
         {".json", "Json_" },
         {".txt", "Txt_" },
         {".bytes", "Byte_" },
+        {".ttf", "Ttf_" },
+        {".mp3", "Audio_" },
+        {".wav", "Audio_" },
+        {".shader", "Shader_" },
+        {".shadergraph", "Shadergraph_" },
+        {".mat", "Mat_" },
     };
-    private static string[] m_SearchPaths = new string[]
+    //private static string[] m_SearchPaths = new string[]
+    //{
+    //    "Assets/GameRes/HotfixRes",
+    //    "Assets/GameRes/Shaders", 
+    //    "Assets/Framework/Hotfix/Res",
+    //    "Assets/Framework/Editor/EditorRes",
+    //};
+    public static bool AssetIsValid(string assetName)
     {
-        "Assets/GameRes/HotfixRes",
-        "Assets/Framework/Hotfix/Res",
-        "Assets/Framework/Editor/EditorRes",
-    };
+        var fix = Path.GetExtension(assetName);
+        if (!m_Suffix2NamePrefix.ContainsKey(fix))
+            return false;
+        return true;
+    }
     public static string GetLoadTargetName(string assetName)
     {
         var fix = Path.GetExtension(assetName);
-        var name = Path.GetFileNameWithoutExtension(assetName);
         if (!m_Suffix2NamePrefix.TryGetValue(fix, out var value))
             return null;
+        var name = Path.GetFileNameWithoutExtension(assetName);
         var result = $"{value}{name}"
             .Replace(".", "_")
             .Replace(" ", "")
@@ -53,15 +62,22 @@ public class LoadConfigEditor
         for (int i = 0; i < assetCfgCount; i++)
         {
             var cfg = ExcelEditorUtil.GetCfgByIndex<AssetCfg>(i);
-            curAssetDic.Add(cfg.strDescEditor, cfg);
+            var editorName = GetLoadTargetName(cfg.strPath);
+            curAssetDic.Add(editorName, cfg);
+            if (cfg.strDescEditor != editorName)
+            {
+                ExcelEditorUtil.SetCfgValue(cfg, nameof(cfg.strDescEditor), editorName);
+            }
         }
 
-
+        var searchPaths = AssetbundleBuilderSO.Instance.abPaths;
         foreach (var item in m_Suffix2NamePrefix)
         {
-            foreach (var searchPath in m_SearchPaths)
+            foreach (var searchPath in searchPaths)
             {
                 var fullDir = ABBUtil.GetFullPathByUnityPath(searchPath);
+                if (!Directory.Exists(fullDir))
+                    continue;
                 var dirInfo = new DirectoryInfo(fullDir);
                 var fileList = dirInfo.GetFiles($"*{item.Key}", SearchOption.AllDirectories);
                 foreach (var fileInfo in fileList)
@@ -86,11 +102,23 @@ public class LoadConfigEditor
                 }
             }
         }
-
-        ExcelEditorUtil.SaveExcel<AssetCfg>();
+        CheckInvalidAsset();
         WriteEnLoadTargetFile();
+        ExcelEditorUtil.SaveExcel<AssetCfg>();
     }
-
+    public static void CheckInvalidAsset()
+    {
+        var assetCfgCount = ExcelEditorUtil.GetCfgCount<AssetCfg>();
+        for (int i = 0; i < assetCfgCount; i++)
+        {
+            var cfg = ExcelEditorUtil.GetCfgByIndex<AssetCfg>(i);
+            var ass = AssetDatabase.LoadAssetAtPath<Object>(cfg.strPath);
+            if (ass != null)
+                continue;
+            ExcelEditorUtil.RemoveCfgByIndex<AssetCfg>(i--);
+            assetCfgCount--;
+        }
+    }
     private static void WriteEnLoadTargetFile()
     {
         var enumStr = new StringBuilder();

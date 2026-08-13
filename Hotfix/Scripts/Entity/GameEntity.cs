@@ -1,29 +1,27 @@
 ﻿using UnityEngine;
 
-
 public class GameEntityUserData : IClassPoolDestroy
 {
     public int entityId;
     public virtual void OnPoolDestroy()
     {
-        entityId
-            = -1;
+        entityId = -1;
     }
 }
-public abstract class GameEntityData<T, TUserData> : GameEntityData
-    where T : GameEntity
-    where TUserData: GameEntityUserData
+public abstract class GameEntityData<TEntity, TUserData> : GameEntityData
+    where TEntity : GameEntity
+    where TUserData : GameEntityUserData
 {
-    protected T _Entity = null;
+    protected TEntity _Entity = null;
     public override void OnGODestroy()
     {
         _Entity = null;
         base.OnGODestroy();
     }
-    public override void OnGOCreate()
+    public override void OnGOCreate(GameEntity entity)
     {
-        base.OnGOCreate();
-        _Entity = _GameEntity as T;
+        base.OnGOCreate(entity);
+        _Entity = entity as TEntity;
     }
     protected abstract void OnPoolInit(TUserData userData);
     public sealed override void OnPoolInit(GameEntityUserData userData)
@@ -32,8 +30,8 @@ public abstract class GameEntityData<T, TUserData> : GameEntityData
         OnPoolInit(userData as TUserData);
     }
 }
-public abstract class GameEntityData<T>: GameEntityData
-    where T: GameEntity
+public abstract class GameEntityData<T> : GameEntityData
+    where T : GameEntity
 {
     protected T _Entity = null;
     public override void OnGODestroy()
@@ -41,10 +39,10 @@ public abstract class GameEntityData<T>: GameEntityData
         _Entity = null;
         base.OnGODestroy();
     }
-    public override void OnGOCreate()
+    public override void OnGOCreate(GameEntity entity)
     {
-        base.OnGOCreate();
-        _Entity = _GameEntity as T;
+        base.OnGOCreate(entity);
+        _Entity = entity as T;
     }
 }
 public abstract class GameEntityData : IClassPool<GameEntityUserData>
@@ -70,8 +68,7 @@ public abstract class GameEntityData : IClassPool<GameEntityUserData>
     public Vector3 Right { get; private set; } = Vector3.right;
     public Vector3 Forword { get; private set; } = Vector3.forward;
     private Transform _ParentTran = null;
-    public Transform ParentTran => _ParentTran;
-    protected GameEntity _GameEntity = null;
+    private GameEntity _GameEntity = null;
     public GameEntity EntityGO => _GameEntity;
 
     private bool _IsActive = false;
@@ -113,32 +110,31 @@ public abstract class GameEntityData : IClassPool<GameEntityUserData>
     {
     }
 
-    public void OnPoolEnable()
-    {
-    }
-
     public void PoolRelease()
     {
-    }
-    public virtual void Create()
-    {
-
     }
     public virtual void Destroy()
     {
         _LocalScale = Vector3.one;
         _LocalRotation = Vector3.zero;
     }
-    public virtual void OnGOCreate()
+    public virtual void OnGOCreate(GameEntity entity)
     {
-        var go = ABBGOMgr.Instance.GetGo(_GoId);
-        _GameEntity = go.GetComponent<GameEntity>();
+        _GameEntity = entity;
+
+        _GameEntity.SetParentTran(_ParentTran);
+        _GameEntity.SetPosition(in _WorldPos);
+        _GameEntity.SetLocalRotation(in _LocalRotation);
+        _GameEntity.SetLocalScale(in _LocalScale);
     }
     public virtual void OnGODestroy()
     {
         _GameEntity = null;
     }
-
+    public Transform GetParent()
+    {
+        return _ParentTran;
+    }
     public bool GetActive()
     {
         return _IsActive;
@@ -163,13 +159,13 @@ public abstract class GameEntityData : IClassPool<GameEntityUserData>
     {
         _WorldPos = worldPos;
         if (_IsLoadSuccess)
-            _GameEntity.SetPosition();
+            _GameEntity.SetPosition(worldPos);
     }
     public void SetParentTran(Transform parentTran)
     {
         _ParentTran = parentTran;
         if (_IsLoadSuccess)
-            _GameEntity.SetParentTran();
+            _GameEntity.SetParentTran(parentTran);
     }
     public Transform GetTransfrom()
     {
@@ -181,7 +177,7 @@ public abstract class GameEntityData : IClassPool<GameEntityUserData>
     {
         if (!_IsLoadSuccess)
             return default;
-        var entity = _GameEntity.GetEntity<T>();
+        var entity = _GameEntity.GetComponent<T>();
         return entity;
     }
     public virtual void SetLocalRotation(in Vector3 localRotation)
@@ -191,13 +187,13 @@ public abstract class GameEntityData : IClassPool<GameEntityUserData>
         Up = Quaternion.Euler(_LocalRotation) * Vector3.up;
         Right = Quaternion.Euler(_LocalRotation) * Vector3.right;
         if (_IsLoadSuccess)
-            _GameEntity.SetLocalRotation();
+            _GameEntity.SetLocalRotation(in localRotation);
     }
-    public void SetLocalScale(Vector3 localScale)
+    public void SetLocalScale(in Vector3 localScale)
     {
         _LocalScale = localScale;
         if (_IsLoadSuccess)
-            _GameEntity.SetLocalScale();
+            _GameEntity.SetLocalScale(in localScale);
     }
     public ref readonly Vector3 GetWorldPos()
     {
@@ -213,25 +209,10 @@ public abstract class GameEntityData : IClassPool<GameEntityUserData>
         return ref _LocalScale;
     }
 }
-public abstract class GameEntity<T> : GameEntity
-    where T: GameEntityData
-{
-    protected T _GameEntityData = null;
-    public override void OnUnload()
-    {
-        _GameEntityData = null;
-        base.OnUnload();
-    }
-    public override void LoadCompeletion()
-    {
-        base.LoadCompeletion();
-        _GameEntityData = _EntityData as T;
-    }
-}
+
 public abstract class GameEntity : MonoBehaviour
 {
-    private int _EntityID;
-    protected GameEntityData _EntityData = null;
+    protected int _EntityID;
 
     public static implicit operator int(GameEntity entity)
     {
@@ -240,48 +221,37 @@ public abstract class GameEntity : MonoBehaviour
 
     public void SetEntityID(int entityDataID)
     {
-        var entityData = EntityMgr.Instance.GetEntityData(entityDataID);
-        _EntityData = entityData;
         _EntityID = entityDataID;
     }
     public int GetEntityID()
     {
         return _EntityID;
     }
-    public T GetEntity<T>()
-    {
-        if (!this.TryGetComponent<T>(out var com))
-            return default;
-        return com;
-    }
     public virtual void LoadCompeletion()
     {
-        SetParentTran();
-        SetPosition();
-        SetLocalRotation();
-        SetLocalScale();
+
     }
-    public virtual void SetLocalRotation()
+    public virtual void SetLocalRotation(in Vector3 localPos)
     {
-        transform.localEulerAngles = _EntityData.LocalRotation;
+        transform.localEulerAngles = localPos;
     }
-    public virtual void SetLocalScale()
+    public virtual void SetLocalScale(in Vector3 localScale)
     {
-        transform.localScale = _EntityData.LocalScale;
+        transform.localScale = localScale;
     }
     public virtual void OnUnload()
     {
-        _EntityData = null;
+
     }
 
 
-    public virtual void SetPosition()
+    public virtual void SetPosition(in Vector3 worldPos)
     {
-        transform.position = _EntityData.WorldPos;
+        transform.position = worldPos;
     }
-    public void SetParentTran()
+    public void SetParentTran(Transform parent)
     {
-        transform.SetParent(_EntityData.ParentTran);
+        transform.SetParent(parent);
     }
     public virtual Vector3 GetForward()
     {

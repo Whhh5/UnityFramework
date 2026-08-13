@@ -1,5 +1,6 @@
 
 using System.Collections.Generic;
+using System.Linq;
 
 public class EventData<T> : IEventData
     where T : IClassPool
@@ -31,6 +32,17 @@ public class EventData<T> : IEventData
             return;
         eventList.Remove(eventExecute);
     }
+    private void InvokHasList(HashSet<AbbEventCallback<T>> hashSet, in int sourceID, in int typeID, in T userData)
+    {
+        var list = hashSet.ToList();
+        for (int i = 0; i < list.Count; i++)
+        {
+            var callback = list[i];
+            if (!hashSet.Contains(callback))
+                continue;
+            callback.Invoke(in sourceID, in typeID, in userData);
+        }
+    }
     public void FireEvent(in int sourceID, in int typeID, in T userData)
     {
         if (sourceID > 0)
@@ -41,27 +53,18 @@ public class EventData<T> : IEventData
                 {
                     if (sourceList.TryGetValue(0, out var eventList))
                     {
-                        foreach (var item in eventList)
-                        {
-                            item.Invoke(in sourceID, in typeID, in userData);
-                        }
+                        InvokHasList(eventList, in sourceID, in typeID, in userData);
                     }
                     if (sourceList.TryGetValue(typeID, out eventList))
                     {
-                        foreach (var item in eventList)
-                        {
-                            item.Invoke(in sourceID, in typeID, in userData);
-                        }
+                        InvokHasList(eventList, in sourceID, in typeID, in userData);
                     }
                 }
                 else
                 {
                     foreach (var typeList in sourceList)
                     {
-                        foreach (var item in typeList.Value)
-                        {
-                            item.Invoke(in sourceID, in typeID, in userData);
-                        }
+                        InvokHasList(typeList.Value, in sourceID, in typeID, in userData);
                     }
                 }
             }
@@ -73,26 +76,17 @@ public class EventData<T> : IEventData
             {
                 if (sourceList.TryGetValue(0, out var eventList))
                 {
-                    foreach (var item in eventList)
-                    {
-                        item.Invoke(in sourceID, in typeID, in userData);
-                    }
+                    InvokHasList(eventList, in sourceID, in typeID, in userData);
                 }
                 if (!sourceList.TryGetValue(typeID, out eventList))
                     return;
-                foreach (var item in eventList)
-                {
-                    item.Invoke(in sourceID, in typeID, in userData);
-                }
+                InvokHasList(eventList, in sourceID, in typeID, in userData);
             }
             else
             {
                 foreach (var typeList in sourceList)
                 {
-                    foreach (var item in typeList.Value)
-                    {
-                        item.Invoke(in sourceID, in typeID, in userData);
-                    }
+                    InvokHasList(typeList.Value, in sourceID, in typeID, in userData);
                 }
             }
         }
@@ -104,26 +98,17 @@ public class EventData<T> : IEventData
                 {
                     if (sourceList.Value.TryGetValue(0, out var eventList))
                     {
-                        foreach (var item in eventList)
-                        {
-                            item.Invoke(in sourceID, in typeID, in userData);
-                        }
+                        InvokHasList(eventList, in sourceID, in typeID, in userData);
                     }
                     if (!sourceList.Value.TryGetValue(typeID, out eventList))
                         return;
-                    foreach (var item in eventList)
-                    {
-                        item.Invoke(in sourceID, in typeID, in userData);
-                    }
+                    InvokHasList(eventList, in sourceID, in typeID, in userData);
                 }
                 else
                 {
                     foreach (var typeList in sourceList.Value)
                     {
-                        foreach (var item in typeList.Value)
-                        {
-                            item.Invoke(in sourceID, in typeID, in userData);
-                        }
+                        InvokHasList(typeList.Value, in sourceID, in typeID, in userData);
                     }
                 }
             }
@@ -170,6 +155,17 @@ public class EventData : IEventData
             }
         }
     }
+    private void InvokHasList(HashSet<AbbEventCallback> list, in int sourceID, in int typeID)
+    {
+        var callbacks = list.ToList();
+        for (int i = 0; i < callbacks.Count; i++)
+        {
+            var callback = callbacks[i];
+            if (!list.Contains(callback))
+                continue;
+            callback.Invoke(sourceID, typeID);
+        }
+    }
     public void FireEvent(in int sourceID, in int typeID)
     {
         if (sourceID > 0)
@@ -180,27 +176,18 @@ public class EventData : IEventData
                 {
                     if (sourceList.TryGetValue(0, out var eventList))
                     {
-                        foreach (var item in eventList)
-                        {
-                            item.Invoke(in sourceID, in typeID);
-                        }
+                        InvokHasList(eventList, in sourceID, in typeID);
                     }
                     if (sourceList.TryGetValue(typeID, out eventList))
                     {
-                        foreach (var item in eventList)
-                        {
-                            item.Invoke(in sourceID, in typeID);
-                        }
+                        InvokHasList(eventList, in sourceID, in typeID);
                     }
                 }
                 else
                 {
                     foreach (var typeList in sourceList)
                     {
-                        foreach (var item in typeList.Value)
-                        {
-                            item.Invoke(in sourceID, in typeID);
-                        }
+                        InvokHasList(typeList.Value, in sourceID, in typeID);
                     }
                 }
             }
@@ -212,26 +199,17 @@ public class EventData : IEventData
             {
                 if (sourceList.TryGetValue(0, out var eventList))
                 {
-                    foreach (var item in eventList)
-                    {
-                        item.Invoke(in sourceID, in typeID);
-                    }
+                    InvokHasList(eventList, in sourceID, in typeID);
                 }
                 if (!sourceList.TryGetValue(typeID, out eventList))
                     return;
-                foreach (var item in eventList)
-                {
-                    item.Invoke(in sourceID, in typeID);
-                }
+                InvokHasList(eventList, in sourceID, in typeID);
             }
             else
             {
                 foreach (var typeList in sourceList)
                 {
-                    foreach (var item in typeList.Value)
-                    {
-                        item.Invoke(in sourceID, in typeID);
-                    }
+                    InvokHasList(typeList.Value, in sourceID, in typeID);
                 }
             }
         }
@@ -243,26 +221,17 @@ public class EventData : IEventData
                 {
                     if (sourceList.Value.TryGetValue(0, out var eventList))
                     {
-                        foreach (var item in eventList)
-                        {
-                            item.Invoke(in sourceID, in typeID);
-                        }
+                        InvokHasList(eventList, in sourceID, in typeID);
                     }
                     if (!sourceList.Value.TryGetValue(typeID, out eventList))
                         return;
-                    foreach (var item in eventList)
-                    {
-                        item.Invoke(in sourceID, in typeID);
-                    }
+                    InvokHasList(eventList, in sourceID, in typeID);
                 }
                 else
                 {
                     foreach (var typeList in sourceList.Value)
                     {
-                        foreach (var item in typeList.Value)
-                        {
-                            item.Invoke(in sourceID, in typeID);
-                        }
+                        InvokHasList(typeList.Value, in sourceID, in typeID);
                     }
                 }
             }

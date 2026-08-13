@@ -17,4 +17,6 @@ public enum EnBuff
     Freeze,
     [EditorFieldNameAttribute("感电")]
     Electric,
+    [EditorFieldNameAttribute("出血")]
+    Bleed,
 }

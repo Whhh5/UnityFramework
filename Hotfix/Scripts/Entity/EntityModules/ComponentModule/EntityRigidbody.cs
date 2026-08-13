@@ -1,43 +1,35 @@
 using UnityEngine;
 
-public abstract class EntityRigidbody2DData : SceneEntityData
+public abstract class EntityRigidbody2DData : SceneEntityData<EntityRigidbody2D>
 {
-    private EntityRigidbody2D _EntityRigidbody = null;
+    private Vector3 _MoveRigibodyPos;
 
-    public Vector3 MoveRigibodyPos { get; private set; }
-
-    public override void OnGOCreate()
+    public override void OnPoolDestroy()
     {
-        base.OnGOCreate();
-        _EntityRigidbody = _GameEntity as EntityRigidbody2D;
+        base.OnPoolDestroy();
+        _MoveRigibodyPos = default;
     }
-    public override void OnGODestroy()
-    {
-        _EntityRigidbody = null;
-        base.OnGODestroy();
-    }
-
     public void AddForce(Vector2 force, ForceMode2D mode)
     {
         if (!_IsLoadSuccess)
             return;
-        _EntityRigidbody.AddForce(force, mode);
+        _SceneEntity.AddForce(force, mode);
     }
     public void Sleep()
     {
         if (!_IsLoadSuccess)
             return;
-        _EntityRigidbody.Sleep();
+        _SceneEntity.Sleep();
     }
     public void MoveRigibody(Vector3 worldPos)
     {
-        MoveRigibodyPos = worldPos;
+        _MoveRigibodyPos = worldPos;
         if (!_IsLoadSuccess)
         {
             SetPosition(worldPos);
             return;
         }
-        _EntityRigidbody.MoveRigibody();
+        _SceneEntity.MoveRigibody(worldPos);
     }
 
 }
@@ -45,19 +37,10 @@ public abstract class EntityRigidbody2D : SceneEntity
 {
     [SerializeField] private Rigidbody2D _Rigidbody2D = null;
 
-    private EntityRigidbody2DData _EntityRigidbodyData = null;
-
-    public override void OnUnload()
-    {
-        _EntityRigidbodyData = null;
-        base.OnUnload();
-    }
     public override void LoadCompeletion()
     {
         base.LoadCompeletion();
-        _EntityRigidbodyData = _EntityData as EntityRigidbody2DData;
-
-        _Rigidbody2D.position = _EntityRigidbodyData.WorldPos;
+        _Rigidbody2D.position = EntityMgr.Instance.GetEntityWorldPos(_EntityID);
     }
 
     public void AddForce(Vector2 force, ForceMode2D mode)
@@ -68,18 +51,17 @@ public abstract class EntityRigidbody2D : SceneEntity
     {
         _Rigidbody2D.Sleep();
     }
-    public void MoveRigibody()
+    public void MoveRigibody(Vector3 worldPos)
     {
-        _Rigidbody2D.MovePosition(_EntityRigidbodyData.MoveRigibodyPos);
+        _Rigidbody2D.MovePosition(worldPos);
     }
-    public override void SetPosition()
+    public override void SetPosition(in Vector3 worldPos)
     {
         // _Rigidbody2D.MovePosition(_EntityRigidbodyData.MoveRigibodyPos);
     }
     protected override void Update()
     {
         base.Update();
-
-        _EntityRigidbodyData.SetPosition(transform.position);
+        EntityMgr.Instance.SetEntityWorldPos(_EntityID, transform.position);
     }
 }

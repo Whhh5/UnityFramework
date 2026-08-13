@@ -34,6 +34,10 @@ public partial class GameSchedule
 	private System.Collections.Generic.Dictionary<System.Int32, TimelineCfg> m_DicTimelineCfg0 = new();
 	private ProjectileCfg[] m_ProjectileCfg = null;
 	private System.Collections.Generic.Dictionary<System.Int32, ProjectileCfg> m_DicProjectileCfg0 = new();
+	private AudioCfg[] m_AudioCfg = null;
+	private System.Collections.Generic.Dictionary<System.Int32, AudioCfg> m_DicAudioCfg0 = new();
+	private AudioLayerCfg[] m_AudioLayerCfg = null;
+	private System.Collections.Generic.Dictionary<System.Int32, AudioLayerCfg> m_DicAudioLayerCfg0 = new();
 	private MapCfg[] m_MapCfg = null;
 	private System.Collections.Generic.Dictionary<System.Int32, MapCfg> m_DicMapCfg0 = new();
 	private SkillBallCfg[] m_SkillBallCfg = null;
@@ -44,10 +48,16 @@ public partial class GameSchedule
 	private System.Collections.Generic.Dictionary<System.Int32, SkillBallPartCfg> m_DicSkillBallPartCfg0 = new();
 	private AttributeCfg[] m_AttributeCfg = null;
 	private System.Collections.Generic.Dictionary<System.Int32, AttributeCfg> m_DicAttributeCfg0 = new();
-	private AttributeValueCfg[] m_AttributeValueCfg = null;
-	private System.Collections.Generic.Dictionary<System.Int32, AttributeValueCfg> m_DicAttributeValueCfg0 = new();
 	private BattleWaveCfg[] m_BattleWaveCfg = null;
 	private System.Collections.Generic.Dictionary<System.Int32, BattleWaveCfg> m_DicBattleWaveCfg0 = new();
+	private LanguageCfg[] m_LanguageCfg = null;
+	private System.Collections.Generic.Dictionary<System.Int32, LanguageCfg> m_DicLanguageCfg0 = new();
+	private DamageTypeCfg[] m_DamageTypeCfg = null;
+	private System.Collections.Generic.Dictionary<System.Int32, DamageTypeCfg> m_DicDamageTypeCfg0 = new();
+	private AttributeValueCfg[] m_AttributeValueCfg = null;
+	private System.Collections.Generic.Dictionary<System.Int32, AttributeValueCfg> m_DicAttributeValueCfg0 = new();
+	private SkillPassivityCfg[] m_SkillPassivityCfg = null;
+	private System.Collections.Generic.Dictionary<System.Int32, SkillPassivityCfg> m_DicSkillPassivityCfg0 = new();
 	public void Initialization()
 	{
 		for (int i = 0; i < m_ClipCfg.Length; i++)
@@ -135,6 +145,16 @@ public partial class GameSchedule
 			var cfg = m_ProjectileCfg[i];
 			m_DicProjectileCfg0.Add(cfg.nProjectileId, cfg);
 		}
+		for (int i = 0; i < m_AudioCfg.Length; i++)
+		{
+			var cfg = m_AudioCfg[i];
+			m_DicAudioCfg0.Add(cfg.nAudioID, cfg);
+		}
+		for (int i = 0; i < m_AudioLayerCfg.Length; i++)
+		{
+			var cfg = m_AudioLayerCfg[i];
+			m_DicAudioLayerCfg0.Add(cfg.nLayer, cfg);
+		}
 		for (int i = 0; i < m_MapCfg.Length; i++)
 		{
 			var cfg = m_MapCfg[i];
@@ -148,7 +168,7 @@ public partial class GameSchedule
 		for (int i = 0; i < m_SkillBallFussionCfg.Length; i++)
 		{
 			var cfg = m_SkillBallFussionCfg[i];
-			m_DicSkillBallFussionCfg0.Add(cfg.nBallId, cfg);
+			m_DicSkillBallFussionCfg0.Add(cfg.nFussionId, cfg);
 		}
 		for (int i = 0; i < m_SkillBallPartCfg.Length; i++)
 		{
@@ -160,15 +180,30 @@ public partial class GameSchedule
 			var cfg = m_AttributeCfg[i];
 			m_DicAttributeCfg0.Add(cfg.nAttributeId, cfg);
 		}
+		for (int i = 0; i < m_BattleWaveCfg.Length; i++)
+		{
+			var cfg = m_BattleWaveCfg[i];
+			m_DicBattleWaveCfg0.Add(cfg.nWaveId, cfg);
+		}
+		for (int i = 0; i < m_LanguageCfg.Length; i++)
+		{
+			var cfg = m_LanguageCfg[i];
+			m_DicLanguageCfg0.Add(cfg.nLangId, cfg);
+		}
+		for (int i = 0; i < m_DamageTypeCfg.Length; i++)
+		{
+			var cfg = m_DamageTypeCfg[i];
+			m_DicDamageTypeCfg0.Add(cfg.nDamageType, cfg);
+		}
 		for (int i = 0; i < m_AttributeValueCfg.Length; i++)
 		{
 			var cfg = m_AttributeValueCfg[i];
 			m_DicAttributeValueCfg0.Add(cfg.nValueId, cfg);
 		}
-		for (int i = 0; i < m_BattleWaveCfg.Length; i++)
+		for (int i = 0; i < m_SkillPassivityCfg.Length; i++)
 		{
-			var cfg = m_BattleWaveCfg[i];
-			m_DicBattleWaveCfg0.Add(cfg.nWaveId, cfg);
+			var cfg = m_SkillPassivityCfg[i];
+			m_DicSkillPassivityCfg0.Add(cfg.nSkillPassivityId, cfg);
 		}
 	}
 	public System.Int32 GetClipCfgCount()
@@ -375,6 +410,30 @@ public partial class GameSchedule
 	{
 		return m_DicProjectileCfg0[nProjectileId];
 	}
+	public System.Int32 GetAudioCfgCount()
+	{
+		return m_AudioCfg.Length;
+	}
+	public AudioCfg GetAudioCfg(System.Int32 index)
+	{
+		return m_AudioCfg[index];
+	}
+	public AudioCfg GetAudioCfg0(System.Int32 nAudioID)
+	{
+		return m_DicAudioCfg0[nAudioID];
+	}
+	public System.Int32 GetAudioLayerCfgCount()
+	{
+		return m_AudioLayerCfg.Length;
+	}
+	public AudioLayerCfg GetAudioLayerCfg(System.Int32 index)
+	{
+		return m_AudioLayerCfg[index];
+	}
+	public AudioLayerCfg GetAudioLayerCfg0(System.Int32 nLayer)
+	{
+		return m_DicAudioLayerCfg0[nLayer];
+	}
 	public System.Int32 GetMapCfgCount()
 	{
 		return m_MapCfg.Length;
@@ -407,9 +466,9 @@ public partial class GameSchedule
 	{
 		return m_SkillBallFussionCfg[index];
 	}
-	public SkillBallFussionCfg GetSkillBallFussionCfg0(System.Int32 nBallId)
+	public SkillBallFussionCfg GetSkillBallFussionCfg0(System.Int32 nFussionId)
 	{
-		return m_DicSkillBallFussionCfg0[nBallId];
+		return m_DicSkillBallFussionCfg0[nFussionId];
 	}
 	public System.Int32 GetSkillBallPartCfgCount()
 	{
@@ -435,6 +494,42 @@ public partial class GameSchedule
 	{
 		return m_DicAttributeCfg0[nAttributeId];
 	}
+	public System.Int32 GetBattleWaveCfgCount()
+	{
+		return m_BattleWaveCfg.Length;
+	}
+	public BattleWaveCfg GetBattleWaveCfg(System.Int32 index)
+	{
+		return m_BattleWaveCfg[index];
+	}
+	public BattleWaveCfg GetBattleWaveCfg0(System.Int32 nWaveId)
+	{
+		return m_DicBattleWaveCfg0[nWaveId];
+	}
+	public System.Int32 GetLanguageCfgCount()
+	{
+		return m_LanguageCfg.Length;
+	}
+	public LanguageCfg GetLanguageCfg(System.Int32 index)
+	{
+		return m_LanguageCfg[index];
+	}
+	public LanguageCfg GetLanguageCfg0(System.Int32 nLangId)
+	{
+		return m_DicLanguageCfg0[nLangId];
+	}
+	public System.Int32 GetDamageTypeCfgCount()
+	{
+		return m_DamageTypeCfg.Length;
+	}
+	public DamageTypeCfg GetDamageTypeCfg(System.Int32 index)
+	{
+		return m_DamageTypeCfg[index];
+	}
+	public DamageTypeCfg GetDamageTypeCfg0(System.Int32 nDamageType)
+	{
+		return m_DicDamageTypeCfg0[nDamageType];
+	}
 	public System.Int32 GetAttributeValueCfgCount()
 	{
 		return m_AttributeValueCfg.Length;
@@ -447,16 +542,16 @@ public partial class GameSchedule
 	{
 		return m_DicAttributeValueCfg0[nValueId];
 	}
-	public System.Int32 GetBattleWaveCfgCount()
+	public System.Int32 GetSkillPassivityCfgCount()
 	{
-		return m_BattleWaveCfg.Length;
+		return m_SkillPassivityCfg.Length;
 	}
-	public BattleWaveCfg GetBattleWaveCfg(System.Int32 index)
+	public SkillPassivityCfg GetSkillPassivityCfg(System.Int32 index)
 	{
-		return m_BattleWaveCfg[index];
+		return m_SkillPassivityCfg[index];
 	}
-	public BattleWaveCfg GetBattleWaveCfg0(System.Int32 nWaveId)
+	public SkillPassivityCfg GetSkillPassivityCfg0(System.Int32 nSkillPassivityId)
 	{
-		return m_DicBattleWaveCfg0[nWaveId];
+		return m_DicSkillPassivityCfg0[nSkillPassivityId];
 	}
 }

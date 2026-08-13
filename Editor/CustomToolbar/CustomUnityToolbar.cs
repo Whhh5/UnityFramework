@@ -1,17 +1,14 @@
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Reflection;
+using System.Text;
 using UnityEditor;
 using UnityEngine;
-using System;
-using System.Diagnostics;
-using System.IO;
-using System.Text;
 using UnityEngine.UIElements;
 using Debug = UnityEngine.Debug;
-using HybridCLR.Editor;
-using System.Linq;
-using System.Collections.Generic;
-using static Codice.CM.WorkspaceServer.WorkspaceTreeDataStore;
 
 public enum EnCustomUnityToolbarType
 {
@@ -21,11 +18,14 @@ public enum EnCustomUnityToolbarType
 public enum EnCustomUnityToolbarOrder
 {
     None,
+    TMPFontBuilderToolbar,
     UpdateLoadTarget,
     ExportExcel,
     BuildAssetbundle,
     BuildBundle,
     ResourcePattern,
+    UpdateAudioCfg,
+    UpdateClipCfg,
 
     ClearCache,
     OpenPersistentDataRoot,
@@ -86,8 +86,9 @@ public static class CustomUnityToolbar
                 continue;
             switch (att.order)
             {
-                case EnCustomUnityToolbarOrder.BuildAssetbundle:
-                case EnCustomUnityToolbarOrder.BuildBundle:
+                case EnCustomUnityToolbarOrder.TMPFontBuilderToolbar:
+                case EnCustomUnityToolbarOrder.UpdateClipCfg:
+                case EnCustomUnityToolbarOrder.UpdateAudioCfg:
                     continue;
                 default:
                     break;

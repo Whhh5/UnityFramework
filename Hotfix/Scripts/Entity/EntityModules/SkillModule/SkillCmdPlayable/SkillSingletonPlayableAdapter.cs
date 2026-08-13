@@ -46,4 +46,11 @@ public class SkillSingletonPlayableAdapter : SkillPlayableAdapter<SkillPlayableA
     {
         return _CurClipAdapter.GetOutputLayer();
     }
+
+    public override EnAnimLayerBit GetAnimationLayers()
+    {
+        var clipCfg = GameSchedule.Instance.GetClipCfg0(_AnimationClipId);
+        var result = (EnAnimLayerBit)(1 << clipCfg.nLayer);
+        return result;
+    }
 }

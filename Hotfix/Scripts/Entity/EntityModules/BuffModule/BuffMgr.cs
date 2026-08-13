@@ -83,10 +83,10 @@ public class BuffMgr : Singleton<BuffMgr>
             return false;
         return true;
     }
-    public int AddEntityBuff(int sourceEntityID, int targetEntityID, EnBuff buff)
-    {
-        throw new System.NotImplementedException();
-    }
+    //public int AddEntityBuff(int sourceEntityID, int targetEntityID, EnBuff buff)
+    //{
+    //    throw new System.NotImplementedException();
+    //}
     public int AddEntityBuff(int sourceEntityID, int targetEntityID, IEntityBuffData buffParams)
     {
         var buff = buffParams.GetBuff();

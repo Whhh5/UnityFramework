@@ -7,14 +7,14 @@ using System.IO;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Threading;
+using System;
+using Object = UnityEngine.Object;
 
 public class ABBEditorLoader : IABBAssetLoader2
 {
     private readonly Dictionary<int, AssetCfg> _AssetDic = new();
     public async UniTask Initialization()
     {
-        await UniTask.DelayFrame(1);
-
         var path = GameSchedule.GetCfgPath<AssetCfg>();
         var file = await File.ReadAllTextAsync(path);
         var assetCfgs = JsonConvert.DeserializeObject<AssetCfg[]>(file);
@@ -33,9 +33,15 @@ public class ABBEditorLoader : IABBAssetLoader2
     public async UniTask<T> LoadAssetAsync<T>(int assetID, CancellationToken token) where T : Object
     {
         var cfg = _AssetDic[assetID];
+        if (typeof(T) != typeof(AnimationClip) && typeof(T) != typeof(AudioClip))
+        {
+            var delay = ABBUtil.GetRange(-200, 200);
+            var isCancel = await UniTask.Delay(Mathf.Max(0, delay), true, cancellationToken: token, cancelImmediately: true)
+                .SuppressCancellationThrow();
+            if (isCancel)
+                throw new OperationCanceledException();
+        }
         var obj = UnityEditor.AssetDatabase.LoadAssetAtPath<T>(cfg.strPath);
-        var delay = ABBUtil.GetRange(0, 3);
-        await UniTask.DelayFrame(delay, cancellationToken: token);
         if (obj == null)
             return null;
         return obj;

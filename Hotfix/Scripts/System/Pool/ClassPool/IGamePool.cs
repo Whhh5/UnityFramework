@@ -5,7 +5,6 @@
 public interface IClassPoolInit : IClassPool
 {
     void IClassPool.PoolConstructor() { }
-    void IClassPool.OnPoolEnable() { }
     void IClassPool.PoolRelease() { }
 }
 public interface IClassPoolInit<T> : IClassPoolInit, IClassPool<T>
@@ -23,8 +22,7 @@ public interface IClassPoolNone : IClassPoolDestroy
 public interface IClassPool
 {
     public void PoolConstructor();
-    public void OnPoolInit<T>(T userData) where T : IClassPoolDestroy;
-    public void OnPoolEnable();
+    public void OnPoolInit<T>(T userData) where T : IClassPool;
 
     public void OnPoolDestroy();
 

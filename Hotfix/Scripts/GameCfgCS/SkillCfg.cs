@@ -20,6 +20,8 @@ public class SkillCfg : ICfg
 	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 nLevel;
 	// 过渡时间
 	[Newtonsoft.Json.JsonProperty()] public readonly System.Single fMixerTime;
+	// 
+	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 bIsLoop;
 	public System.Int32 GetID()
 	{
 		return nSkillID;

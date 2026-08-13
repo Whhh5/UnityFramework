@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 
 
-public abstract class EntityBuffData : IEntityBuffData
+public abstract class EntityBuffData : IEntityBuffData, IDescription
 {
 
     public abstract EnBuff GetBuff();
@@ -20,6 +20,10 @@ public abstract class EntityBuffData : IEntityBuffData
        
     }
 
+    public virtual void GetDescriptionList(ref List<DescriptionInfo> descInfos, EnDescriptionLevel level)
+    {
+        
+    }
 }
 public interface IEntityBuff : IClassPoolInit<EntityBuffDataUserData>
 {

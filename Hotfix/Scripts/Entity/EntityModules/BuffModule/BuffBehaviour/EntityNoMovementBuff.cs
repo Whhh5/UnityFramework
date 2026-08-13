@@ -10,7 +10,7 @@ public class EntityNoMovementBuffData : IEntityBuffData
 
     public void OnPoolInit(CommonSerializeToIntArrayUserData userData)
     {
-        
+
     }
 
     public EnBuff GetBuff() => EnBuff.NoMovement;
@@ -33,22 +33,17 @@ public class EntityNoMovementBuff : EntityBuff<EntityNoMovementBuffData>
 
     protected override void AddKey(int addKey, EntityNoMovementBuffData buffParams)
     {
+        GameAttributeUtility.RemoveAddtionalPercentage(_TargetEntityID, EnEntityAttributeId.MoveSpeed, 1);
+    }
 
-        //var proCom = SceneEntityMgr.Instance.GetEntityCom<SceneEntityPropertyComData>(_TargetEntityID, EnSceneEntityComType.Property);
-        //proCom.SetIsCanMove(false);
+    public override void Clear()
+    {
+        GameAttributeUtility.AddAddtionalPercentage(_TargetEntityID, EnEntityAttributeId.MoveSpeed, 1);
+        base.Clear();
     }
 
     protected override void ReaddKey(int addKey, EntityNoMovementBuffData buffParams)
     {
-
-        //var proCom = SceneEntityMgr.Instance.GetEntityCom<SceneEntityPropertyComData>(_TargetEntityID, EnSceneEntityComType.Property);
-        //proCom.SetIsCanMove(false);
-    }
-
-    public override void RemoveKey(int addKey)
-    {
-        //var proCom = SceneEntityMgr.Instance.GetEntityCom<SceneEntityPropertyComData>(_TargetEntityID, EnSceneEntityComType.Property);
-        //proCom.SetIsCanMove(true);
-        //base.OnDisable(addKey);
+        
     }
 }

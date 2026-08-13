@@ -23,18 +23,25 @@ public class EffectEntityData : GameEntityData<EffectEntity, EffectEntityUserDat
         }
     }
     protected int _EffectID = -1;
-    public bool IsPlaying { get; private set; } = false;
+    private bool _IsPlaying = false;
 
     public override void OnPoolDestroy()
     {
         base.OnPoolDestroy();
         _EffectID
             = -1;
-        IsPlaying = false;
+        _IsPlaying = false;
     }
     protected override void OnPoolInit(EffectEntityUserData userData)
     {
         _EffectID = userData.effectCfgID;
+    }
+
+    public override void OnGOCreate(GameEntity entity)
+    {
+        base.OnGOCreate(entity);
+
+        _Entity.SetIsPlaying(_IsPlaying);
     }
 
     public void Play()
@@ -47,9 +54,9 @@ public class EffectEntityData : GameEntityData<EffectEntity, EffectEntityUserDat
     }
     private void SetIsPlaying(bool isPlaying)
     {
-        IsPlaying = isPlaying;
+        _IsPlaying = isPlaying;
         if (_IsLoadSuccess)
-            _Entity.SetIsPlaying();
+            _Entity.SetIsPlaying(isPlaying);
     }
     public float GetMaxTime()
     {
@@ -59,31 +66,22 @@ public class EffectEntityData : GameEntityData<EffectEntity, EffectEntityUserDat
 
 }
 
-public abstract class EffectEntity : GameEntity<EffectEntityData>
+public abstract class EffectEntity : GameEntity
 {
     [SerializeField, AutoReference]
     private ParticleSystem _MainParticleSystem = null;
 
     private float _SingletonMaxTime = 0;
-    protected override void Awake()
-    {
-        base.Awake();
-
-        UpdateMaxTime();
-
-        //_MainParticleSystem.Simulate(0, true, false);
-    }
 
     public override void LoadCompeletion()
     {
         base.LoadCompeletion();
-
-        SetIsPlaying();
+        UpdateMaxTime();
     }
 
-    public void SetIsPlaying()
+    public void SetIsPlaying(bool isPlaying)
     {
-        if (_GameEntityData.IsPlaying)
+        if (isPlaying)
             Play();
         else
             Stop();

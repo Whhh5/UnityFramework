@@ -13,7 +13,7 @@ public enum EnEntityAttributeId
     CriticalDamage,
     MoveSpeed,
     MagicCritical,
-
+    EnumCount,
 }
 public class EntityAttributeData : IClassPoolDestroy
 {
@@ -112,41 +112,63 @@ public class SceneEntityAttributeComData : Entity3DComData
     public int GetValueInt(EnEntityAttributeId proId)
     {
         var value = GetValue(proId);
-        return Mathf.RoundToInt(value);
+        return Mathf.CeilToInt(value);
     }
     public void SetBaseValue(EnEntityAttributeId proId, float value)
     {
         var data = GetPropertyData(proId);
         data.SetBaseValue(value);
+
+        FireChangeEvent(proId);
     }
     public void AddAddtionalValue(EnEntityAttributeId proId, float value)
     {
         var data = GetPropertyData(proId);
         data.AddAddtionalValue(value);
+
+        FireChangeEvent(proId);
     }
     public void RemoveAddtionalValue(EnEntityAttributeId proId, float value)
     {
         var data = GetPropertyData(proId);
         data.RemoveAddtionalValue(value);
+
+        FireChangeEvent(proId);
     }
     public void AddAddtionalPercentage(EnEntityAttributeId proId, float value)
     {
         var data = GetPropertyData(proId);
         data.AddAddtionalPercentage(value);
+
+        FireChangeEvent(proId);
     }
     public void RemoveAddtionalPercentage(EnEntityAttributeId proId, float value)
     {
         var data = GetPropertyData(proId);
         data.RemoveAddtionalPercentage(value);
+
+        FireChangeEvent(proId);
     }
     public void AddResultValue(EnEntityAttributeId proId, float value)
     {
         var data = GetPropertyData(proId);
         data.AddResultChange(value);
+
+        FireChangeEvent(proId);
     }
     public void RemoveResultValue(EnEntityAttributeId proId, float value)
     {
         var data = GetPropertyData(proId);
         data.RemoveResultChange(value);
+
+        FireChangeEvent(proId);
+    }
+    private void FireChangeEvent(EnEntityAttributeId proId)
+    {
+        var data = GetPropertyData(proId);
+        var evData = ClassPoolMgr.Instance.Pull<GameBattleEntityAttributeChangeEventData>();
+        evData.currentValue = data.GetValue();
+        EventMgr.Instance.FireExecute(EnABBEvent.EVENT_BATTLE_ENTITY_ATTRIBUTE_CHANGE, _EntityId, (int)proId, evData);
+        ClassPoolMgr.Instance.Push(evData);
     }
 }

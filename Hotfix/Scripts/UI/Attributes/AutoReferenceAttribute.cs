@@ -1,14 +1,22 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
+public enum SearchScope
+{
+    None,
+    Self,
+    Children,
+}
+
+[AttributeUsage(AttributeTargets.Field)]
 public class AutoReferenceAttribute : Attribute
 {
     public string objName;
+    public SearchScope scope = SearchScope.Children;
+
     public AutoReferenceAttribute() { }
-    public AutoReferenceAttribute(object name)
+    public AutoReferenceAttribute(string name, SearchScope scope = SearchScope.Children)
     {
-        objName = name.ToString();
+        objName = name;
+        this.scope = scope;
     }
 }

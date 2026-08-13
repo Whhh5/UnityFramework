@@ -38,14 +38,18 @@ public interface ISkillPlayableAdapter : IPlayableAdapter, ISerializeToIntArray
     public bool NextAnimLevelComdition();
 }
 
-public abstract class SkillPlayableAdapter<T> : PlayableAdapter<T>, ISkillPlayableAdapter, ISerializeToIntArray
+public interface ISkilAnimationLayers
+{
+    public EnAnimLayerBit GetAnimationLayers();
+}
+public abstract class SkillPlayableAdapter<T> : PlayableAdapter<T>, ISkillPlayableAdapter, ISerializeToIntArray, ISkilAnimationLayers
     where T : SkillPlayableAdapterUserData, new()
 {
-    private bool _IsValid = false;
-
     public abstract EnTypeId GetTypeDefineId();
     public abstract List<int> SerializeToIntArray();
     public abstract void DeserializeFromIntArray(int[] datas, int start, int count, ISerializeToIntArrayUserData userData);
+    public abstract EnAnimLayerBit GetAnimationLayers();
+
     public override void OnPoolInit(T userData)
     {
         base.OnPoolInit(userData);
@@ -53,11 +57,9 @@ public abstract class SkillPlayableAdapter<T> : PlayableAdapter<T>, ISkillPlayab
     }
     public virtual void ExecutePlayable()
     {
-        _IsValid = true;
     }
     public virtual void RemovePlayable()
     {
-        _IsValid = false;
     }
     public virtual void ReexecutePlayable()
     {
@@ -70,12 +72,6 @@ public abstract class SkillPlayableAdapter<T> : PlayableAdapter<T>, ISkillPlayab
     public virtual bool NextAnimLevelComdition()
     {
         return true;
-    }
-    public override bool OnPrepareFrame(Playable playable, FrameData info)
-    {
-        if (!base.OnPrepareFrame(playable, info))
-            return false;
-        return _IsValid;
     }
 
 }

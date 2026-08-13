@@ -222,6 +222,7 @@ public static class SkillEditorDefine
             EnAtkLinkScheculeType.FlyItem => GetEditorType(typeof(SkillFlyItemScheduleAction)),
             EnAtkLinkScheculeType.Behaviour => GetEditorType(typeof(SkillBehaviourScheduleAction)),
             EnAtkLinkScheculeType.Event => GetEditorType(typeof(SkillEventScheduleAction)),
+            EnAtkLinkScheculeType.Audio => GetEditorType(typeof(SkillAudioScheduleAction)),
             _ => null,
         };
         var ins = Activator.CreateInstance(scheduleTypeType);

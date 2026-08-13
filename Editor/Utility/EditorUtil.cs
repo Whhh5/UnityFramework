@@ -22,6 +22,8 @@ public enum EnMouseControllerType
     StageInfoSlider_CanNextTime = 1 << 3,
 
     Ai_ViewMove = 1 << 4,
+
+    DebugWaveWindow = 1 << 5,
 }
 
 [Flags]

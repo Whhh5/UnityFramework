@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
 using System.Threading;
+using System;
 
 public class GOData : IClassPoolDestroy
 {
@@ -20,7 +21,7 @@ public class GOData : IClassPoolDestroy
 }
 public class GoPoolItem : IClassPoolDestroy
 {
-    public GameObject tempGo;
+    public LoadHandle handle;
     public List<GameObject> gos = new();
     public float desTime;
     public int count;
@@ -30,7 +31,7 @@ public class GoPoolItem : IClassPoolDestroy
         count = 0;
         gos.Clear();
         desTime = -1;
-        tempGo = null;
+        handle = default;
     }
 }
 public class ABBGOMgr : Singleton<ABBGOMgr>
@@ -80,16 +81,20 @@ public class ABBGOMgr : Singleton<ABBGOMgr>
         }
         else
         {
-            if (poolItem.tempGo == null)
+            if (!poolItem.handle.IsValid())
             {
-                var obj = await ABBLoadMgr.Instance.LoadAsync<GameObject>(target, GetToken());
-                if (obj == null)
-                    return -1;
-                poolItem.tempGo = obj;
+                var (isCancel, handle) = await ABBLoadMgr.Instance.LoadAsync<GameObject>(target, GetToken())
+                    .SuppressCancellationThrow();
+                if (isCancel)
+                    throw new OperationCanceledException();
+                poolItem.handle = handle;
             }
 
-            goData.insOperation = GameObject.InstantiateAsync(poolItem.tempGo, parent);
-            var ins = await goData.insOperation.ToUniTask(cancellationToken: GetToken());
+            goData.insOperation = GameObject.InstantiateAsync(poolItem.handle.GetObject<GameObject>(), parent);
+            var (isCancel2, ins) = await goData.insOperation.ToUniTask(cancellationToken: GetToken())
+                .SuppressCancellationThrow();
+            if (isCancel2)
+                throw new OperationCanceledException();
             goData.insOperation = null;
             goData.go = ins[0];
         }
@@ -99,7 +104,7 @@ public class ABBGOMgr : Singleton<ABBGOMgr>
 
         goData.loadTarget = target;
 #if UNITY_EDITOR
-        goData.go.name = $"{poolItem.tempGo.name} (Clone)_{goID}";
+        goData.go.name = $"{poolItem.handle.GetObject<GameObject>().name} (Clone)_{goID}";
 #endif
         return goID;
     }
@@ -140,7 +145,7 @@ public class ABBGOMgr : Singleton<ABBGOMgr>
             {
                 _GoPools.Remove(target);
                 ClassPoolMgr.Instance.Push(poolItem);
-                ABBLoadMgr.Instance.Unload(target);
+                ABBLoadMgr.Instance.Unload(poolItem.handle);
             }
         }
     }

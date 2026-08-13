@@ -6,17 +6,32 @@ using UnityEngine;
 public class SceneMonsterEntityUserData : SceneEntityUserData
 {
     public int monsterId;
+    public override void OnPoolDestroy()
+    {
+        base.OnPoolDestroy();
+        monsterId = -1;
+    }
 }
 public abstract class SceneMonsterEntityData<T, TUserData> : SceneMonsterEntityData
     where T : SceneMonsterEntity
     where TUserData : SceneMonsterEntityUserData
 {
-    protected T SceneMonsterEntity => _GameEntity as T;
+    protected T _SceneMonsterEntity;
     protected abstract void OnPoolInit(TUserData userData);
     protected sealed override void OnPoolInit(SceneMonsterEntityUserData userData)
     {
         base.OnPoolInit(userData);
         OnPoolInit(userData as TUserData);
+    }
+    public override void OnGOCreate(GameEntity entity)
+    {
+        base.OnGOCreate(entity);
+        _SceneMonsterEntity = entity as T;
+    }
+    public override void OnGODestroy()
+    {
+        base.OnGODestroy();
+        _SceneMonsterEntity = null;
     }
 }
 public class SceneMonsterEntityData : SceneEntityData<SceneMonsterEntity, SceneMonsterEntityUserData>
@@ -27,6 +42,7 @@ public class SceneMonsterEntityData : SceneEntityData<SceneMonsterEntity, SceneM
     private EnGameLayerInt _EnemyLayerInt;
     private EnGameLayerInt _FriendLayerInt;
     private EnGameLayerInt _LayerInt;
+    private float _Volume;
     public override EnLoadTarget LoadTarget
     {
         get
@@ -40,7 +56,9 @@ public class SceneMonsterEntityData : SceneEntityData<SceneMonsterEntity, SceneM
     {
         base.Destroy();
 
-        _MonsterCfgId = -1;
+        _Volume
+            = _MonsterCfgId
+            = -1;
         _EnemyLayerInt
             = _FriendLayerInt
             = _LayerInt
@@ -58,10 +76,16 @@ public class SceneMonsterEntityData : SceneEntityData<SceneMonsterEntity, SceneM
             _FriendLayerInt |= (EnGameLayerInt)(1 << monsterCfg.arrFriendLayer[i]);
         for (int i = 0; i < monsterCfg.arrLayer.Length; i++)
             _LayerInt |= (EnGameLayerInt)(1 << monsterCfg.arrLayer[i]);
+
+        _Volume = monsterCfg.fVolume;
     }
     public ref readonly int GetMonsterCfgId()
     {
         return ref _MonsterCfgId;
+    }
+    public float GetVolume()
+    {
+        return _Volume;
     }
 
     public ref readonly EnSceneEntityStatus GetSceneEntityStatus()
@@ -111,14 +135,7 @@ public class SceneMonsterEntityData : SceneEntityData<SceneMonsterEntity, SceneM
         return ref _LayerInt;
     }
 }
-public abstract class SceneMonsterEntity<T> : SceneMonsterEntity
-    where T : SceneMonsterEntityData
-{
-    public virtual T GetEntityData()
-    {
-        return _EntityData as T;
-    }
-}
+
 public abstract class SceneMonsterEntity : SceneEntity, IEntityAnimCom
 {
     private Animator _Animator = null;

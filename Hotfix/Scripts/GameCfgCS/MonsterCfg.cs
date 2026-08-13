@@ -7,6 +7,8 @@ public class MonsterCfg : ICfg
 	// 
 	[Newtonsoft.Json.JsonProperty()] public readonly System.String strName;
 	// 
+	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 nNameLangId;
+	// 
 	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 nEntityTypeId;
 	// 
 	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 nMonsterType;
@@ -20,6 +22,8 @@ public class MonsterCfg : ICfg
 	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32[] arrGridLocalPos;
 	// 
 	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32[] arrGridValidEdge;
+	// 体积
+	[Newtonsoft.Json.JsonProperty()] public readonly System.Single fVolume;
 	// 动作组id-skillcfg
 	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32[] arrSkillGroup;
 	// 
@@ -37,6 +41,8 @@ public class MonsterCfg : ICfg
 	// 
 	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 nFlyDown;
 	// 
+	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 nAttackCmdId;
+	// 
 	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 nCmdHitLeft;
 	// 
 	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 nCmdHitRight;
@@ -45,9 +51,13 @@ public class MonsterCfg : ICfg
 	// 
 	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 nCmdHitDown;
 	// 
+	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 nCmdFreeze;
+	// 
 	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 nAIID;
 	// 
 	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 nIconAssetID;
+	// 
+	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 nDieAudioId;
 	public System.Int32 GetID()
 	{
 		return nMonsterID;

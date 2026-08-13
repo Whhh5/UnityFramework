@@ -86,4 +86,11 @@ public class SkillTypeSelectPlayableAdapter : SkillPlayableAdapter<SkillPlayable
     {
         return _Clipadapter.GetPlayTime();
     }
+
+    public override EnAnimLayerBit GetAnimationLayers()
+    {
+        var clipCfg = GameSchedule.Instance.GetClipCfg0(_atkLinkStageData.GetClipID());
+        var result = (EnAnimLayerBit)(1 << clipCfg.nLayer);
+        return result;
+    }
 }

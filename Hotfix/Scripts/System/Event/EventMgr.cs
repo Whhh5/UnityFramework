@@ -8,6 +8,11 @@ public class EventMgr : Singleton<EventMgr>
     private readonly int _DefClId = 0;
     private readonly Dictionary<EnABBEvent, Dictionary<int, IEventData>> _ActionList = new();
 
+    public void Register<T>(in EnABBEvent ev, in AbbEventCallback<T> action)
+        where T : IClassPool
+    {
+        Register<T>(in ev, 0, 0, in action);
+    }
     public void Register<T>(in EnABBEvent ev, in int sourceID, in int typeID, in AbbEventCallback<T> action)
         where T : IClassPool
     {
@@ -24,6 +29,11 @@ public class EventMgr : Singleton<EventMgr>
         }
         (evData as EventData<T>).AddEvent(in sourceID, in typeID, in action);
     }
+    public void Unregister<T>(in EnABBEvent ev, in AbbEventCallback<T> action)
+        where T : IClassPool
+    {
+        Unregister<T>(in ev, 0, 0, in action);
+    }
     public void Unregister<T>(in EnABBEvent ev, in int sourceID, in int typeID, in AbbEventCallback<T> action)
         where T : IClassPool
     {
@@ -37,10 +47,10 @@ public class EventMgr : Singleton<EventMgr>
             Debug.LogError($"register error type T error, valid:{evData}, in:{typeof(T)}");
             return;
         }
-        eventData.AddEvent(in sourceID, in typeID, in action);
-        if (!evData.IsValid())
+        eventData.RemoveEvent(in sourceID, in typeID, in action);
+        if (!eventData.IsValid())
         {
-            ClassPoolMgr.Instance.Push(evData);
+            ClassPoolMgr.Instance.Push(eventData);
             if (dic.Remove(clId) && dic.Count == 0)
             {
                 _ActionList.Remove(ev);
@@ -95,10 +105,15 @@ public class EventMgr : Singleton<EventMgr>
             return;
         if (!dic.TryGetValue(_DefClId, out var evData))
             return;
-        (evData as EventData).RemoveEvent(in sourceID, in typeID, in action);
-        if (!evData.IsValid())
+        if (evData is not EventData eventData)
         {
-            ClassPoolMgr.Instance.Push(evData);
+            Debug.LogError($"register error type T error, valid:{evData}");
+            return;
+        }
+        eventData.RemoveEvent(in sourceID, in typeID, in action);
+        if (!eventData.IsValid())
+        {
+            ClassPoolMgr.Instance.Push(eventData);
             if (dic.Remove(_DefClId) && dic.Count == 0)
             {
                 _ActionList.Remove(ev);

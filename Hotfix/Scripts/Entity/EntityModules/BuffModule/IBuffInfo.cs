@@ -21,7 +21,7 @@ public class BuffDefaultInfo : IBuffInfo
     public void OnPoolDestroy()
     { }
 
-    public void OnPoolInit<T>(T userData) where T : IClassPoolDestroy
+    public void OnPoolInit<T>(T userData) where T : IClassPool
     { }
 }
 public interface IBuffTimeInfo
@@ -35,7 +35,7 @@ public class BuffTimeInfo : IBuffInfo<IBuffTimeInfo>
     public float time = 0;
 
 
-    public void OnPoolInit<T>(T userData) where T : IClassPoolDestroy
+    public void OnPoolInit<T>(T userData) where T : IClassPool
     {
         startTime = ABBUtil.GetGameTimeSeconds();
     }

@@ -4,10 +4,7 @@ using UnityEngine;
 
 public abstract class SceneEntityUserData : GameEntityUserData
 {
-    public override void OnPoolDestroy()
-    {
-        base.OnPoolDestroy();
-    }
+
 }
 public abstract class SceneEntityData<T, TUserData> : SceneEntityData<T>
     where T : SceneEntity
@@ -24,9 +21,9 @@ public abstract class SceneEntityData<T> : SceneEntityData
     where T : SceneEntity
 {
     protected T _SceneEntity = null;
-    public override void OnGOCreate()
+    public override void OnGOCreate(GameEntity entity)
     {
-        base.OnGOCreate();
+        base.OnGOCreate(entity);
         _SceneEntity = _Entity as T;
     }
     public override void OnGODestroy()
@@ -92,9 +89,9 @@ public abstract class SceneEntityData : GameEntityData<SceneEntity, SceneEntityU
         }
     }
 
-    public override void OnGOCreate()
+    public override void OnGOCreate(GameEntity entity)
     {
-        base.OnGOCreate();
+        base.OnGOCreate(entity);
         foreach (var item in _EntityComs)
             item.Value.OnCreateGO();
     }
@@ -168,30 +165,7 @@ public abstract class SceneEntityData : GameEntityData<SceneEntity, SceneEntityU
 
 }
 
-public abstract class SceneEntity<T> : SceneEntity
-    where T : SceneEntityData
-{
-    public T GetEntityData()
-    {
-        return _EntityData as T;
-    }
-}
 public abstract class SceneEntity : GameEntity
 {
-    public static implicit operator int(SceneEntity entity3D)
-    {
-        return entity3D._Entity3DData.EntityID;
-    }
-    private SceneEntityData _Entity3DData = null;
-
-    protected override void Awake()
-    {
-        base.Awake();
-    }
-    public override void LoadCompeletion()
-    {
-        _Entity3DData = _EntityData as SceneEntityData;
-        base.LoadCompeletion();
-    }
 
 }

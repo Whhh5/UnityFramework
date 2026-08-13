@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 [CustomUnityToolbarAttribute("ResourcePattern", EnCustomUnityToolbarType.Right, EnCustomUnityToolbarOrder.ResourcePattern)]
@@ -14,5 +15,6 @@ public class ResourcePatternToolbar : ICustomUnityToolbar, ICustomUnityToolbarBt
     {
         GlobalConfigSO.Instance.LoaderType =
             (EnLoaderType)((int)(GlobalConfigSO.Instance.LoaderType + 1) % (int)EnLoaderType.EnumCount);
+        EditorUtility.SetDirty(GlobalConfigSO.Instance);
     }
 }

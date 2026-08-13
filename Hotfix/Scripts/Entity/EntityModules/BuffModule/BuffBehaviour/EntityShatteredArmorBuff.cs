@@ -5,7 +5,8 @@ public class EntityShatteredArmorBuffData : EntityBuffData, IBuffTimeInfo
 {
     public float duration;
     public int maxCount;
-    public float shatteredArmorPercentage;
+    public float shatteredArmorPercentage01;
+    public EnEntityAttributeId attId;
 
     public override EnBuff GetBuff() => EnBuff.ShatteredArmor;
 
@@ -16,21 +17,37 @@ public class EntityShatteredArmorBuffData : EntityBuffData, IBuffTimeInfo
     {
         var list = new List<int>();
         ISerializeToIntArray.SerializeToInt(ref list, duration);
-        ISerializeToIntArray.SerializeToInt(ref list, shatteredArmorPercentage);
+        ISerializeToIntArray.SerializeToInt(ref list, shatteredArmorPercentage01);
         ISerializeToIntArray.SerializeToInt(ref list, maxCount);
+        ISerializeToIntArray.SerializeToInt(ref list, attId);
         return list;
     }
     public override void DeserializeFromIntArray(int[] datas, int start, int count, ISerializeToIntArrayUserData userData)
     {
         var index = 0;
         ISerializeToIntArray.ParseToValue(in datas, in start, in count, ref index, out duration);
-        ISerializeToIntArray.ParseToValue(in datas, in start, in count, ref index, out shatteredArmorPercentage);
+        ISerializeToIntArray.ParseToValue(in datas, in start, in count, ref index, out shatteredArmorPercentage01);
         ISerializeToIntArray.ParseToValue(in datas, in start, in count, ref index, out maxCount);
+        ISerializeToIntArray.ParseToValue(in datas, in start, in count, ref index, out attId);
     }
 
     public float GetTime()
     {
         return duration;
+    }
+
+    public override void GetDescriptionList(ref List<DescriptionInfo> descInfos, EnDescriptionLevel level)
+    {
+        base.GetDescriptionList(ref descInfos, level);
+
+        var attName = LanguageUtility.GetLanguage_AttiributeName(attId);
+
+        var info = ClassPoolMgr.Instance.Pull<DescriptionInfo>();
+        descInfos.Add(info);
+        info.title = LanguageUtility.GetLanguage_BuffStyleName(GetBuff());
+        info.level = level;
+        info.content = string.Format(LanguageUtility.GetLanguage_BuffDescription(GetBuff()),
+            shatteredArmorPercentage01 * 100, attName, duration, maxCount);
     }
 }
 public class EntityShatteredArmorBuff : EntityBuff<EntityShatteredArmorBuffData>, IUpdate
@@ -39,6 +56,7 @@ public class EntityShatteredArmorBuff : EntityBuff<EntityShatteredArmorBuffData>
     private float _ProChangeValue;
     private int _MaxCount;
     private int _LastCount;
+    private EnEntityAttributeId _AttId;
     public override void OnPoolDestroy()
     {
         UpdateMgr.Instance.Unregistener(this);
@@ -49,23 +67,25 @@ public class EntityShatteredArmorBuff : EntityBuff<EntityShatteredArmorBuffData>
             = _MaxCount
             = _LastCount
             = -1;
+        _AttId = EnEntityAttributeId.None;
     }
     public override void OnPoolInit(EntityBuffDataUserData userData)
     {
         base.OnPoolInit(userData);
 
-        var monsterEntityData = EntityMgr.Instance.GetEntityData<IEntityGridPointInfo>(_TargetEntityID);
-        var worldPos = monsterEntityData.GetCenterPointWorldPos();
-        _EffectEntityId = GameEffectMgr.Instance.PlayEffect(EnGameEffectId.Eff_buff_ShatteredArmor, in worldPos);
+        var entityData = EntityMgr.Instance.GetEntityData<GameBattleMonsterEntityData>(_TargetEntityID);
+        var worldPos = entityData.GetCenterPointWorldPos();
+        _EffectEntityId = GameEffectMgr.Instance.PlayEffect(EnGameEffectId.Eff_buff_ShatteredArmor, in worldPos, entityData.GetVolume());
     }
     protected override void AddKey(int addKey, EntityShatteredArmorBuffData buffParams)
     {
-        _ProChangeValue = buffParams.shatteredArmorPercentage;
+        _ProChangeValue = buffParams.shatteredArmorPercentage01;
         _MaxCount = buffParams.maxCount;
+        _AttId = buffParams.attId;
 
         _LastCount = Mathf.Min(_MaxCount, Count);
-        var proCom = SceneEntityMgr.Instance.GetEntityCom<SceneEntityAttributeComData>(_TargetEntityID, EnSceneEntityComType.Attribute);
-        proCom.RemoveAddtionalPercentage(EnEntityAttributeId.PhysicsArmor, buffParams.shatteredArmorPercentage * _LastCount);
+
+        GameAttributeUtility.RemoveAddtionalPercentage(_TargetEntityID, _AttId, buffParams.shatteredArmorPercentage01 * _LastCount);
         UpdateMgr.Instance.Registener(this);
     }
     protected override void ReaddKey(int addKey, EntityShatteredArmorBuffData buffParams)
@@ -77,24 +97,23 @@ public class EntityShatteredArmorBuff : EntityBuff<EntityShatteredArmorBuffData>
         if (count != _LastCount)
         {
             var change = _ProChangeValue * (count - _LastCount);
-            var proCom = SceneEntityMgr.Instance.GetEntityCom<SceneEntityAttributeComData>(_TargetEntityID, EnSceneEntityComType.Attribute);
-            proCom.RemoveAddtionalPercentage(EnEntityAttributeId.PhysicsArmor, change);
+
+            GameAttributeUtility.RemoveAddtionalPercentage(_TargetEntityID, _AttId, change);
             _LastCount = count;
         }
 
-        if (buffParams.shatteredArmorPercentage > _ProChangeValue)
+        if (buffParams.shatteredArmorPercentage01 > _ProChangeValue)
         {
-            var change = buffParams.shatteredArmorPercentage - _ProChangeValue;
-            _ProChangeValue = buffParams.shatteredArmorPercentage;
-            var proCom = SceneEntityMgr.Instance.GetEntityCom<SceneEntityAttributeComData>(_TargetEntityID, EnSceneEntityComType.Attribute);
-            proCom.RemoveAddtionalPercentage(EnEntityAttributeId.PhysicsArmor, change * _LastCount);
+            var change = buffParams.shatteredArmorPercentage01 - _ProChangeValue;
+            _ProChangeValue = buffParams.shatteredArmorPercentage01;
+
+            GameAttributeUtility.RemoveAddtionalPercentage(_TargetEntityID, _AttId, change * _LastCount);
         }
 
     }
     public override void Clear()
     {
-        var proCom = SceneEntityMgr.Instance.GetEntityCom<SceneEntityAttributeComData>(_TargetEntityID, EnSceneEntityComType.Attribute);
-        proCom.AddAddtionalPercentage(EnEntityAttributeId.PhysicsArmor, _ProChangeValue * _LastCount);
+        GameAttributeUtility.AddAddtionalPercentage(_TargetEntityID, _AttId, _ProChangeValue * _LastCount);
         base.Clear();
     }
 

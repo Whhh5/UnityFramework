@@ -1,12 +1,20 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum EnDamageTypeInt
+{
+    None = 0,
+    Physic,
+    Magic,
+    True,
+    Count,
+}
 public enum EnDamageType
 {
     None,
-    Physic = 1 << 0,
-    Magic = 1 << 1,
-    True = 1 << 2,
+    Physic = 1 << EnDamageTypeInt.Physic,
+    Magic = 1 << EnDamageTypeInt.Magic,
+    True = 1 << EnDamageTypeInt.True,
 }
 public enum EnDamageValueType
 {
@@ -50,6 +58,22 @@ public class EntityVulnerableBuffData : EntityBuffData, IBuffTimeInfo
     {
         return duration;
     }
+
+    public override void GetDescriptionList(ref List<DescriptionInfo> descInfos, EnDescriptionLevel level)
+    {
+        base.GetDescriptionList(ref descInfos, level);
+
+        var damageTypeStr = LanguageUtility.GetLanguage_DamageTypeName(damageType);
+        var donusDamageTypeStr = LanguageUtility.GetLanguage_DamageTypeName(donusDamageType);
+        var buffCfg = GameSchedule.Instance.GetBuffCfg0((int)GetBuff());
+        var descStr = LanguageUtility.GetLanguage(buffCfg.nDescLangId);
+
+        var info = ClassPoolMgr.Instance.Pull<DescriptionInfo>();
+        info.level = level;
+        info.title = LanguageUtility.GetLanguage(buffCfg.nStyleNameLangId);
+        info.content = string.Format(descStr, damageTypeStr, $"{donusDamagePercentage * 100}", donusDamageTypeStr, duration, maxCount);
+        descInfos.Add(info);
+    }
 }
 
 public class EntityVulnerableBuff : EntityBuff<EntityVulnerableBuffData>, IUpdate, IGameDamageCallback
@@ -77,7 +101,7 @@ public class EntityVulnerableBuff : EntityBuff<EntityVulnerableBuffData>, IUpdat
 
         var entityData = EntityMgr.Instance.GetEntityData<GameBattleMonsterEntityData>(_TargetEntityID);
         var worldPos = entityData.GetCenterPointWorldPos();
-        _EffectEntityId = GameEffectMgr.Instance.PlayEffect(EnGameEffectId.Eff_buff_fangxue, worldPos);
+        _EffectEntityId = GameEffectMgr.Instance.PlayEffect(EnGameEffectId.Eff_buff_fangxue, worldPos, entityData.GetVolume());
     }
     public override void Clear()
     {
@@ -114,15 +138,19 @@ public class EntityVulnerableBuff : EntityBuff<EntityVulnerableBuffData>, IUpdat
 
     public void DamageCallback(int sourceEntityId, int targetEntityId, int damageValue, EnDamageType damageType, EnDamageValueType valueType, Vector2 worldPos)
     {
+        var targetEntityPointInfo = EntityMgr.Instance.GetEntityData<IEntityGridPointInfo>(targetEntityId);
+        var centerPos = targetEntityPointInfo.GetCenterPointWorldPos();
+        var offset = (centerPos - worldPos) * Random.Range(0.2f, 0.8f);
         var donusDamage = _DonusDamagePercentage * Mathf.Min(_MaxCount, Count);
         var value = Mathf.CeilToInt(damageValue * donusDamage);
-        var finalDamage = GameAttackMgr.Instance.Attack(_SourceEntityID, targetEntityId, value, worldPos, _DonusDamageType);
+        var damagePos = worldPos + offset;
+        var damageResult = GameAttackMgr.Instance.AttackMonster(_SourceEntityID, targetEntityId, value, damagePos, _DonusDamageType);
 
         var eventUd = ClassPoolMgr.Instance.Pull<ValnerableBuffTriggerEventData>();
-        eventUd.finalDamage = finalDamage;
+        eventUd.finalDamage = damageResult.value;
         eventUd.sourceEntityId = sourceEntityId;
         eventUd.targetEntityId = targetEntityId;
-        eventUd.point = worldPos;
+        eventUd.point = damagePos;
         EventMgr.Instance.FireExecute(EnABBEvent.EVENT_BUFF_TRIGGER, (int)_Buff, 0, eventUd);
         ClassPoolMgr.Instance.Push(eventUd);
     }

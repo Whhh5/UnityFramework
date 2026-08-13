@@ -12,5 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6ac2121b37f9e34fb3727bbd5f80c7f, type: 3}
   m_Name: AbBuilderConfig
   m_EditorClassIdentifier: 
-  abPaths: []
-  hotTypes: []
+  abPaths:
+  - Assets/Framework/Hotfix/Res
+  - Assets/GameRes
+  - Assets/TextMesh Pro/Shaders
+  - Assets/TextMesh Pro/LXGWWenKai

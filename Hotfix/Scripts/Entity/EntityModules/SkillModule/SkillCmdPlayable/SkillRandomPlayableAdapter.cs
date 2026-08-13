@@ -1,7 +1,5 @@
 using System.Collections.Generic;
-using UnityEditor.Graphs;
 using UnityEngine;
-using UnityEngine.Playables;
 
 
 public class SkillRandomPlayableAdapter : SkillPlayableAdapter<SkillPlayableAdapterUserData>
@@ -60,10 +58,6 @@ public class SkillRandomPlayableAdapter : SkillPlayableAdapter<SkillPlayableAdap
     {
         return _CurClipAdapter.GetPlayTime();
     }
-    public override bool IsLoop()
-    {
-        return true;
-    }
     public override void ExecutePlayable()
     {
         base.ExecutePlayable();
@@ -78,10 +72,9 @@ public class SkillRandomPlayableAdapter : SkillPlayableAdapter<SkillPlayableAdap
     {
         base.ReexecutePlayable();
     }
-    public override bool OnPrepareFrame(Playable playable, FrameData info)
+    public override void OnUpdate()
     {
-        if (!base.OnPrepareFrame(playable, info))
-            return false;
+        base.OnUpdate();
         if (GetPlaySchedule01() >= 1f)
         {
             CurSkillStageInfo.OnDisable(_EntityId);
@@ -96,7 +89,6 @@ public class SkillRandomPlayableAdapter : SkillPlayableAdapter<SkillPlayableAdap
 
             CurSkillStageInfo.OnEnable(_EntityId);
         }
-        return true;
     }
 
 
@@ -110,4 +102,14 @@ public class SkillRandomPlayableAdapter : SkillPlayableAdapter<SkillPlayableAdap
         ConnectRootAdapter(_CurClipAdapter);
     }
 
+    public override EnAnimLayerBit GetAnimationLayers()
+    {
+        var result = EnAnimLayerBit.None;
+        foreach (var item in _SkillStageList)
+        {
+            var clipCfg = GameSchedule.Instance.GetClipCfg0(item.GetClipID());
+            result |= (EnAnimLayerBit)(1 << clipCfg.nLayer);
+        }
+        return result;
+    }
 }

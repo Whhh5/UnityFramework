@@ -6,28 +6,31 @@ using UnityEngine.Networking;
 [CreateAssetMenu(menuName = "SO/GlobalConfigSO", fileName = "GlobalConfigSO")]
 public class GlobalConfigSO : ScriptableObject
 {
+    [Header("项目名称")]
+    public string ProjectName = $"RunGame";
+
     [Header("下载根路径")]
-    public string DownloadRootUrl = $"http://localhost:8000/RunGame";
+    public string DownloadRootUrl = $"http://localhost:8000";
 
     [Header("dll 加载顺序")]
     public string[] HotfixList = null;
 
-    [Header("dll ab 名字")]
-    public string HotfixAssetbundleName = "hotfixdlls.ab";
+    //[Header("dll ab 名字")]
+    //public string HotfixAssetbundleName = "hotfixdlls.ab";
 
     [Header("config ab 名字")]
     public string ConfigAssetbundleName = "gamecfgjson.ab";
 
-    [Header("dll 元数据 ab字 名")]
-    public string HotfixMatadataAssetbundleName = "hotfixmetadatadlls.ab";
+    //[Header("dll 元数据 ab字 名")]
+    //public string HotfixMatadataAssetbundleName = "hotfixmetadatadlls.ab";
 
     [Header("服务器文件地址")]
-    public string ServerDataPath = "/Users/qiuxiaohui/Desktop/MyServer/Server/Data/RunGame";
+    public string ServerDataPath = "/Users/qiuxiaohui/Desktop/MyServer/Remote/RunGame";
 
     [Header("dll bytes 目录")]
-    public string DllBytesDirectory = "Assets/Abbresources/HotfixDlls";
+    public string DllBytesDirectory = "Assets/GameRes/HotfixRes/Assembly/HotfixDlls";
     [Header("dll matadata bytes 目录")]
-    public string DllMatadataBytesDirectory = "Assets/Abbresources/HotfixMetadataDlls";
+    public string DllMatadataBytesDirectory = "Assets/GameRes/HotfixRes/Assembly/HotfixMetadataDlls";
 
     [SerializeField]
     private EnLoaderType _LoaderType = EnLoaderType.Editor;
@@ -61,4 +64,9 @@ public class GlobalConfigSO : ScriptableObject
         }
     }
 
+    public string GetDownLoadUrlPath()
+    {
+        var path = Path.Combine(DownloadRootUrl, ProjectName);
+        return path;
+    }
 }

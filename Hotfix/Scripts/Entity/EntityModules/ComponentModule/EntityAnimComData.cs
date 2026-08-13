@@ -218,7 +218,7 @@ public sealed class EntityAnimComData : Entity3DComDataGO<IEntityAnimCom>, IUpda
             var mainAdapter2 = from.GetMainPlayableAdapter();
             RemoveAdapter(mainAdapter2);
             from.Complete();
-            
+
             var mixerAdapter = _PlayableGraph.CreateMixerPlayableAdapter(from, skillAdapter, skillCfg.fMixerTime, MixerComplete);
             portID = layerInfo.Connect(mixerAdapter);
         }
@@ -258,7 +258,8 @@ public sealed class EntityAnimComData : Entity3DComDataGO<IEntityAnimCom>, IUpda
         if (!_Adapter2ConnectInfo.TryGetValue(adapter, out var connectInfo2))
             return;
         _Adapter2ConnectInfo.Remove(adapter);
-        _NoLoopPlayableList.Remove(adapter);
+        if (!adapter.IsLoop())
+            _NoLoopPlayableList.Remove(adapter);
         RemoveSkillData(connectInfo2.skillId);
         ClassPoolMgr.Instance.Push(connectInfo2);
     }
@@ -290,7 +291,12 @@ public sealed class EntityAnimComData : Entity3DComDataGO<IEntityAnimCom>, IUpda
 
         for (int i = 0; i < _TempAdapterKeys.Count; i++)
         {
-            _TempAdapterKeys[i].OnUpdate();
+            var adapter = _TempAdapterKeys[i];
+            if (adapter.IsLoop())
+            {
+                adapter.OnLoopUpdate();
+            }
+            adapter.OnUpdate();
         }
         for (var i = 0; i < _NoLoopPlayableList.Count; i++)
         {
