@@ -130,7 +130,7 @@ public class UnityTcpClient2 : IUnityClient
         {
             if (_isConnected)
             {
-                Debug.Log("已经连接到服务器");
+                AotDebug.Log("已经连接到服务器");
                 return;
             }
 
@@ -145,7 +145,7 @@ public class UnityTcpClient2 : IUnityClient
             // 触发连接成功事件
             _NetCliectReceive.OnNetConnected();
 
-            Debug.Log("------>>> 服务器连接");
+            AotDebug.Log("------>>> 服务器连接");
             // 开始接收消息
             await ReceiveMessagesAsync();
         }
@@ -248,7 +248,7 @@ public class UnityTcpClient2 : IUnityClient
             Array.Copy(lenArr, sendArr, lenArr.Length);
             Array.Copy(data, 0, sendArr, lenArr.Length, data.Length);
             var sendCount = await _clientSocket.SendAsync(new ArraySegment<byte>(sendArr), SocketFlags.None);
-            Debug.Log($"发送消息({data.Length}): {message}");
+            AotDebug.Log($"发送消息({data.Length}): {message}");
         }
         catch (SocketException ex)
         {
@@ -288,7 +288,7 @@ public class UnityTcpClient2 : IUnityClient
         {
             _NetCliectReceive.OnNetError($"断开连接时发生错误: {ex.Message}");
         }
-        Debug.Log("断开服务器连接");
+        AotDebug.Log("断开服务器连接");
     }
 
 }

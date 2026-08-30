@@ -53,7 +53,7 @@ public class ServerMgr : Singleton<ServerMgr>, INetCliectReceive
 
         if (!_client.GetIsConnected())
         {
-            Debug.Log("服务器连接失败");
+            AotDebug.Log("服务器连接失败");
         }
     }
     public override void Destroy()
@@ -195,7 +195,7 @@ public class ServerMgr : Singleton<ServerMgr>, INetCliectReceive
 
     private void AddMessage(string message)
     {
-        Debug.Log(message);
+        AotDebug.Log(message);
 
     }
 }

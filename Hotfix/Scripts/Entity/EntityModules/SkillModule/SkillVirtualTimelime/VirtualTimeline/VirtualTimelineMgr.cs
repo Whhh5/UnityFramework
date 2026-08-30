@@ -24,7 +24,8 @@ public class VirtualTimelineInfo : IClassPoolDestroy
 
 public class VirtualTimelineMgr : Singleton<VirtualTimelineMgr>
 {
-    public override EnManagerFuncType FuncType => base.FuncType | EnManagerFuncType.Update;
+    public override EnManagerFuncType FuncType => EnManagerFuncType.None;
+    //public override EnManagerFuncType FuncType => base.FuncType | EnManagerFuncType.Update;
     private readonly Dictionary<int, int> _TimelineId2Index = new(10);
     private readonly List<VirtualTimelineInfo> _TimelineInfos = new(10);
 
@@ -69,7 +70,7 @@ public class VirtualTimelineMgr : Singleton<VirtualTimelineMgr>
     {
         if (!_TimelineId2Index.TryGetValue(timelineId, out var index))
         {
-            Debug.LogError($"[AbbTimelineMgr] RemoveTimeline failed, timelineID {timelineId} not exists.");
+            AotDebug.LogError($"[AbbTimelineMgr] RemoveTimeline failed, timelineID {timelineId} not exists.");
             return;
         }
         var timelineInfo = _TimelineInfos[index];

@@ -94,7 +94,7 @@ public class EntityMgr : Singleton<EntityMgr>
         if (goID < 0)
         {
             entityData.SetLoadStatus(EnLoadStatus.Failed);
-            Debug.LogError($"加载失败 target: {entityData.LoadTarget}, loadId: {entityID}");
+            AotDebug.LogError($"加载失败 target: {entityData.LoadTarget}, loadId: {entityID}");
             return;
         }
         if (loadKey != entityData.LoadKey)
@@ -109,7 +109,7 @@ public class EntityMgr : Singleton<EntityMgr>
         if (!go.TryGetComponent<GameEntity>(out var goEntity))
             throw new System.Exception($"gameobject no exist component : {typeof(GameEntity)}");
         goEntity.SetEntityID(entityID);
-        goEntity.LoadCompeletion();
+        goEntity.LoadCompletion();
         entityData.OnGOCreate(goEntity);
 
 #if UNITY_EDITOR

@@ -116,7 +116,7 @@ namespace Spine.Unity {
 				if (string.IsNullOrEmpty(boneName)) return;
 				bone = skeleton.FindBone(boneName);
 				if (bone == null) {
-					Debug.LogError("Bone not found: " + boneName, this);
+                    Debug.LogError("Bone not found: " + boneName, this);
 					return;
 				}
 			}

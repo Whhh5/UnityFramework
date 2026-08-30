@@ -41,7 +41,7 @@ public class PhysicsResolveSphere : IPhysicsResolve
 
 
         ref var enittyIDs = ref EntityUtility.PhysicsOverlapSphere(out var count, pos, _Radius, (int)layer);
-        //DebugDrawMgr.Instance.DrawSphere(pos, m_Radius, 0.5f);
+        //AotDebugDrawMgr.Instance.DrawSphere(pos, m_Radius, 0.5f);
         callback.Invoke(ref enittyIDs, ref count, cusomData);
     }
 }

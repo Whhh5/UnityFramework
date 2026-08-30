@@ -32,12 +32,14 @@ public class EventData<T> : IEventData
             return;
         eventList.Remove(eventExecute);
     }
+    private readonly List<AbbEventCallback<T>> _TempFireEventList = new(10);
     private void InvokHasList(HashSet<AbbEventCallback<T>> hashSet, in int sourceID, in int typeID, in T userData)
     {
-        var list = hashSet.ToList();
-        for (int i = 0; i < list.Count; i++)
+        _TempFireEventList.Clear();
+        _TempFireEventList.AddRange(hashSet);
+        for (int i = 0; i < _TempFireEventList.Count; i++)
         {
-            var callback = list[i];
+            var callback = _TempFireEventList[i];
             if (!hashSet.Contains(callback))
                 continue;
             callback.Invoke(in sourceID, in typeID, in userData);
@@ -155,12 +157,14 @@ public class EventData : IEventData
             }
         }
     }
+    private readonly List<AbbEventCallback> _TempFireEventList = new(50);
     private void InvokHasList(HashSet<AbbEventCallback> list, in int sourceID, in int typeID)
     {
-        var callbacks = list.ToList();
-        for (int i = 0; i < callbacks.Count; i++)
+        _TempFireEventList.Clear();
+        _TempFireEventList.AddRange(list);
+        for (int i = 0; i < _TempFireEventList.Count; i++)
         {
-            var callback = callbacks[i];
+            var callback = _TempFireEventList[i];
             if (!list.Contains(callback))
                 continue;
             callback.Invoke(sourceID, typeID);

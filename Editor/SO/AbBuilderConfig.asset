@@ -17,3 +17,5 @@ MonoBehaviour:
   - Assets/GameRes
   - Assets/TextMesh Pro/Shaders
   - Assets/TextMesh Pro/LXGWWenKai
+  dirInAllFilesPaths:
+  - Assets/GameRes/HotfixRes/Prefabs/Battle/Entity/Monster

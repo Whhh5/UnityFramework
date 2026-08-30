@@ -81,7 +81,7 @@ public class SceneEntityAttributeComData : Entity3DComData
 {
     public override EnSceneEntityComType GetComType() => EnSceneEntityComType.Attribute;
 
-    private readonly Dictionary<EnEntityAttributeId, EntityAttributeData> _PropertyDatas = new();
+    private readonly Dictionary<EnEntityAttributeId, EntityAttributeData> _PropertyDatas = new((int)EnEntityAttributeId.EnumCount);
 
     public override void OnPoolDestroy()
     {

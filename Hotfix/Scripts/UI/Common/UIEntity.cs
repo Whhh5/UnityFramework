@@ -53,9 +53,9 @@ public abstract class UIEntityData : GameEntityData
 public abstract class UIEntity: GameEntity
 {
     private RectTransform m_Rect = null;
-    public override void LoadCompeletion()
+    public override void LoadCompletion()
     {
-        base.LoadCompeletion();
+        base.LoadCompletion();
         m_Rect = GetComponent<RectTransform>();
     }
 

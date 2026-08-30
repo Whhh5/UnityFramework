@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class PlayerController : Singleton<PlayerController>
 {
-    public override EnManagerFuncType FuncType => base.FuncType | EnManagerFuncType.Update;
+    public override EnManagerFuncType FuncType => EnManagerFuncType.None;
+    //public override EnManagerFuncType FuncType => base.FuncType | EnManagerFuncType.Update;
 
     private int _CurControllerEntityId = -1;
     private Vector3 _MoveDir = Vector3.zero;

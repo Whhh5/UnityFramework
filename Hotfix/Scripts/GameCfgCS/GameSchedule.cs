@@ -58,6 +58,32 @@ public partial class GameSchedule
 	private System.Collections.Generic.Dictionary<System.Int32, AttributeValueCfg> m_DicAttributeValueCfg0 = new();
 	private SkillPassivityCfg[] m_SkillPassivityCfg = null;
 	private System.Collections.Generic.Dictionary<System.Int32, SkillPassivityCfg> m_DicSkillPassivityCfg0 = new();
+	private ChapterCfg[] m_ChapterCfg = null;
+	private System.Collections.Generic.Dictionary<System.Int32, ChapterCfg> m_DicChapterCfg0 = new();
+	private CoreCfg[] m_CoreCfg = null;
+	private System.Collections.Generic.Dictionary<System.Int32, CoreCfg> m_DicCoreCfg0 = new();
+	private CoreTypeCfg[] m_CoreTypeCfg = null;
+	private System.Collections.Generic.Dictionary<System.Int32, CoreTypeCfg> m_DicCoreTypeCfg0 = new();
+	private CoreQualityCfg[] m_CoreQualityCfg = null;
+	private System.Collections.Generic.Dictionary<System.Int32, CoreQualityCfg> m_DicCoreQualityCfg0 = new();
+	private CoreEffectCfg[] m_CoreEffectCfg = null;
+	private System.Collections.Generic.Dictionary<System.Int32, CoreEffectCfg> m_DicCoreEffectCfg0 = new();
+	private GoodsCfg[] m_GoodsCfg = null;
+	private System.Collections.Generic.Dictionary<System.Int32, GoodsCfg> m_DicGoodsCfg0 = new();
+	private GoodsTypeCfg[] m_GoodsTypeCfg = null;
+	private System.Collections.Generic.Dictionary<System.Int32, GoodsTypeCfg> m_DicGoodsTypeCfg0 = new();
+	private AccountLevelCfg[] m_AccountLevelCfg = null;
+	private System.Collections.Generic.Dictionary<System.Int32, AccountLevelCfg> m_DicAccountLevelCfg0 = new();
+	private GemCfg[] m_GemCfg = null;
+	private System.Collections.Generic.Dictionary<System.Int32, GemCfg> m_DicGemCfg0 = new();
+	private GemTypeCfg[] m_GemTypeCfg = null;
+	private System.Collections.Generic.Dictionary<System.Int32, GemTypeCfg> m_DicGemTypeCfg0 = new();
+	private GemEffectTypeCfg[] m_GemEffectTypeCfg = null;
+	private System.Collections.Generic.Dictionary<System.Int32, GemEffectTypeCfg> m_DicGemEffectTypeCfg0 = new();
+	private GemQualityCfg[] m_GemQualityCfg = null;
+	private System.Collections.Generic.Dictionary<System.Int32, GemQualityCfg> m_DicGemQualityCfg0 = new();
+	private GlobalCfg[] m_GlobalCfg = null;
+	private System.Collections.Generic.Dictionary<System.Int32, GlobalCfg> m_DicGlobalCfg0 = new();
 	public void Initialization()
 	{
 		for (int i = 0; i < m_ClipCfg.Length; i++)
@@ -204,6 +230,71 @@ public partial class GameSchedule
 		{
 			var cfg = m_SkillPassivityCfg[i];
 			m_DicSkillPassivityCfg0.Add(cfg.nSkillPassivityId, cfg);
+		}
+		for (int i = 0; i < m_ChapterCfg.Length; i++)
+		{
+			var cfg = m_ChapterCfg[i];
+			m_DicChapterCfg0.Add(cfg.nChapterId, cfg);
+		}
+		for (int i = 0; i < m_CoreCfg.Length; i++)
+		{
+			var cfg = m_CoreCfg[i];
+			m_DicCoreCfg0.Add(cfg.nCoreId, cfg);
+		}
+		for (int i = 0; i < m_CoreTypeCfg.Length; i++)
+		{
+			var cfg = m_CoreTypeCfg[i];
+			m_DicCoreTypeCfg0.Add(cfg.nCoreType, cfg);
+		}
+		for (int i = 0; i < m_CoreQualityCfg.Length; i++)
+		{
+			var cfg = m_CoreQualityCfg[i];
+			m_DicCoreQualityCfg0.Add(cfg.nCoreQuality, cfg);
+		}
+		for (int i = 0; i < m_CoreEffectCfg.Length; i++)
+		{
+			var cfg = m_CoreEffectCfg[i];
+			m_DicCoreEffectCfg0.Add(cfg.nCoreEffectId, cfg);
+		}
+		for (int i = 0; i < m_GoodsCfg.Length; i++)
+		{
+			var cfg = m_GoodsCfg[i];
+			m_DicGoodsCfg0.Add(cfg.nGoodsId, cfg);
+		}
+		for (int i = 0; i < m_GoodsTypeCfg.Length; i++)
+		{
+			var cfg = m_GoodsTypeCfg[i];
+			m_DicGoodsTypeCfg0.Add(cfg.nGoodsTypeId, cfg);
+		}
+		for (int i = 0; i < m_AccountLevelCfg.Length; i++)
+		{
+			var cfg = m_AccountLevelCfg[i];
+			m_DicAccountLevelCfg0.Add(cfg.nLevelId, cfg);
+		}
+		for (int i = 0; i < m_GemCfg.Length; i++)
+		{
+			var cfg = m_GemCfg[i];
+			m_DicGemCfg0.Add(cfg.nGemId, cfg);
+		}
+		for (int i = 0; i < m_GemTypeCfg.Length; i++)
+		{
+			var cfg = m_GemTypeCfg[i];
+			m_DicGemTypeCfg0.Add(cfg.nGemTypeId, cfg);
+		}
+		for (int i = 0; i < m_GemEffectTypeCfg.Length; i++)
+		{
+			var cfg = m_GemEffectTypeCfg[i];
+			m_DicGemEffectTypeCfg0.Add(cfg.nEffectTypeId, cfg);
+		}
+		for (int i = 0; i < m_GemQualityCfg.Length; i++)
+		{
+			var cfg = m_GemQualityCfg[i];
+			m_DicGemQualityCfg0.Add(cfg.nGemQualityId, cfg);
+		}
+		for (int i = 0; i < m_GlobalCfg.Length; i++)
+		{
+			var cfg = m_GlobalCfg[i];
+			m_DicGlobalCfg0.Add(cfg.nId, cfg);
 		}
 	}
 	public System.Int32 GetClipCfgCount()
@@ -553,5 +644,161 @@ public partial class GameSchedule
 	public SkillPassivityCfg GetSkillPassivityCfg0(System.Int32 nSkillPassivityId)
 	{
 		return m_DicSkillPassivityCfg0[nSkillPassivityId];
+	}
+	public System.Int32 GetChapterCfgCount()
+	{
+		return m_ChapterCfg.Length;
+	}
+	public ChapterCfg GetChapterCfg(System.Int32 index)
+	{
+		return m_ChapterCfg[index];
+	}
+	public ChapterCfg GetChapterCfg0(System.Int32 nChapterId)
+	{
+		return m_DicChapterCfg0[nChapterId];
+	}
+	public System.Int32 GetCoreCfgCount()
+	{
+		return m_CoreCfg.Length;
+	}
+	public CoreCfg GetCoreCfg(System.Int32 index)
+	{
+		return m_CoreCfg[index];
+	}
+	public CoreCfg GetCoreCfg0(System.Int32 nCoreId)
+	{
+		return m_DicCoreCfg0[nCoreId];
+	}
+	public System.Int32 GetCoreTypeCfgCount()
+	{
+		return m_CoreTypeCfg.Length;
+	}
+	public CoreTypeCfg GetCoreTypeCfg(System.Int32 index)
+	{
+		return m_CoreTypeCfg[index];
+	}
+	public CoreTypeCfg GetCoreTypeCfg0(System.Int32 nCoreType)
+	{
+		return m_DicCoreTypeCfg0[nCoreType];
+	}
+	public System.Int32 GetCoreQualityCfgCount()
+	{
+		return m_CoreQualityCfg.Length;
+	}
+	public CoreQualityCfg GetCoreQualityCfg(System.Int32 index)
+	{
+		return m_CoreQualityCfg[index];
+	}
+	public CoreQualityCfg GetCoreQualityCfg0(System.Int32 nCoreQuality)
+	{
+		return m_DicCoreQualityCfg0[nCoreQuality];
+	}
+	public System.Int32 GetCoreEffectCfgCount()
+	{
+		return m_CoreEffectCfg.Length;
+	}
+	public CoreEffectCfg GetCoreEffectCfg(System.Int32 index)
+	{
+		return m_CoreEffectCfg[index];
+	}
+	public CoreEffectCfg GetCoreEffectCfg0(System.Int32 nCoreEffectId)
+	{
+		return m_DicCoreEffectCfg0[nCoreEffectId];
+	}
+	public System.Int32 GetGoodsCfgCount()
+	{
+		return m_GoodsCfg.Length;
+	}
+	public GoodsCfg GetGoodsCfg(System.Int32 index)
+	{
+		return m_GoodsCfg[index];
+	}
+	public GoodsCfg GetGoodsCfg0(System.Int32 nGoodsId)
+	{
+		return m_DicGoodsCfg0[nGoodsId];
+	}
+	public System.Int32 GetGoodsTypeCfgCount()
+	{
+		return m_GoodsTypeCfg.Length;
+	}
+	public GoodsTypeCfg GetGoodsTypeCfg(System.Int32 index)
+	{
+		return m_GoodsTypeCfg[index];
+	}
+	public GoodsTypeCfg GetGoodsTypeCfg0(System.Int32 nGoodsTypeId)
+	{
+		return m_DicGoodsTypeCfg0[nGoodsTypeId];
+	}
+	public System.Int32 GetAccountLevelCfgCount()
+	{
+		return m_AccountLevelCfg.Length;
+	}
+	public AccountLevelCfg GetAccountLevelCfg(System.Int32 index)
+	{
+		return m_AccountLevelCfg[index];
+	}
+	public AccountLevelCfg GetAccountLevelCfg0(System.Int32 nLevelId)
+	{
+		return m_DicAccountLevelCfg0[nLevelId];
+	}
+	public System.Int32 GetGemCfgCount()
+	{
+		return m_GemCfg.Length;
+	}
+	public GemCfg GetGemCfg(System.Int32 index)
+	{
+		return m_GemCfg[index];
+	}
+	public GemCfg GetGemCfg0(System.Int32 nGemId)
+	{
+		return m_DicGemCfg0[nGemId];
+	}
+	public System.Int32 GetGemTypeCfgCount()
+	{
+		return m_GemTypeCfg.Length;
+	}
+	public GemTypeCfg GetGemTypeCfg(System.Int32 index)
+	{
+		return m_GemTypeCfg[index];
+	}
+	public GemTypeCfg GetGemTypeCfg0(System.Int32 nGemTypeId)
+	{
+		return m_DicGemTypeCfg0[nGemTypeId];
+	}
+	public System.Int32 GetGemEffectTypeCfgCount()
+	{
+		return m_GemEffectTypeCfg.Length;
+	}
+	public GemEffectTypeCfg GetGemEffectTypeCfg(System.Int32 index)
+	{
+		return m_GemEffectTypeCfg[index];
+	}
+	public GemEffectTypeCfg GetGemEffectTypeCfg0(System.Int32 nEffectTypeId)
+	{
+		return m_DicGemEffectTypeCfg0[nEffectTypeId];
+	}
+	public System.Int32 GetGemQualityCfgCount()
+	{
+		return m_GemQualityCfg.Length;
+	}
+	public GemQualityCfg GetGemQualityCfg(System.Int32 index)
+	{
+		return m_GemQualityCfg[index];
+	}
+	public GemQualityCfg GetGemQualityCfg0(System.Int32 nGemQualityId)
+	{
+		return m_DicGemQualityCfg0[nGemQualityId];
+	}
+	public System.Int32 GetGlobalCfgCount()
+	{
+		return m_GlobalCfg.Length;
+	}
+	public GlobalCfg GetGlobalCfg(System.Int32 index)
+	{
+		return m_GlobalCfg[index];
+	}
+	public GlobalCfg GetGlobalCfg0(System.Int32 nId)
+	{
+		return m_DicGlobalCfg0[nId];
 	}
 }

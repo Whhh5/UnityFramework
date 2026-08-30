@@ -36,7 +36,8 @@ public class AudioMgr : Singleton<AudioMgr>
             GameObject.Destroy(_AudioSource.gameObject);
         _AudioSource = null;
         _LastClipId = -1;
-        _LastPlayTime = -1; ;
+        _LastPlayTime = -1;
+        _UpdateClipInfos.Clear();
     }
     public override async UniTask AwakeAsync()
     {
@@ -116,7 +117,10 @@ public class AudioMgr : Singleton<AudioMgr>
             }
         }
     }
+    public void Stop()
+    {
 
+    }
     public void Play(EnAudioId audioID)
     {
         var time = GameUtility.GetGameTime();

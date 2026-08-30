@@ -68,6 +68,28 @@ public static class LanguageUtility
     {
         return GetLanguage(10013);
     }
+    public static string GetLanguage_10014(object p1, object p2)
+    {
+        return string.Format(GetLanguage(10014), p1, p2);
+    }
+    public static string GetLanguage_10033(object p1)
+    {
+        return string.Format(GetLanguage(10033), p1);
+    }
+    public static string GetLanguage_10035()
+    {
+        return GetLanguage(10035);
+    }
+    public static string GetLanguage_10040(object p1)
+    {
+        return string.Format(GetLanguage(10040), p1);
+    }
+
+
+    // ---------------
+
+
+
 
     public static string GetLanguage_DamageTypeName(EnDamageType damageType)
     {
@@ -112,12 +134,7 @@ public static class LanguageUtility
     public static string GetLanguage_AttributeValue(EnEntityAttributeId attId, float value)
     {
         var attCfg = GameSchedule.Instance.GetAttributeCfg0((int)attId);
-        var result = (EnValueType)attCfg.nValueType switch
-        {
-            EnValueType.Percentage => value * 100,
-            _ => value,
-        };
-        var valueStr = string.Format(GetLanguage(attCfg.nValueDescLangId), result);
+        var valueStr = string.Format(GetLanguage(attCfg.nValueDescLangId), value);
         return valueStr;
     }
 
@@ -156,6 +173,32 @@ public static class LanguageUtility
         var partCfg = GameSchedule.Instance.GetSkillPassivityCfg0(partId);
         var desc = LanguageUtility.GetLanguage(partCfg.nTipsDescLangId);
         return desc;
+    }
+    public static string GetLanguage_CoreQualityName(EnCoreQuality quality)
+    {
+        if (quality > EnCoreQuality.None && quality < EnCoreQuality.EnumCount)
+        {
+            var qualityCg = GameSchedule.Instance.GetCoreQualityCfg0((int)quality);
+            var name = GetLanguage(qualityCg.nNameLangId);
+            return $"<color={qualityCg.strColor}>{name}</color>";
+        }
+        else
+        {
+            return GetLanguage_10035();
+        }
+    }
+    public static string GetLanguage_GemQualityName(EnGemQuality quality)
+    {
+        if (quality > EnGemQuality.None && quality < EnGemQuality.EnumCount)
+        {
+            var qualityCg = GameSchedule.Instance.GetGemQualityCfg0((int)quality);
+            var name = GetLanguage(qualityCg.nNameLangId);
+            return $"<color={qualityCg.strColor}>{name}</color>";
+        }
+        else
+        {
+            return GetLanguage_10035();
+        }
     }
 
 }

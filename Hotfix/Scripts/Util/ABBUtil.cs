@@ -24,17 +24,17 @@ public static class ABBUtil
     public static void Log(params object[] messageList)
     {
         var str = GetLogStr(messageList);
-        Debug.Log($"ABB: {str}");
+        AotDebug.Log($"ABB: {str}");
     }
     public static void LogWarring(params object[] messageList)
     {
         var str = GetLogStr(messageList);
-        Debug.LogWarning($"ABB: {str}");
+        AotDebug.LogWarning($"ABB: {str}");
     }
     public static void LogError(params object[] messageList)
     {
         var str = GetLogStr(messageList);
-        Debug.LogError($"ABB: {str}");
+        AotDebug.LogError($"ABB: {str}");
     }
 
 
@@ -149,21 +149,18 @@ public static class ABBUtil
     {
         var inType = typeof(T);
         // 获取所有加载的程序集
-        Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+        Assembly assembly = GameStart.Instance.GetMainAssembly();
 
-        foreach (Assembly assembly in assemblies)
+        // 获取程序集中的所有类型
+        Type[] types = assembly.GetTypes();
+
+        foreach (Type type in types)
         {
-            // 获取程序集中的所有类型
-            Type[] types = assembly.GetTypes();
-
-            foreach (Type type in types)
+            // 检查类型是否带有GameStartAttribute特性
+            if (!type.IsInterface && inType.IsAssignableFrom(type))
             {
-                // 检查类型是否带有GameStartAttribute特性
-                if (!type.IsInterface && inType.IsAssignableFrom(type))
-                {
-                    outType = type;
-                    return true;
-                }
+                outType = type;
+                return true;
             }
         }
         outType = null;

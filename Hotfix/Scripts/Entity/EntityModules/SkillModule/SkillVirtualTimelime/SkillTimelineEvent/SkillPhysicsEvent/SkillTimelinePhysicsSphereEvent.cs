@@ -32,13 +32,13 @@ public class SkillTimelinePhysicsSphereEvent : SkillVirtualTimelinePhysicsEvent
         var pos = entityPos + _OffsetPos;
         ref readonly var entityListCount = ref SkillPhysicsMgr.Instance.SphereCast(in pos, _Radius, in entityEnemyLayer);
 
-        Debug.Log($"sphere target entity posOffset:{_OffsetPos}, radius:{_Radius}, count:{_Count}, rayType:{_RayType} --");
+        AotDebug.Log($"sphere target entity posOffset:{_OffsetPos}, radius:{_Radius}, count:{_Count}, rayType:{_RayType} --");
         for (int i = 0; i < entityListCount; i++)
         {
             ref readonly var entityId = ref SkillPhysicsMgr.Instance.GetLastCastEntityId(in i);
-            Debug.Log($"sphere target entityId = {entityId}");
+            AotDebug.Log($"sphere target entityId = {entityId}");
         }
-        Debug.Log($"sphere target entity count = {entityListCount} --------------");
+        AotDebug.Log($"sphere target entity count = {entityListCount} --------------");
     }
 
     public override List<int> SerializeToIntArray()

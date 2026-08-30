@@ -73,9 +73,9 @@ public abstract class EffectEntity : GameEntity
 
     private float _SingletonMaxTime = 0;
 
-    public override void LoadCompeletion()
+    public override void LoadCompletion()
     {
-        base.LoadCompeletion();
+        base.LoadCompletion();
         UpdateMaxTime();
     }
 

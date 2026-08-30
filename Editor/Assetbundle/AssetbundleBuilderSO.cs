@@ -21,4 +21,5 @@ public class AssetbundleBuilderSO : ScriptableObject
 #endif
 
     public string[] abPaths;
+    public string[] dirInAllFilesPaths;
 }

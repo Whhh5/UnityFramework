@@ -35,7 +35,7 @@ public abstract class SceneEntityData<T> : SceneEntityData
 public abstract class SceneEntityData : GameEntityData<SceneEntity, SceneEntityUserData>
 {
 
-    private readonly Dictionary<EnSceneEntityComType, IEntity3DComData> _EntityComs = new();
+    private readonly Dictionary<EnSceneEntityComType, IEntity3DComData> _EntityComs = new(20);
     
     private EnSceneEntityControllerType _ControllerType = EnSceneEntityControllerType.None;
 

@@ -17,9 +17,9 @@ public class AnimMgr : Singleton<AnimMgr>
     public AvatarMask GetLayerAvatar(EnAnimLayer layerAvatarID)
     {
         return null;
-        var avatarCfg = GameSchedule.Instance.GetAnimLayerCfg0((int)layerAvatarID);
-        var mask = ABBLoadMgr.Instance.Load<AvatarMask>(avatarCfg.nAssetID);
-        return mask;
+        //var avatarCfg = GameSchedule.Instance.GetAnimLayerCfg0((int)layerAvatarID);
+        //var mask = ABBLoadMgr.Instance.Load<AvatarMask>(avatarCfg.nAssetID);
+        //return mask;
     }
 
 	public EnAnimLayer GetAnimLayer(int clipID)

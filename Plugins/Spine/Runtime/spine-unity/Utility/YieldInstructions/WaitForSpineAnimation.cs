@@ -82,8 +82,8 @@ namespace Spine.Unity {
 
 		protected void SafeSubscribe (Spine.TrackEntry trackEntry, AnimationEventTypes eventsToWaitFor) {
 			if (trackEntry == null) {
-				// Break immediately if trackEntry is null.
-				Debug.LogWarning("TrackEntry was null. Coroutine will continue immediately.");
+                // Break immediately if trackEntry is null.
+                Debug.LogWarning("TrackEntry was null. Coroutine will continue immediately.");
 				m_WasFired = true;
 			} else {
 				if ((eventsToWaitFor & AnimationEventTypes.Start) != 0)

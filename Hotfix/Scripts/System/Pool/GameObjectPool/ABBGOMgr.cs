@@ -89,8 +89,8 @@ public class ABBGOMgr : Singleton<ABBGOMgr>
                     throw new OperationCanceledException();
                 poolItem.handle = handle;
             }
-
-            goData.insOperation = GameObject.InstantiateAsync(poolItem.handle.GetObject<GameObject>(), parent);
+            var goAsset = poolItem.handle.GetObject<GameObject>();
+            goData.insOperation = GameObject.InstantiateAsync(goAsset, parent);
             var (isCancel2, ins) = await goData.insOperation.ToUniTask(cancellationToken: GetToken())
                 .SuppressCancellationThrow();
             if (isCancel2)

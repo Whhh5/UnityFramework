@@ -227,7 +227,7 @@ public abstract class GameEntity : MonoBehaviour
     {
         return _EntityID;
     }
-    public virtual void LoadCompeletion()
+    public virtual void LoadCompletion()
     {
 
     }

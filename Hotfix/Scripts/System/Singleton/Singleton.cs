@@ -16,7 +16,11 @@ public enum EnSingletonOrder
     None,
     Load,
     GameSchedule,
+    EventMgr,
     Server,
+    PersistentMgr,
+    UICharacterMgr,
+    GameMapMgr,
     Base,
     Default,
 }
@@ -29,7 +33,7 @@ public abstract class Singleton
     public virtual async UniTask AwakeAsync()
     {
         _LifeToken = new();
-        await UniTask.DelayFrame(1);
+        await UniTask.DelayFrame(0);
     }
     public virtual async UniTask OnEnableAsync()
     {

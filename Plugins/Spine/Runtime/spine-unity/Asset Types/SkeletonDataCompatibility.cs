@@ -232,7 +232,7 @@ namespace Spine.Unity {
 				wasVersionDialogShown = true;
 				UnityEditor.EditorUtility.DisplayDialog("Version mismatch!", descriptionString, "OK");
 			}
-			Debug.LogError(string.Format("Error importing skeleton '{0}': {1}",
+            Debug.LogError(string.Format("Error importing skeleton '{0}': {1}",
 				spineJson.name, descriptionString), spineJson);
 		}
 #endif // UNITY_EDITOR

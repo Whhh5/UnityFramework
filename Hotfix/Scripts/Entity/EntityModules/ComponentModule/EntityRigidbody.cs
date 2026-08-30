@@ -37,9 +37,9 @@ public abstract class EntityRigidbody2D : SceneEntity
 {
     [SerializeField] private Rigidbody2D _Rigidbody2D = null;
 
-    public override void LoadCompeletion()
+    public override void LoadCompletion()
     {
-        base.LoadCompeletion();
+        base.LoadCompletion();
         _Rigidbody2D.position = EntityMgr.Instance.GetEntityWorldPos(_EntityID);
     }
 

@@ -1,6 +1,4 @@
-﻿using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class SkillTimelinePhysicsCylinderEvent : SkillVirtualTimelinePhysicsEvent
@@ -63,7 +61,7 @@ public class SkillTimelinePhysicsCylinderEvent : SkillVirtualTimelinePhysicsEven
                 EventMgr.Instance.FireExecute(EnABBEvent.EVENT_SKILL_TIMELINE_PHYSICS, _SkillId, _TimelineEventId, eventData);
                 ClassPoolMgr.Instance.Push(eventData);
             }
-            Debug.Log(atkLog);
+            AotDebug.Log(atkLog);
         }
     }
 }

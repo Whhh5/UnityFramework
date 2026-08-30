@@ -46,10 +46,10 @@ public sealed class ClassPoolMgr : Singleton<ClassPoolMgr>
         }
         var type = classData.GetType();
         var poolData = GetClassPoolData(type);
-        if (poolData.Contains(classData))
-        {
-            throw new Exception($"error {Time.frameCount}: {classData.GetHashCode()}");
-        }
+        //if (poolData.Contains(classData))
+        //{
+        //    throw new Exception($"error {Time.frameCount}: {classData.GetHashCode()}");
+        //}
 
         classData.OnPoolDestroy();
         poolData.Push(classData);

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Text;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -9,6 +10,7 @@ using UnityEngine.UI;
 public enum EnUIWindowType
 {
     Window,
+    SubWindow,
     Dialog,
     Tips,
     Hint,
@@ -53,7 +55,7 @@ public class UIMgr : SingletonMono<UIMgr>
             ABBUtil.LogError($"没有找到启动界面，请继承 {typeof(IStartLaunch)}");
         }
 
-        Debug.Log($"uimgrloadshader {_NoiseTexture} {_UITmpDissolveShader} {_UIImageShader}");
+        //AotDebug.Log($"uimgrloadshader {_NoiseTexture} {_UITmpDissolveShader} {_UIImageShader}");
         var noiseLoadhandle = await ABBLoadMgr.Instance.LoadAsync<Texture>(EnLoadTarget.Sp_Noise2, default);
         _NoiseTexture = noiseLoadhandle.GetObject<Texture>();
         var tmpDissolveShader = await ABBLoadMgr.Instance.LoadAsync<Shader>(EnLoadTarget.Shader_DistanceFieldDissolve_ScreenSpaceNoise, default);
@@ -61,7 +63,7 @@ public class UIMgr : SingletonMono<UIMgr>
         var imgDissolveShader = await ABBLoadMgr.Instance.LoadAsync<Shader>(EnLoadTarget.Shader_UI_Dissolve_ScreenSpaceNoise, default);
         _UIImageShader = imgDissolveShader.GetObject<Shader>();
 
-        Debug.Log($"uimgrloadshader {_NoiseTexture} {_UITmpDissolveShader} {_UIImageShader}");
+        //AotDebug.Log($"uimgrloadshader {_NoiseTexture} {_UITmpDissolveShader} {_UIImageShader}");
     }
 
     public Shader GetTmpDissolveShader()
@@ -85,6 +87,10 @@ public class UIMgr : SingletonMono<UIMgr>
     public RectTransform GetCanvasRect()
     {
         return _CanvasRect;
+    }
+    public float GetCanvasScale()
+    {
+        return _CanvasRect.lossyScale.x;
     }
     public Vector2 GetUISize()
     {
@@ -111,16 +117,30 @@ public class UIMgr : SingletonMono<UIMgr>
     {
         return _WindowId2EntityDataID.ContainsKey(windowId);
     }
-    public int ShowWindow<T>()
+    public int ShowWindow(EnLoadTarget windowId, RectTransform parent = null)
+    {
+        return windowId switch
+        {
+            EnLoadTarget.Pre_UIHallMainBattleWindow => ShowWindow<UIHallMainBattleWindowData>(parent),
+            EnLoadTarget.Pre_UIHallMainShopWindow => ShowWindow<UIHallMainShopWindowData>(parent),
+            EnLoadTarget.Pre_UIHallMainTalentWindow => ShowWindow<UIHallMainTalentWindowData>(parent),
+            EnLoadTarget.Pre_UIHallMainCoreWindow => ShowWindow<UIHallMainCoreWindowData>(parent),
+            EnLoadTarget.Pre_UIHallMainCharacterWindow => ShowWindow<UIHallMainCharacterWindowData>(parent),
+            EnLoadTarget.Pre_UIHallMainDebugWindow => ShowWindow<UIHallMainDebugWindowData>(parent),
+            EnLoadTarget.Pre_UIHallMainInlayWindow => ShowWindow<UIHallMainInlayWindowData>(parent),
+            _ => -1
+        };
+    }
+    public int ShowWindow<T>(RectTransform parent = null)
         where T : UIWindowData, new()
     {
         var userData = ClassPoolMgr.Instance.Pull<UIWindowUserData>();
-        var windowId = ShowWindow<T>(userData);
+        var windowId = ShowWindow<T>(userData, parent);
         ClassPoolMgr.Instance.Push(userData);
         return windowId;
     }
 
-    public int ShowWindow<T>(UIWindowUserData userData)
+    public int ShowWindow<T>(UIWindowUserData userData, RectTransform parent = null)
         where T : UIWindowData, new()
     {
         var windowId = ABBUtil.GetTempKey();
@@ -133,20 +153,15 @@ public class UIMgr : SingletonMono<UIMgr>
         if (windowData.WindowType == EnUIWindowType.Window)
             GameStateMgr.Instance.AddGameState(EnGameStatus.UIWindow);
 
-        //windowData.OnShow(userData);
-
-        if (!m_WindowType2Root.TryGetValue(windowData.WindowType, out var root))
-            root = m_UIRootRect;
-        windowData.SetParentTran(root);
+        if (parent == null)
+        {
+            if (!m_WindowType2Root.TryGetValue(windowData.WindowType, out parent))
+                parent = m_UIRootRect;
+        }
+        windowData.SetParentTran(parent);
         EntityMgr.Instance.LoadEntity(dataID);
         return windowId;
     }
-    //public void HideWindow<T>()
-    //    where T: UIWindowData
-    //{
-    //    var type = typeof(T);
-    //    HideWindow(type);
-    //}
     public bool IsValid(int windowId)
     {
         return _WindowId2EntityDataID.ContainsKey(windowId);
@@ -154,6 +169,20 @@ public class UIMgr : SingletonMono<UIMgr>
     public void HideWindow(int windowId)
     {
         HideWindow(windowId, EnWindowHideType.Close);
+    }
+    public void HideWindow<T>()
+        where T : UIWindowData, new()
+    {
+        var list = new List<int>();
+        foreach (var (windowId, _) in _WindowId2EntityDataID)
+        {
+            var windowData = GetWindow(windowId);
+            if (windowData.GetType() != typeof(T))
+                continue;
+            list.Add(windowId);
+        }
+        foreach (var item in list)
+            HideWindow(item);
     }
     public async void HideWindow(int windowId, EnWindowHideType hideCode)
     {
@@ -163,7 +192,6 @@ public class UIMgr : SingletonMono<UIMgr>
         if (windowData.WindowType == EnUIWindowType.Window)
             GameStateMgr.Instance.RemoveGameState(EnGameStatus.UIWindow);
 
-        //windowData.OnHide();
         _WindowList.Remove(windowId);
         _WindowId2EntityDataID.Remove(windowId);
 
@@ -203,20 +231,32 @@ public class UIMgr : SingletonMono<UIMgr>
 
     public async UniTask<T> LoadWindowItemAsync<T>(EnLoadTarget loadTarget, RectTransform parent, CancellationToken token)
     {
-        var goId = await ABBGOMgr.Instance.CreateGOAsync(loadTarget, parent);
+        var (isCancel, com) = await LoadWindowItemAsync(loadTarget, parent, token)
+            .SuppressCancellationThrow();
+        if (isCancel)
+            throw new OperationCanceledException();
+        if (com is not T windowITem)
+        {
+            UnloadWindowItem(com);
+            throw new Exception($"{typeof(T)} is not {typeof(UIWindowItem)}");
+        }
+        return windowITem;
+    }
+    public async UniTask<UIWindowItem> LoadWindowItemAsync(EnLoadTarget loadTarget, RectTransform parent, CancellationToken token)
+    {
+        var (isCancel, goId) = await ABBGOMgr.Instance.CreateGOAsync(loadTarget, parent)
+            .SuppressCancellationThrow();
+        if (isCancel)
+            throw new OperationCanceledException();
         if (token.IsCancellationRequested)
         {
             ABBGOMgr.Instance.DestroyGO(goId);
             throw new OperationCanceledException();
         }
-        var com = ABBGOMgr.Instance.GetGoCom<T>(goId);
-        if (com is not UIWindowItem windowITem)
-        {
-            throw new Exception($"{typeof(T)} is not {typeof(UIWindowItem)}");
-        }
+        var windowITem = ABBGOMgr.Instance.GetGoCom<UIWindowItem>(goId);
         windowITem.SetGoId(goId);
-        windowITem.LoadCompeletion();
-        return com;
+        windowITem.LoadCompletion();
+        return windowITem;
     }
     public void UnloadWindowItem<T>(T item)
     {
@@ -245,5 +285,14 @@ public class UIMgr : SingletonMono<UIMgr>
         var testWindowId = _WindowList[^1];
         return windowId == testWindowId;
 
+    }
+
+    public void ShowLobby()
+    {
+        UIMgr.Instance.ShowWindow<UIHallMainWindowData>();
+    }
+    public void HideLobby()
+    {
+        UIMgr.Instance.HideWindow<UIHallMainWindowData>();
     }
 }

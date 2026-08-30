@@ -82,9 +82,9 @@ public class PlayableGraphAdapter : IClassPool<PlayableGraphAdapterUserData>, IU
     private Animator _Anim = null;
     private int _EntityID = -1;
     private AnimationLayerMixerPlayable _LayerMixerPlayable;
-    private Dictionary<EnAnimLayer, LayerMixerInfo> _Layer2unusePortDic = new();
-    private List<LayerAnimMixerInfo> _EnterLayerList = new();
-    private List<LayerAnimMixerInfo> _ExistLayerList = new();
+    private Dictionary<EnAnimLayer, LayerMixerInfo> _Layer2unusePortDic = new(10);
+    private List<LayerAnimMixerInfo> _EnterLayerList = new(10);
+    private List<LayerAnimMixerInfo> _ExistLayerList = new(10);
     //private AnimationScriptPlayable _PlayableJob;
 
     public void PoolConstructor()
@@ -336,7 +336,7 @@ public class PlayableGraphAdapter : IClassPool<PlayableGraphAdapterUserData>, IU
             var pos = hit.point + hit.normal * 0.128f;
             var ikDis = Vector3.Distance(pos, leftPos);
 
-            //DebugDrawMgr.Instance.DrawSphere(pos, 0.1f, 0.01f);
+            //AotDebugDrawMgr.Instance.DrawSphere(pos, 0.1f, 0.01f);
 
             var weight2 = pos.y < leftPos.y
                 ? Mathf.Lerp(0, 1, 1 - Mathf.Pow(Mathf.Clamp01(ikDis / rayLine), 1))

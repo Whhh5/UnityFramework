@@ -512,7 +512,7 @@ namespace Spine.Unity {
 			if (!Application.isPlaying) {
 				string errorMessage = null;
 				if (!quiet && MaterialChecks.IsMaterialSetupProblematic(this, ref errorMessage))
-					Debug.LogWarningFormat(this, "Problematic material setup at {0}: {1}", this.name, errorMessage);
+                    Debug.LogWarningFormat(this, "Problematic material setup at {0}: {1}", this.name, errorMessage);
 			}
 #endif
 		}
@@ -777,7 +777,7 @@ namespace Spine.Unity {
 				}
 #if UNITY_EDITOR
 				else if (!string.IsNullOrEmpty(separatorSlotNames[i])) {
-					Debug.LogWarning(separatorSlotNames[i] + " is not a slot in " + skeletonDataAsset.skeletonJSON.name);
+                    Debug.LogWarning(separatorSlotNames[i] + " is not a slot in " + skeletonDataAsset.skeletonJSON.name);
 				}
 #endif
 			}

@@ -12,13 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 12008a010e2074f82a035879693f24c9, type: 3}
   m_Name: GlobalConfigSO
   m_EditorClassIdentifier: 
+  _LoaderType: 0
   ProjectName: RunGame
-  DownloadRootUrl: http://172.20.10.10:8000
+  StaticWebUtl: https://cloud1-d5gy0bngg418fba77-1304051594.tcloudbaseapp.com
+  DownloadRootUrl: http://192.168.31.129:8000
+  ServerUrl: https://librarian-widget-churn.ngrok-free.dev
+  PersistentRoot: Persistent
   HotfixList:
   - 1
   - 0
+  MainAssemblyName: HotfixAssembly
   ConfigAssetbundleName: gamecfgjson.ab
-  ServerDataPath: /Users/qiuxiaohui/Desktop/MyServer/Remote/RunGame
   DllBytesDirectory: Assets/GameRes/HotfixRes/Assembly/HotfixDlls
   DllMatadataBytesDirectory: Assets/GameRes/HotfixRes/Assembly/HotfixMetadataDlls
-  _LoaderType: 1

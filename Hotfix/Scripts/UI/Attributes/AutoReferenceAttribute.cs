@@ -19,4 +19,8 @@ public class AutoReferenceAttribute : Attribute
         objName = name;
         this.scope = scope;
     }
+    public AutoReferenceAttribute(SearchScope scope)
+    {
+        this.scope = scope;
+    }
 }

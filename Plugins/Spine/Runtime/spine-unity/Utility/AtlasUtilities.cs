@@ -640,7 +640,7 @@ namespace Spine.Unity.AttachmentTools {
 				r.yMax = Math.Max(s.uv[0].y, s.uv[2].y) * spriteTexture.height;
 #if UNITY_EDITOR
 				if (s.uv.Length > 4) {
-					Debug.LogError("When using a tightly packed SpriteAtlas with Spine, you may only access Sprites that are packed as 'FullRect' from it! " +
+                    Debug.LogError("When using a tightly packed SpriteAtlas with Spine, you may only access Sprites that are packed as 'FullRect' from it! " +
 						"You can either disable 'Tight Packing' at the whole SpriteAtlas, or change the single Sprite's TextureImporter Setting 'MeshType' to 'Full Rect'." +
 						"Sprite Asset: " + s.name, s);
 				}

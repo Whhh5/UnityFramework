@@ -100,7 +100,7 @@ namespace Spine.Unity {
 		/// <param name="addMinimumPartsRenderers">If set to <c>true</c>, a minimum number of SkeletonPartsRenderer GameObjects (determined by separatorSlots.Count + 1) will be added.</param>
 		public static SkeletonRenderSeparator AddToSkeletonRenderer (SkeletonRenderer skeletonRenderer, int sortingLayerID = 0, int extraPartsRenderers = 0, int sortingOrderIncrement = DefaultSortingOrderIncrement, int baseSortingOrder = 0, bool addMinimumPartsRenderers = true) {
 			if (skeletonRenderer == null) {
-				Debug.Log("Tried to add SkeletonRenderSeparator to a null SkeletonRenderer reference.");
+                Debug.Log("Tried to add SkeletonRenderSeparator to a null SkeletonRenderer reference.");
 				return null;
 			}
 

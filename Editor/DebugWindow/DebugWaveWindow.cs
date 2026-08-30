@@ -20,6 +20,7 @@ public class DebugWaveWindow : EditorWindow
 {
     // map
     private int _MapId;
+    private int _ChapterId;
     private int _MaxRow;
     private int _MaxCol;
     private Vector2 _GridSize;
@@ -46,6 +47,7 @@ public class DebugWaveWindow : EditorWindow
         EditorApplication.update -= OnEditorUpdate;
         _CurWaveId = -1;
         _MapId = -1;
+        _ChapterId = -1;
         _LastSelectMonsterIndex = -1;
     }
     private void OnEditorUpdate()
@@ -184,10 +186,10 @@ public class DebugWaveWindow : EditorWindow
         };
         EditorGuiUtil.DrawBox(listRect, "");
         GUI.BeginClip(listRect);
-        if (_MapId > 0)
+        if (_ChapterId > 0)
         {
-            var mapCfg = ExcelEditorUtil.GetCfg<MapCfg>(_MapId);
-            var count = mapCfg.nMaxWaveId - mapCfg.nMinWaveId + 1;
+            var chapterCfg = ExcelEditorUtil.GetCfg<ChapterCfg>(_ChapterId);
+            var count = chapterCfg.nMaxWaveId - chapterCfg.nMinWaveId;
             var btnWidth = rect.width - 30;
             var btnHeight = 50;
             var topOffset = btnHeight / 2 + 10f;
@@ -203,7 +205,15 @@ public class DebugWaveWindow : EditorWindow
             _WaveMenuRect = rect;
             for (int i = 0; i <= count; i++)
             {
-                var waveId = mapCfg.nMinWaveId + i;
+                var waveId = chapterCfg.nMinWaveId + i;
+                DrawWaveItem(i, waveId);
+            }
+            if (chapterCfg.nBossWaveId > 0)
+            {
+                DrawWaveItem(count + 1, chapterCfg.nBossWaveId);
+            }
+            void DrawWaveItem(int i, int waveId)
+            {
                 var cfg = ExcelEditorUtil.GetCfg<BattleWaveCfg>(waveId);
                 if (cfg == null)
                 {
@@ -224,7 +234,13 @@ public class DebugWaveWindow : EditorWindow
                 var col = GUI.backgroundColor;
                 if (_CurWaveId == cfg.nWaveId)
                     GUI.backgroundColor = Color.cyan;
-                if (GUI.Button(btnRect, $"{cfg.nWaveId}"))
+                var content = new GUIContent($"{cfg.nWaveId}");
+                if (chapterCfg.nBossWaveId == waveId)
+                {
+                    var content2 = EditorGUIUtility.IconContent("BuildSettings.Lumin");
+                    content.image = content2.image;
+                }
+                if (GUI.Button(btnRect, content))
                 {
                     if (cfg.nWaveId == _CurWaveId)
                     {
@@ -249,7 +265,7 @@ public class DebugWaveWindow : EditorWindow
     private float _MapMenuScrollDelta;
     private void DrawMapMenu(Rect rect)
     {
-        var count = ExcelEditorUtil.GetCfgCount<MapCfg>();
+        var count = ExcelEditorUtil.GetCfgCount<ChapterCfg>();
         var btnWidth = rect.width - 30;
         var btnHeight = 50;
         var topOffset = btnHeight / 2 + 10f;
@@ -260,7 +276,7 @@ public class DebugWaveWindow : EditorWindow
             x = 5,
             y = 5,
         };
-        GUI.Label(titleRect, "map");
+        GUI.Label(titleRect, "chapter");
         EditorGuiUtil.DrawBox(titleRect, "");
 
         var listRect = new Rect(rect)
@@ -283,7 +299,7 @@ public class DebugWaveWindow : EditorWindow
             {
                 for (int i = 0; i < count; i++)
                 {
-                    var cfg = ExcelEditorUtil.GetCfgByIndex<MapCfg>(i);
+                    var cfg = ExcelEditorUtil.GetCfgByIndex<ChapterCfg>(i);
                     var btnRect = new Rect()
                     {
                         width = btnWidth,
@@ -295,18 +311,18 @@ public class DebugWaveWindow : EditorWindow
                         }
                     };
                     var col = GUI.backgroundColor;
-                    if (_MapId == cfg.nMapId)
+                    if (_ChapterId == cfg.nChapterId)
                         GUI.backgroundColor = Color.cyan;
-                    if (GUI.Button(btnRect, $"{cfg.nMapId}"))
+                    if (GUI.Button(btnRect, $"{cfg.nChapterId}"))
                     {
                         SetWaveId(-1);
-                        if (_MapId == cfg.nMapId)
+                        if (_ChapterId == cfg.nChapterId)
                         {
-                            SettingMapId(-1);
+                            SetChapterId(-1);
                         }
                         else
                         {
-                            SettingMapId(cfg.nMapId);
+                            SetChapterId(cfg.nChapterId);
                         }
                     }
                     GUI.backgroundColor = col;
@@ -363,6 +379,19 @@ public class DebugWaveWindow : EditorWindow
             _MaxCol = mapCfg.nGridRowCol[1];
         }
     }
+    public void SetChapterId(int chapterId)
+    {
+        _ChapterId = chapterId;
+        if (chapterId > 0)
+        {
+            var chapterCfg = ExcelEditorUtil.GetCfg<ChapterCfg>(chapterId);
+            SettingMapId(chapterCfg.nMapId);
+        }
+        else
+        {
+            SettingMapId(-1);
+        }
+    }
 
     private bool _IsShowGridInfos = false;
     private void DrawGrid(Rect rect)
@@ -407,9 +436,9 @@ public class DebugWaveWindow : EditorWindow
         };
 
         _MonsterMenuDic.Clear();
-        if (_MapId > 0)
+        if (_ChapterId > 0)
         {
-            var mapCfg = ExcelEditorUtil.GetCfg<MapCfg>(_MapId);
+            var chapterCfg = ExcelEditorUtil.GetCfg<ChapterCfg>(_ChapterId);
             var offset = new Vector2(10, 10);
             var maxWidth = monsterMenuRect.width - offset.x * 2;
             var iconRect = new Rect()
@@ -417,9 +446,9 @@ public class DebugWaveWindow : EditorWindow
                 x = offset.x,
                 y = delRect.yMax + 5,
             };
-            for (int i = 0; i < mapCfg.arrMonsterIds.Length; i++)
+            for (int i = 0; i < chapterCfg.arrMonsterIds.Length; i++)
             {
-                var monsterId = mapCfg.arrMonsterIds[i];
+                var monsterId = chapterCfg.arrMonsterIds[i];
                 var monsterCfg = ExcelEditorUtil.GetCfg<MonsterCfg>(monsterId);
                 var iconAssetCfg = ExcelEditorUtil.GetCfg<AssetCfg>(monsterCfg.nIconAssetID);
                 if (iconAssetCfg != null)
@@ -661,8 +690,6 @@ public class DebugWaveWindow : EditorWindow
     #region Draw map monster Info
     private void DrawWaveMonster(Dictionary<int, Rect> localGridRects)
     {
-        if (_MapId <= 0)
-            return;
         if (_CurWaveId <= 0)
             return;
         var monsterInfos = GetMonsterInfos();

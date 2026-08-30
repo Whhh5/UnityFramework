@@ -26,11 +26,13 @@ public class TmpLanguageEditor : Editor
             if (ExcelEditorUtil.GetCfg<LanguageCfg>(changeLangId) != null)
             {
                 _Target.SetLangId(changeLangId);
+                EditorUtility.SetDirty(_Target);
             }
         }
         if (cfg != null && GUILayout.Button("Apply", GUILayout.Height(50)))
         {
             _Target.GetComponent<TextMeshProUGUI>().SetText(cfg.strValueCh);
+            EditorUtility.SetDirty(_Target);
         }
     }
 }

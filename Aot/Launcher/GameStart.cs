@@ -1,11 +1,19 @@
-using System.Collections.Generic;
+#if UNITY_WEBGL && UNItY_MINIGAME_WX && !UNITY_EDITOR
+#define UNITY_WX
+#endif
+
+using System;
+using System.Linq;
+using System.Reflection;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public enum EnLoaderType
 {
     Editor,
-    Assetbundle,
+    Localhost,
+    internet,
     EnumCount,
 }
 public interface IUpdateGame
@@ -13,32 +21,58 @@ public interface IUpdateGame
     public UniTask InitializationAsync();
 }
 
+public interface IGameStart
+{
+    public UniTask<bool> AwakeAsync();
+    public UniTask<bool> StartAsync();
+    public void Destroy();
+}
 public class GameStart : MonoBehaviour
 {
     public static GameStart Instance = null;
-    private Dictionary<EnLoaderType, IUpdateGame> _UpdateGameController = new();
+    private IUpdateGame _UpdateGameController;
+    private Assembly _MainAssembly;
+    private readonly IGameStart _GameStart =
+#if UNITY_WX
+        new WxGameStart()
+#else
+        new EditorGameStart()
+#endif
+        ;
 
-
-    private void Awake()
+    private CancellationTokenSource _Token;
+    private async void Awake()
     {
-        //WX.InitSDK(sdkID=>
-        //{
-        //    Debug.LogWarning($"WXSDKID: {sdkID}");
-        //});
-        //WX.ReportGameStart();
         Instance = this;
-        _UpdateGameController.Add(EnLoaderType.Assetbundle, new HotfixMgr());
-        _UpdateGameController.Add(EnLoaderType.Editor, new HotfixTest());
-    }
-    private async void Start()
-    {
-        var controller = _UpdateGameController[GlobalConfigSO.Instance.LoaderType];
-        await controller.InitializationAsync();
+        _UpdateGameController = GlobalConfigSO.Instance.LoaderType switch
+        {
+#if UNITY_EDITOR
+            EnLoaderType.Editor => new HotfixTest(),
+#endif
+            _ => new HotfixMgr()
+        };
+
+        if (!await _GameStart.AwakeAsync())
+            return;
+
+        await _UpdateGameController.InitializationAsync();
+        _MainAssembly = AppDomain.CurrentDomain.GetAssemblies().First(a => a.GetName().Name == GlobalConfigSO.Instance.MainAssemblyName);
+        await Resources.UnloadUnusedAssets();
+
+        if (!await _GameStart.StartAsync())
+            return;
+
+        if (!Application.isPlaying)
+            return;
 
         var type = AotUtility.GetClassesWithGameStartAttribute(typeof(GameStartAttribute));
+        AotDebug.Log($"通过【{type.Name}】运行游戏");
         var go = new GameObject(type.FullName, type);
         GameObject.DontDestroyOnLoad(go);
-
     }
 
+    public Assembly GetMainAssembly()
+    {
+        return _MainAssembly;
+    }
 }

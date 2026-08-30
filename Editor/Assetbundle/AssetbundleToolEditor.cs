@@ -1,13 +1,11 @@
+using System;
 using System.Collections.Generic;
-using UnityEditor;
-using UnityEngine;
 using System.IO;
 using System.Text;
-using Newtonsoft.Json;
-using System;
 using Cysharp.Threading.Tasks;
-using PlasticPipe.Server;
-using Codice.Client.BaseCommands.Fileinfo;
+using Newtonsoft.Json;
+using UnityEditor;
+using UnityEngine;
 
 public static class AssetbundleToolEditor
 {
@@ -88,9 +86,13 @@ public static class AssetbundleToolEditor
             if (!Directory.Exists(path))
                 return;
             var curDir = new DirectoryInfo(path);
-            var abBuild = CreateAbBulid(path, curDir);
+            var localPath = ABBUtil.GetUnityPathByFullPath(path);
+            var isExist = Array.Exists(AssetbundleBuilderSO.Instance.dirInAllFilesPaths, path => path == localPath);
+            var abBuild = CreateAbBulid(path, curDir, isExist ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
             if (abBuild.assetNames.Length > 0)
                 abBuilds.Add(abBuild);
+            if (isExist)
+                return;
             var dirs = curDir.GetDirectories();
             for (int i = 0; i < dirs.Length; i++)
             {
@@ -102,7 +104,7 @@ public static class AssetbundleToolEditor
     private static async UniTask<bool> UploadAssetbundleAsync(string root, List<AssetBundleBuild> abBuilds, List<AbCatalog> catalogList)
     {
         var catalogPath = AssetbundleUtil.GetAbCatalogLocalPath();
-        var data = await WebUtil.DownloadFileAsync(catalogPath);
+        var data = await DownloadContent(catalogPath);
 
         var catalogDict = AssetbundleUtil.BytesToCatalogDict(data);
 
@@ -120,7 +122,8 @@ public static class AssetbundleToolEditor
             var abPath = Path.Combine(root, abName);
             var abData = await File.ReadAllBytesAsync(abPath);
 
-            if (!await WebUtil.UploadContent(AssetbundleUtil.GetAssetbundleLocalPath(abName), abData))
+            var upLoadPath = AssetbundleUtil.GetAssetbundleLocalPath(abName);
+            if (!await UploadContent(upLoadPath, abData))
                 return false;
             curCatalog.version++;
         }
@@ -131,7 +134,7 @@ public static class AssetbundleToolEditor
         var file = File.ReadAllBytes(abCatalogPath);
         var uploadPath = AssetbundleUtil.GetAbCatalogLocalPath();
 
-        var result = await WebUtil.UploadContent(uploadPath, file);
+        var result = await UploadContent(uploadPath, file);
         return result;
     }
     private static async UniTask<bool> UploadAbInfoAsync()
@@ -140,7 +143,7 @@ public static class AssetbundleToolEditor
         var file = File.ReadAllBytes(abInfoPath);
         var uploadPath = AssetbundleUtil.GetAbInfoLocalPath();
 
-        var result = await WebUtil.UploadContent(uploadPath, file);
+        var result = await UploadContent(uploadPath, file);
         return result;
     }
     private static async UniTask<bool> UploadAssetInfoAsync()
@@ -149,7 +152,7 @@ public static class AssetbundleToolEditor
         var file = File.ReadAllBytes(assetInfoPath);
         var uploadPath = AssetbundleUtil.GetAssetInfoLocalPath();
 
-        var result = await WebUtil.UploadContent(uploadPath, file);
+        var result = await UploadContent(uploadPath, file);
         return result;
     }
     private static async UniTask<bool> SaveLocalAbCatalogAsync(string path, List<AbCatalog> data)
@@ -162,7 +165,7 @@ public static class AssetbundleToolEditor
     private static async UniTask<List<AbCatalog>> CreateAbCatalogListAsync(string root, List<AssetBundleBuild> abBuilds)
     {
         var localCatalogPath = AssetbundleUtil.GetAbCatalogLocalPath();
-        var data = await WebUtil.DownloadFileAsync(localCatalogPath);
+        var data = await DownloadContent(localCatalogPath);
         var webcatalogDict = AssetbundleUtil.BytesToCatalogDict(data);
 
         var catalogList = new List<AbCatalog>();
@@ -281,12 +284,12 @@ public static class AssetbundleToolEditor
         return result;
     }
 
-    private static AssetBundleBuild CreateAbBulid(string dir, DirectoryInfo dirInfo)
+    private static AssetBundleBuild CreateAbBulid(string dir, DirectoryInfo dirInfo, SearchOption search)
     {
         var addressableNames = new List<string>(10);
         var assetNames = new List<string>(10);
 
-        var fileInfos = dirInfo.GetFiles("*", searchOption: SearchOption.TopDirectoryOnly);
+        var fileInfos = dirInfo.GetFiles("*", searchOption: search);
         for (int i = 0; i < fileInfos.Length; i++)
         {
             var fileInfo = fileInfos[i];
@@ -311,4 +314,26 @@ public static class AssetbundleToolEditor
     }
 
 
+    public static async UniTask<bool> UploadContent(string uploadLocalPath, byte[] data)
+    {
+        var uploadContent = Encoding.UTF8.GetString(data);
+        await WebUtil.UploadFileAsync(uploadLocalPath, uploadContent);
+
+        //var path = Path.Combine(GlobalConfigSO.Instance.ServerDataPath, uploadLocalPath);
+        //AotDebug.Log($"上传成功: {path}");
+        //var dir = Path.GetDirectoryName(path);
+        //if (!Directory.Exists(dir))
+        //    Directory.CreateDirectory(dir);
+        //await File.WriteAllBytesAsync(path, data);
+        return true;
+    }
+    public static async UniTask<byte[]> DownloadContent(string uploadLocalPath)
+    {
+        //var path = Path.Combine(GlobalConfigSO.Instance.ServerDataPath, uploadLocalPath);
+        //var dir = Path.GetDirectoryName(path);
+        //if (!Directory.Exists(dir))
+        //    Directory.CreateDirectory(dir);
+        var result = await WebUtil.DownloadFileAsync(uploadLocalPath);
+        return result;
+    }
 }

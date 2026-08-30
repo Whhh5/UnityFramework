@@ -206,7 +206,7 @@ namespace Spine.Unity {
 					replacementMaterials.Add(replacement);
 					anyReplacementMaterialsChanged = true;
 				} else {
-					Debug.LogError(string.Format("Failed creating blend mode Material for SkeletonData asset '{0}'," +
+                    Debug.LogError(string.Format("Failed creating blend mode Material for SkeletonData asset '{0}'," +
 						" atlas page '{1}', template '{2}'.",
 						skeletonDataAsset.name, originalRegion.page.name, materialTemplate.name),
 						skeletonDataAsset);

@@ -6,6 +6,7 @@ using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using UnityEditor;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class DebugWindow : EditorWindow
 {
@@ -35,7 +36,7 @@ public class DebugWindow : EditorWindow
         }
         EditorGUILayout.EndHorizontal();
 
-        if (GUILayout.Button("test fussion", GUILayout.Width(100), GUILayout.Height(30)))
+        if (GUILayout.Button("HashCode", GUILayout.Width(100), GUILayout.Height(30)))
         {
             if (Selection.assetGUIDs.Length > 0)
             {
@@ -50,6 +51,25 @@ public class DebugWindow : EditorWindow
                 Debug.Log(logStr);
             }
         }
+        if (GUILayout.Button("upload", GUILayout.Width(100), GUILayout.Height(30)))
+        {
+            //ServerTest();
+            UIRewardMgr.Instance.SendReward(new List<GoodsInfo>()
+            {
+                new(1,100),
+                new(1,1),
+                new(110010101, 1),
+                new(110010102, 4),
+            });
+        }
+        EditorGUILayout.BeginHorizontal();
+        {
+            if (GUILayout.Button("upload persistent", GUILayout.Width(100), GUILayout.Height(30)))
+            {
+                PersistentMgr.Instance.UploadPeresistentData();
+            }
+        }
+        EditorGUILayout.EndHorizontal();
         if (GUILayout.Button("check temp monster icon", GUILayout.Width(100), GUILayout.Height(30)))
         {
             CheckMonsterTempIcon();
@@ -125,6 +145,19 @@ public class DebugWindow : EditorWindow
                     SkillPassivityStarLevelArray(cfg.nSkillPassivityId, result);
                 }
                 ExcelEditorUtil.SaveExcel<SkillPassivityCfg>();
+            }
+        }
+        EditorGUILayout.EndHorizontal();
+
+
+        EditorGUILayout.BeginHorizontal();
+        {
+            if (GUILayout.Button("add core", GUILayout.Width(100), GUILayout.Height(30)))
+            {
+                var count = GameSchedule.Instance.GetCoreCfgCount();
+                var index = Random.Range(0, count);
+                var cfg = GameSchedule.Instance.GetCoreCfg(index);
+                UICoreMgr.Instance.AddCore(cfg.nCoreId);
             }
         }
         EditorGUILayout.EndHorizontal();
@@ -242,5 +275,13 @@ public class DebugWindow : EditorWindow
     }
     private void ClearScene()
     {
+    }
+    private async void ServerTest()
+    {
+        var file = "Persistent/q0.txt";
+        var cur = await WebUtil.DownloadFileAsync(file);
+        var curStr = Encoding.UTF8.GetString(cur);
+        curStr += "1";
+        await WebUtil.UploadFileAsync(file, curStr);
     }
 }

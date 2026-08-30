@@ -1,8 +1,8 @@
-using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.Profiling;
 using UnityEngine.Scripting;
 
 [GameStartAttribute]
@@ -42,26 +42,23 @@ public class GameManager : MonoBehaviour
     }
     private void Register()
     {
-        Assembly[] hotUpdateAsss = AppDomain.CurrentDomain.GetAssemblies();
+        Assembly assembly = GameStart.Instance.GetMainAssembly();
         var parentType = typeof(Singleton<>);
-        var instanceStr = "Instance";
-        foreach (var assembly in hotUpdateAsss)
+        var instanceStr = nameof(Singleton<GameManager>.Instance);
+        var types = assembly.GetTypes();
+        foreach (var type in types)
         {
-            var types = assembly.GetTypes();
-            foreach (var type in types)
-            {
-                if (!typeof(Singleton).IsAssignableFrom(type))
-                    continue;
-                if (parentType == type)
-                    continue;
-                if (typeof(Singleton) == type)
-                    continue;
-                var specificParentType = parentType.MakeGenericType(type);
-                var instanceField = specificParentType.GetField(instanceStr, BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
-                var instance = instanceField.GetValue(null);
-                var monoBehaviour = instance as Singleton;
-                SubManager(monoBehaviour);
-            }
+            if (!typeof(Singleton).IsAssignableFrom(type))
+                continue;
+            if (parentType == type)
+                continue;
+            if (typeof(Singleton) == type)
+                continue;
+            var specificParentType = parentType.MakeGenericType(type);
+            var instanceField = specificParentType.GetField(instanceStr, BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+            var instance = instanceField.GetValue(null);
+            var monoBehaviour = instance as Singleton;
+            SubManager(monoBehaviour);
         }
     }
 
@@ -72,30 +69,29 @@ public class GameManager : MonoBehaviour
     }
     private async void Start()
     {
-        //Debug.Log(" --------------------- start Awake -----------------------");
+        Debug.Log(" --------------------- start Awake -----------------------");
         if (_ManagerList.TryGetValue(EnManagerFuncType.AwakeAsync, out var list))
         {
-            var count = list.Count;
             foreach (var item in list)
             {
+                Debug.Log($" Awake: {item.GetType()}");
                 await item.AwakeAsync();
             }
         }
         _CurInitSatge |= EnManagerFuncType.AwakeAsync;
-        //Debug.Log(" --------------------- Awake end -----------------------");
+        Debug.Log(" --------------------- Awake end -----------------------");
 
 
-        //Debug.Log(" --------------------- start Start -----------------------");
+        Debug.Log(" --------------------- start Start -----------------------");
         if (_ManagerList.TryGetValue(EnManagerFuncType.OnEnableAsync, out list))
         {
-            var count = list.Count;
             foreach (var item in list)
             {
                 await item.OnEnableAsync();
             }
         }
         _CurInitSatge |= EnManagerFuncType.OnEnableAsync;
-        //Debug.Log(" ---------------------  Start end -----------------------");
+        Debug.Log(" ---------------------  Start end -----------------------");
 
 
         _GameManagerGoID = await ABBGOMgr.Instance.CreateGOAsync(EnLoadTarget.Pre_GameManager, null);
@@ -117,6 +113,11 @@ public class GameManager : MonoBehaviour
             {
                 if (!item.IsUpdate())
                     continue;
+                //var type = item.GetType();
+                //if (type == typeof(GameMonsterMoveSystem)
+                //    || type == typeof(GameMonsterMoveSystem)
+                //    )
+                //    continue;
                 item.Update();
             }
         }

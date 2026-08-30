@@ -86,7 +86,7 @@ public class RuntimeAssetInfo : IClassPoolDestroy
     }
 }
 
-public class AbbAssetbundleLoader : IABBAssetLoader2
+public class AbbAssetbundleLoader : IABBAssetLoader
 {
     private Dictionary<int, AssetbundleInfo> _AbInfos = new();
     private Dictionary<int, AssetInfo> _AssetInfos = new();
@@ -128,7 +128,7 @@ public class AbbAssetbundleLoader : IABBAssetLoader2
             stringBuilder.AppendLine($"\t }}");
         }
         stringBuilder.AppendLine($"abInfo = }}");
-        Debug.LogWarning(stringBuilder);
+        AotDebug.LogWarning(stringBuilder);
     }
     public void Destroy()
     {
@@ -171,7 +171,7 @@ public class AbbAssetbundleLoader : IABBAssetLoader2
             _AbPathMap.Add(abInfo.abID, value);
             if (testDic.TryGetValue(value, out var key))
             {
-                Debug.LogError($"ab value 重复 key1:{key} key2:{abInfo.abID}-{value}");
+                AotDebug.LogError($"ab value 重复 key1:{key} key2:{abInfo.abID}-{value}");
             }
             else
             {
@@ -323,7 +323,7 @@ public class AbbAssetbundleLoader : IABBAssetLoader2
             runtimeAbInfo.tokenSource.Cancel();
             runtimeAbInfo.tokenSource.Dispose();
             runtimeAbInfo.tokenSource = null;
-            Debug.LogError("UnloadAssetbundle");
+            AotDebug.LogError("UnloadAssetbundle");
 
             if (runtimeAbInfo.abRequest != null && runtimeAbInfo.abRequest.assetBundle != null)
             {
@@ -388,8 +388,8 @@ public class AbbAssetbundleLoader : IABBAssetLoader2
         }
 
         var abPath = _AbPathMap[abID];
-        //Debug.Log($"load1 ab {abID}->{abPath}"); 
-        var abFileHandle = AssetBundle.LoadFromFileAsync(abPath);
+        //AotDebug.LogWarning($"load1 ab {abID}->{abPath}");
+        var abFileHandle = AssetBundle.LoadFromFileAsync(abPath); ;
         var abLoadHandle = abFileHandle.ToUniTask(cancellationToken: runtimeAbInfo.tokenSource.Token, cancelImmediately: true);
         unitaskList.Add(abLoadHandle);
         runtimeAbInfo.abRequest = abFileHandle;
@@ -402,7 +402,7 @@ public class AbbAssetbundleLoader : IABBAssetLoader2
         }
         catch (OperationCanceledException ex)
         {
-            Debug.Log($"load cancel {ex.Message}");
+            AotDebug.Log($"load cancel {ex.Message}"); 
             throw new OperationCanceledException();
         }
 

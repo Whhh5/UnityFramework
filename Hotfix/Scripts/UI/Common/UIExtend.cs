@@ -12,10 +12,10 @@ public static class UIExtend
     {
         btn.onClick.AddListener(callback);
     }
-    public static void RemoveAllListeners(this Button btn)
-    {
-        btn.onClick.RemoveAllListeners();
-    }
+    //public static void RemoveAllListeners(this Button btn)
+    //{
+    //    btn.onClick.RemoveAllListeners();
+    //}
     public static void RemoveListener(this Button btn, UnityAction callback)
     {
         btn.onClick.RemoveListener(callback);
@@ -42,6 +42,10 @@ public static class UIExtend
         }
     }
     private static readonly Dictionary<Image, ImageLoadData> _ImgLoadDatas = new();
+    public static void LoadSprirte(this Image image, int loadTarget)
+    {
+        LoadSprirte(image, (EnLoadTarget)loadTarget);
+    }
     public static async void LoadSprirte(this Image image, EnLoadTarget loadTarget)
     {
         if (_ImgLoadDatas.TryGetValue(image, out var loadData))
@@ -78,6 +82,7 @@ public static class UIExtend
                 loadData.token.Cancel();
                 break;
             case EnLoadStatus.Finish:
+                image.sprite = null;
                 ABBLoadMgr.Instance.Unload(loadData.handle);
                 break;
             default:

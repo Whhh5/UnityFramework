@@ -10,7 +10,8 @@ public class LayerMixerInfo : IClassPool<LayerMixerInfoUserData>
     private List<int> _UnuseIndex = new(GlobalConfig.Int2);
     private int _InputPortCount = 0;
     public EnAnimLayerStatus _Status = EnAnimLayerStatus.None;
-    private Dictionary<int, IPlayableAdapter> _Port2Adapter = new();
+    private readonly Dictionary<int, IPlayableAdapter> _Port2Adapter = new();
+    private readonly List<int> _TempPortIds = new(10);
 
     public void OnPoolDestroy()
     {
@@ -90,10 +91,10 @@ public class LayerMixerInfo : IClassPool<LayerMixerInfoUserData>
     }
     public void DisconnectAll()
     {
-        var idList = new List<int>(_Port2Adapter.Count);
+        _TempPortIds.Clear();
         foreach (var item in _Port2Adapter)
-            idList.Add(item.Key);
-        foreach (var item in idList)
+            _TempPortIds.Add(item.Key);
+        foreach (var item in _TempPortIds)
             Disconnect(item);
     }
     public bool IsStatus(EnAnimLayerStatus target)

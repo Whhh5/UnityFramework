@@ -4,6 +4,14 @@ using UnityEngine;
 
 public static class AssetbundleEditorUtil
 {
+    //public static string GetLocalhostPath()
+    //{
+    //    return "/Users/qiuxiaohui/Desktop/MyServer/Remote";
+    //}
+    //public static string GetLocalhostAbPath(RuntimePlatform buildTarget)
+    //{
+    //    return Path.Combine(GetLocalhostPath(), buildTarget.ToString(), "Assetbundle");
+    //}
     public static string GetAbBuilderPath(RuntimePlatform buildTarget)
     {
         return Path.Combine(ABBUtil.GetUnityMiscPath(), buildTarget.ToString(), "Assetbundle");

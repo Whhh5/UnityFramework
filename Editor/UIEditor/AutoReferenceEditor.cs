@@ -11,6 +11,18 @@ using Debug = UnityEngine.Debug;
 
 public static class AutoReferenceFinder
 {
+    private static List<FieldInfo> GetAllFieldInfos(Type type)
+    {
+        var fieldInfos = new List<FieldInfo>();
+        var parentType = type;
+        while (parentType != null && parentType != typeof(MonoBehaviour))
+        {
+            var types = parentType.GetFields((BindingFlags)int.MaxValue);
+            fieldInfos.AddRange(types);
+            parentType = parentType.BaseType;
+        }
+        return fieldInfos;
+    }
     /// <summary>
     /// 对单个MonoBehaviour执行自动引用赋值
     /// </summary>
@@ -19,8 +31,7 @@ public static class AutoReferenceFinder
         if (target == null) return;
         GameObject go = target.gameObject;
         Type targetType = target.GetType();
-        FieldInfo[] fields = targetType.GetFields(
-            BindingFlags.Instance | BindingFlags.NonPublic);
+        var fields = GetAllFieldInfos(targetType);
 
         bool modified = false;
 

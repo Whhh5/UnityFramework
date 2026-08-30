@@ -2,6 +2,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UIWindowUserData : GameEntityUserData
 {
@@ -69,6 +70,24 @@ public abstract class UIWindowData : UIEntityData<UIWindow, UIWindowUserData>
     {
         base.OnGOCreate(entity);
         _UIEntity.SetWindowId(_WindowId);
+
+        if (!_UIEntity.TryGetComponent<Canvas>(out var canvas))
+        {
+            canvas = _UIEntity.gameObject.AddComponent<Canvas>();
+        }
+        if (!_UIEntity.TryGetComponent<GraphicRaycaster>(out var _))
+        {
+            _UIEntity.gameObject.AddComponent<GraphicRaycaster>();
+        }
+        if (WindowType == EnUIWindowType.SubWindow)
+        {
+            canvas.overrideSorting = false;
+        }
+        else
+        {
+            canvas.overrideSorting = true;
+            canvas.sortingOrder = _WindowId;
+        }
     }
 
     public async UniTask HideAsync()
@@ -92,9 +111,9 @@ public abstract class UIWindow : UIEntity
         _WindowId = windowId;
     }
 
-    public override void LoadCompeletion()
+    public override void LoadCompletion()
     {
-        base.LoadCompeletion();
+        base.LoadCompletion();
         if (!gameObject.TryGetComponent<CanvasGroup>(out _CanvasGroup))
         {
             _CanvasGroup = gameObject.AddComponent<CanvasGroup>();

@@ -40,7 +40,7 @@ namespace Spine.Unity {
 				if (emptyRegion == null) {
 					Shader hiddenShader = Shader.Find("Spine/Special/HiddenPass");
 					if (hiddenShader == null) {
-						Debug.LogError("Shader \"Spine/Special/HiddenPass\" not found while loading SkeletonDataAsset" +
+                        Debug.LogError("Shader \"Spine/Special/HiddenPass\" not found while loading SkeletonDataAsset" +
 							" with 0 Atlas Assets. Please add this shader to Project Settings - Graphics - Always" +
 							" Included Shaders, or make sure your SkeletonDataAssets all have an AtlasAsset assigned.");
 					}

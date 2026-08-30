@@ -23,6 +23,7 @@ public class LoadConfigEditor
         {".shader", "Shader_" },
         {".shadergraph", "Shadergraph_" },
         {".mat", "Mat_" },
+        {".spriteatlasv2", "Atlas_" },
     };
     //private static string[] m_SearchPaths = new string[]
     //{

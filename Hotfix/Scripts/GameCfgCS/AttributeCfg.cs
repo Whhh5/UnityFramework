@@ -14,6 +14,8 @@ public class AttributeCfg : ICfg
 	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 nValueDescLangId;
 	// 
 	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 nIconAssetId;
+	// 
+	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 bAptitude;
 	public System.Int32 GetID()
 	{
 		return nAttributeId;

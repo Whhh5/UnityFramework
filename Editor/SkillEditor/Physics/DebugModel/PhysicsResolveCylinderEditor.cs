@@ -78,7 +78,7 @@ public partial class PhysicsResolveCylinderEditor : IPhysicsResolveDebugModelEdi
     }
     private Quaternion GetRot()
     {
-        var direction = (_PosPoint2 - _PosPoint).normalized; // Ô²ÖùÌåÖ÷Öá·½Ïò
+        var direction = (_PosPoint2 - _PosPoint).normalized; // Ô²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½á·½ï¿½ï¿½
         var rotation = Quaternion.FromToRotation(Vector3.up, direction);
         return rotation;
     }

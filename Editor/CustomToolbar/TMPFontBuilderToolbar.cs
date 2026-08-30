@@ -1,18 +1,17 @@
-using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using TMPro;
 using UnityEditor;
 using UnityEngine;
-using static Unity.Burst.Intrinsics.X86.Avx;
-using UnityEngine.TextCore.Text;
-using TMPro;
-using System.Linq;
-using System.Text;
-using System.Runtime.InteropServices;
 
 [CustomUnityToolbarAttribute("builf tmp font", EnCustomUnityToolbarType.Left, EnCustomUnityToolbarOrder.TMPFontBuilderToolbar)]
 public class TMPFontBuilderToolbar : ICustomUnityToolbar
 {
     public void OnClick()
+    {
+        OnClick2();
+    }
+    public static void OnClick2()
     {
         var cfgCount = ExcelEditorUtil.GetCfgCount<LanguageCfg>();
         var charSet = new HashSet<char>(1000);
@@ -32,27 +31,31 @@ public class TMPFontBuilderToolbar : ICustomUnityToolbar
         }
 
         // 读取字体资源路径
-        string fontPath = "Assets/TextMesh Pro/Resources/Fonts & Materials/LXGWWenKai-Medium SDF.asset";
-        TMP_FontAsset targetFontAsset = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(fontPath);
+        var targetFontAsset = TMP_Settings.defaultFontAsset;
         if (targetFontAsset == null)
         {
-            EditorUtility.DisplayDialog("错误", "找不到字体资源", "确定");
+            Debug.LogError("找不到字体资源");
             return;
         }
+        var orgMode = targetFontAsset.atlasPopulationMode;
+        if (orgMode == AtlasPopulationMode.Static)
+        {
+            targetFontAsset.atlasPopulationMode = AtlasPopulationMode.Dynamic;
+        }
 
-        string allChars = new string(charSet.ToArray());
+        var allChars = new string(charSet.ToArray());
 
         // 核心API：尝试批量添加字符，返回失败的字符
-        bool allSuccess = targetFontAsset.TryAddCharacters(allChars, false);
+        var allSuccess = targetFontAsset.TryAddCharacters(allChars, out var missingCharacters, false);
 
+        targetFontAsset.atlasPopulationMode = orgMode;
         // 标记资产修改并永久保存
         EditorUtility.SetDirty(targetFontAsset);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
-        string msg = allSuccess
+        var msg = allSuccess
         ? $"成功添加 {charSet.Count} 个字符到字库"
-            : $"添加失败";
-
-        EditorUtility.DisplayDialog("执行完成", msg, "确定");
+            : $"添加失败/已经存在字符  missing characters: {missingCharacters}";
+        Debug.Log(msg);
     }
 }

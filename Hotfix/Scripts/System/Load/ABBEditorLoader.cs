@@ -10,7 +10,7 @@ using System.Threading;
 using System;
 using Object = UnityEngine.Object;
 
-public class ABBEditorLoader : IABBAssetLoader2
+public class ABBEditorLoader : IABBAssetLoader
 {
     private readonly Dictionary<int, AssetCfg> _AssetDic = new();
     public async UniTask Initialization()

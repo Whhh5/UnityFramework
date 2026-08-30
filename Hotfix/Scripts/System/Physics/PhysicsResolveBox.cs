@@ -69,7 +69,7 @@ public class PhysicsResolveBox : IPhysicsResolve
         var unitHalfSize = CalculateUtility.GetScale(in ebtityScale, in _BoxSize) * 0.5f;
 
         var idCount = EntityUtility.PhysicsOverlapBox(ref _TempEntityIDs, pos, unitHalfSize, targetRot, (int)layer);
-        // DebugDrawMgr.Instance.DrawBox(pos, unitHalfSize, targetRot, 0.5f);
+        // AotDebugDrawMgr.Instance.DrawBox(pos, unitHalfSize, targetRot, 0.5f);
         callback(ref _TempEntityIDs, ref idCount, cusomData);
     }
 

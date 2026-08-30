@@ -311,7 +311,7 @@ namespace Spine.Unity {
 				this.rootMotionBone = bone;
 				FindTransformConstraintsAffectingBone();
 			} else {
-				Debug.Log("Bone named \"" + name + "\" could not be found. " +
+                Debug.Log("Bone named \"" + name + "\" could not be found. " +
 					"Set 'skeletonRootMotion.rootMotionBoneName' before calling 'skeletonAnimation.Initialize(true)'.");
 				this.rootMotionBoneIndex = 0;
 				this.rootMotionBone = skeleton.RootBone;

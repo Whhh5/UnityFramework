@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -9,7 +10,7 @@ public static class WebRequestHelper
     /// <summary>
     /// 发送 WebRequest 的安全异步版本（WebGL 兼容）
     /// </summary>
-    public static Task<UnityWebRequest> SendWebRequestSafeAsync(
+    public static UniTask<UnityWebRequest> SendWebRequestSafeAsync(
         this UnityWebRequest request,
         MonoBehaviour coroutineRunner,
         CancellationToken cancellationToken = default)
@@ -34,11 +35,11 @@ public static class WebRequestHelper
         // 在 MonoBehaviour 上启动协程
         coroutineRunner.StartCoroutine(WebRequestCoroutine(request, tcs));
 
-        return tcs.Task;
+        return tcs.Task.AsUniTask();
     }
 
     // 原生异步实现（非 WebGL 使用）
-    private static async Task<UnityWebRequest> SendNativeAsync(
+    private static async UniTask<UnityWebRequest> SendNativeAsync(
         UnityWebRequest request,
         CancellationToken cancellationToken)
     {
@@ -50,7 +51,7 @@ public static class WebRequestHelper
                 request.Abort();
                 cancellationToken.ThrowIfCancellationRequested();
             }
-            await Task.Yield(); // 避免死循环
+            await UniTask.Yield(); // 避免死循环
         }
 
         // 处理错误

@@ -5,6 +5,7 @@ public delegate void AbbEventCallback<T>(in int sourceId, in int typeId, in T da
 public delegate void AbbEventCallback(in int sourceId, in int typeId);
 public class EventMgr : Singleton<EventMgr>
 {
+    public override EnSingletonOrder SingletonOrder => EnSingletonOrder.EventMgr;
     private readonly int _DefClId = 0;
     private readonly Dictionary<EnABBEvent, Dictionary<int, IEventData>> _ActionList = new();
 
@@ -44,7 +45,7 @@ public class EventMgr : Singleton<EventMgr>
             return;
         if (evData is not EventData<T> eventData)
         {
-            Debug.LogError($"register error type T error, valid:{evData}, in:{typeof(T)}");
+            AotDebug.LogError($"register error type T error, valid:{evData}, in:{typeof(T)}");
             return;
         }
         eventData.RemoveEvent(in sourceID, in typeID, in action);
@@ -73,13 +74,17 @@ public class EventMgr : Singleton<EventMgr>
         FireExecute(in ev, in sourceID, 0, in userData);
     }
     public void FireExecute<T>(in EnABBEvent ev, in T userData)
-        where T: IClassPool
+        where T : IClassPool
     {
         FireExecute(in ev, 0, 0, in userData);
     }
 
 
 
+    public void Register(in EnABBEvent ev, in AbbEventCallback action)
+    {
+        Register(in ev, 0, 0, in action);
+    }
     public void Register(in EnABBEvent ev, in int sourceID, in int typeID, in AbbEventCallback action)
     {
         if (!_ActionList.TryGetValue(ev, out var dic))
@@ -94,10 +99,14 @@ public class EventMgr : Singleton<EventMgr>
         }
         if (evData is not EventData eventData)
         {
-            Debug.LogError($"register error type T error, valid:{evData}");
+            AotDebug.LogError($"register error type T error, valid:{evData}");
             return;
         }
         eventData.AddEvent(in sourceID, in typeID, in action);
+    }
+    public void Unregister(in EnABBEvent ev, in AbbEventCallback action)
+    {
+        Unregister(in ev, 0, 0, in action);
     }
     public void Unregister(in EnABBEvent ev, in int sourceID, in int typeID, in AbbEventCallback action)
     {
@@ -107,7 +116,7 @@ public class EventMgr : Singleton<EventMgr>
             return;
         if (evData is not EventData eventData)
         {
-            Debug.LogError($"register error type T error, valid:{evData}");
+            AotDebug.LogError($"register error type T error, valid:{evData}");
             return;
         }
         eventData.RemoveEvent(in sourceID, in typeID, in action);
