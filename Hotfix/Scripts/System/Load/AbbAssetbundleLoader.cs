@@ -112,22 +112,25 @@ public class AbbAssetbundleLoader : IABBAssetLoader
             stringBuilder.AppendLine($"\t\t token:{abInfo.Value.tokenSource}");
             stringBuilder.AppendLine($"\t }}");
         }
-        stringBuilder.AppendLine($"abInfo = }}");
+        stringBuilder.AppendLine($"}}");
 
         stringBuilder.AppendLine($"");
         stringBuilder.AppendLine($"");
         stringBuilder.AppendLine($"assetInfo = {{");
-        foreach (var assetInfo in _RuntimeAssetInfos)
+        foreach (var rtInfo in _RuntimeAssetInfos)
         {
-            stringBuilder.AppendLine($"\t ID:{assetInfo.Key}");
+            if (!_AssetInfos.TryGetValue(rtInfo.Key, out var assetInfo))
+                return;
+            stringBuilder.AppendLine($"\t ID:{rtInfo.Key}");
             stringBuilder.AppendLine($"\t {{");
-            stringBuilder.AppendLine($"\t\t refCount:{assetInfo.Value.refCount}");
-            stringBuilder.AppendLine($"\t\t assetID:{(EnLoadTarget)assetInfo.Value.assetID}");
-            stringBuilder.AppendLine($"\t\t obj:{assetInfo.Value.obj}");
-            stringBuilder.AppendLine($"\t\t token:{assetInfo.Value.tokenSource}");
+            stringBuilder.AppendLine($"\t\t ab:{assetInfo.abID}");
+            stringBuilder.AppendLine($"\t\t refCount:{rtInfo.Value.refCount}");
+            stringBuilder.AppendLine($"\t\t assetID:{(EnLoadTarget)rtInfo.Value.assetID}");
+            stringBuilder.AppendLine($"\t\t obj:{rtInfo.Value.obj.name}");
+            stringBuilder.AppendLine($"\t\t token:{rtInfo.Value.tokenSource}");
             stringBuilder.AppendLine($"\t }}");
         }
-        stringBuilder.AppendLine($"abInfo = }}");
+        stringBuilder.AppendLine($"}}");
         AotDebug.LogWarning(stringBuilder);
     }
     public void Destroy()
@@ -142,7 +145,7 @@ public class AbbAssetbundleLoader : IABBAssetLoader
     {
         var assetInfos = new Dictionary<int, AssetInfo>();
         var assetInfoPath = AssetbundleUtil.GetCurPlatformAssetInfoFilePath();
-        var assetInfoStr = File.ReadAllText(assetInfoPath, System.Text.Encoding.UTF8);
+        var assetInfoStr = File.ReadAllText(assetInfoPath, Encoding.UTF8);
         var assetInfoList = JsonConvert.DeserializeObject<List<AssetInfo>>(assetInfoStr);
 
         for (int i = 0; i < assetInfoList.Count; i++)
@@ -158,7 +161,7 @@ public class AbbAssetbundleLoader : IABBAssetLoader
     public async UniTask Initialization()
     {
         var abInfoPath = AssetbundleUtil.GetCurPlatformAbInfoFilePath();
-        var abInfoStr = File.ReadAllText(abInfoPath, System.Text.Encoding.UTF8);
+        var abInfoStr = File.ReadAllText(abInfoPath, Encoding.UTF8);
         var abInfoList = JsonConvert.DeserializeObject<List<AssetbundleInfo>>(abInfoStr);
 
         var abRoot = AssetbundleUtil.GetCurPlatformAssetbundleRoot();
@@ -181,7 +184,7 @@ public class AbbAssetbundleLoader : IABBAssetLoader
 
 
         var assetInfoPath = AssetbundleUtil.GetCurPlatformAssetInfoFilePath();
-        var assetInfoStr = File.ReadAllText(assetInfoPath, System.Text.Encoding.UTF8);
+        var assetInfoStr = File.ReadAllText(assetInfoPath, Encoding.UTF8);
         var assetInfoList = JsonConvert.DeserializeObject<List<AssetInfo>>(assetInfoStr);
 
         for (int i = 0; i < assetInfoList.Count; i++)
@@ -192,22 +195,22 @@ public class AbbAssetbundleLoader : IABBAssetLoader
         await UniTask.Delay(0);
     }
 
-    public async UniTask<T> LoadAssetAsync<T>(int assetID, CancellationToken token) where T : Object
-    {
-        if (!await LoadAbAndAssetAsync<T>(assetID, token))
-            return null;
-        if (!_RuntimeAssetInfos.TryGetValue(assetID, out var runtimeAssetInfo))
-            return null;
+    //public async UniTask<T> LoadAssetAsync<T>(int assetID, CancellationToken token) where T : Object
+    //{
+    //    if (!await LoadAbAndAssetAsync<T>(assetID, token))
+    //        return null;
+    //    if (!_RuntimeAssetInfos.TryGetValue(assetID, out var runtimeAssetInfo))
+    //        return null;
 
-        runtimeAssetInfo.AddRefCount();
-        if (runtimeAssetInfo.obj is not T)
-        {
-            ABBUtil.LogError($"asset type error {runtimeAssetInfo.obj} not {typeof(T)}");
-            UnloadAsset(assetID);
-            return null;
-        }
-        return runtimeAssetInfo.obj as T;
-    }
+    //    //runtimeAssetInfo.AddRefCount();
+    //    if (runtimeAssetInfo.obj is not T)
+    //    {
+    //        ABBUtil.LogError($"asset type error {runtimeAssetInfo.obj} not {typeof(T)}");
+    //        UnloadAsset(assetID);
+    //        return null;
+    //    }
+    //    return runtimeAssetInfo.obj as T;
+    //}
 
     public T LoadAsset<T>(int assetID) where T : Object
     {
@@ -222,33 +225,44 @@ public class AbbAssetbundleLoader : IABBAssetLoader
         if (runtimeAssetInfo.IsUnload())
             UnloadAsset(assetID);
     }
-
-    private async UniTask<bool> LoadAbAndAssetAsync<T>(int assetID, CancellationToken token)
+    public async UniTask<T> LoadAssetAsync<T>(int assetID, CancellationToken token)
         where T : Object
     {
         if (_RuntimeAssetInfos.TryGetValue(assetID, out var runtimeAssetInfo))
         {
-            var curInfoID = runtimeAssetInfo.infoID;
+            runtimeAssetInfo.AddRefCount();
             if (runtimeAssetInfo.tokenSource != null)
             {
-                var isCancel2 = await UniTask.WaitUntil(() => runtimeAssetInfo.tokenSource == null, cancellationToken: token, cancelImmediately: true)
+                var curInfoID = runtimeAssetInfo.infoID;
+                var isCancel2 = await UniTask.WaitUntil(() =>
+                {
+                    return curInfoID != runtimeAssetInfo.infoID || runtimeAssetInfo.tokenSource == null;
+
+                }, cancellationToken: token, cancelImmediately: true)
                     .SuppressCancellationThrow();
                 if (isCancel2)
+                {
                     throw new OperationCanceledException();
+                }
+                if (curInfoID != runtimeAssetInfo.infoID)
+                {
+                    return null;
+                }
             }
-            return curInfoID == runtimeAssetInfo.infoID;
+            return runtimeAssetInfo.obj as T;
         }
 
         if (!_AssetInfos.TryGetValue(assetID, out var assetInfo))
-            return false;
+            return null;
 
         runtimeAssetInfo = ClassPoolMgr.Instance.Pull<RuntimeAssetInfo>();
         runtimeAssetInfo.tokenSource = new CancellationTokenSource();
         var infoID = ABBUtil.GetTempKey();
         runtimeAssetInfo.infoID = infoID;
         runtimeAssetInfo.assetID = assetID;
+        runtimeAssetInfo.AddRefCount();
         _RuntimeAssetInfos.Add(assetID, runtimeAssetInfo);
-        var (isCancel, ab) = await LoadAssetbundleAsync(assetInfo.abID, token).SuppressCancellationThrow();
+        var (isCancel, ab) = await LoadAssetbundleAsync(assetInfo.abID, runtimeAssetInfo.tokenSource.Token).SuppressCancellationThrow();
         if (isCancel)
         {
             throw new OperationCanceledException();
@@ -256,30 +270,34 @@ public class AbbAssetbundleLoader : IABBAssetLoader
         if (infoID != runtimeAssetInfo.infoID)
         {
             UnloadAsset(assetID);
-            return false;
+            return null;
         }
         //ABBUtil.Log($"加载 asset - {assetID} - {assetInfo.path} - {assetInfo.addressableName}");
         var abRequest = ab.LoadAssetAsync<T>(assetInfo.addressableName);
-        var (isCancel3, asset) = await abRequest.ToUniTask(cancellationToken: token).SuppressCancellationThrow();
+        var (isCancel3, asset) = await abRequest.ToUniTask(cancellationToken: runtimeAssetInfo.tokenSource.Token).SuppressCancellationThrow();
         if (isCancel3)
+        {
             throw new OperationCanceledException();
-        var isCancel4 = await UniTask.DelayFrame(1, PlayerLoopTiming.Update, token, true).SuppressCancellationThrow();
-        if (isCancel4)
-            throw new OperationCanceledException();
+        }
+        //var isCancel4 = await UniTask.DelayFrame(1, PlayerLoopTiming.Update, token, true).SuppressCancellationThrow();
+        //if (isCancel4)
+        //{
+        //    AotDebug.LogError("cancel 11");
+        //    throw new OperationCanceledException();
+        //}
         if (infoID != runtimeAssetInfo.infoID)
         {
-            UnloadAsset(assetID);
-            return false;
+            return null;
         }
         runtimeAssetInfo.tokenSource.Dispose();
         runtimeAssetInfo.tokenSource = null;
         if (asset == null)
         {
             UnloadAsset(assetID);
-            return false;
+            return null;
         }
         runtimeAssetInfo.obj = asset;
-        return true;
+        return asset as T;
     }
 
     private void UnloadAsset(int assetID)
@@ -361,7 +379,9 @@ public class AbbAssetbundleLoader : IABBAssetLoader
                 var isCancel = await UniTask.WaitUntil(() => runtimeAbInfo.tokenSource == null, cancelImmediately: true, cancellationToken: token)
                     .SuppressCancellationThrow();
                 if (isCancel)
+                {
                     throw new OperationCanceledException();
+                }
             }
             return curInfoId == runtimeAbInfo.infoID ? runtimeAbInfo.ab : null;
         }

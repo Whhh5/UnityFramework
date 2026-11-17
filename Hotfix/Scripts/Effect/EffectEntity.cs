@@ -68,7 +68,7 @@ public class EffectEntityData : GameEntityData<EffectEntity, EffectEntityUserDat
 
 public abstract class EffectEntity : GameEntity
 {
-    [SerializeField, AutoReference]
+    [SerializeField, AutoReference(SearchScope.Self)]
     private ParticleSystem _MainParticleSystem = null;
 
     private float _SingletonMaxTime = 0;

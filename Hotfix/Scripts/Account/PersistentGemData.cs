@@ -10,6 +10,7 @@ public class PersistentGemData : PersistentDataBase
         public int goodsCfgId;
         public float effectValue;
         public EnGemQuality quality;
+        public EnGemTypeId type;
         public bool isInlay;
         public void OnPoolDestroy()
         {
@@ -18,12 +19,14 @@ public class PersistentGemData : PersistentDataBase
                 = -1;
             isInlay = false;
             quality = EnGemQuality.None;
+            type = EnGemTypeId.None;
         }
-        public void Setting(int goodsCfgId, float effectValue, EnGemQuality quality)
+        public void Setting(int goodsCfgId, float effectValue, EnGemQuality quality, EnGemTypeId type)
         {
             this.goodsCfgId = goodsCfgId;
             this.effectValue = effectValue;
             this.quality = quality;
+            this.type = type;
         }
     }
     [JsonProperty]
@@ -44,12 +47,13 @@ public class PersistentGemData : PersistentDataBase
     {
         return _Datas[gemId];
     }
-    public int AddGemData(int gemGoodsCfgId, int effectValue, EnGemQuality quality)
+    public int AddGemData(int gemGoodsCfgId, float effectValue, EnGemQuality quality, EnGemTypeId type)
     {
         var gemId = NewGemId();
         var gemData = ClassPoolMgr.Instance.Pull<GemData>();
-        gemData.Setting(gemGoodsCfgId, effectValue, quality);
+        gemData.Setting(gemGoodsCfgId, effectValue, quality, type);
         _Datas.Add(gemId, gemData);
+        SetDirty(true);
         return gemId;
     }
     public void RemoveGemData(int gemId)
@@ -58,6 +62,7 @@ public class PersistentGemData : PersistentDataBase
             return;
         ClassPoolMgr.Instance.Push(gemData);
         _Datas.Remove(gemId);
+        SetDirty(true);
     }
     public float GetEffectValue(int gemId)
     {
@@ -69,11 +74,19 @@ public class PersistentGemData : PersistentDataBase
     {
         var data = GetData(gemId);
         data.effectValue = effectValue;
+        SetDirty(true);
     }
     public void SetIsInlay(int gemId, bool isInlay)
     {
         var data = GetData(gemId);
         data.isInlay = isInlay;
+        SetDirty(true);
+    }
+    public EnGemTypeId GetGemType(int gemId)
+    {
+        if (!_Datas.TryGetValue(gemId, out var data))
+            return 0;
+        return data.type;
     }
     public int GetGoodsCfgId(int gemId)
     {

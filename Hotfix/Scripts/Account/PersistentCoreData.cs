@@ -69,7 +69,7 @@ public class PersistentCoreData : PersistentDataBase
         }
         throw new System.Exception("create core id error");
     }
-    public int AddCoreData(int coreGoodsCfgId, int effectValue, EnCoreQuality quality)
+    public int AddCoreData(int coreGoodsCfgId, float effectValue, EnCoreQuality quality)
     {
         var coreId = NewCoreId();
         var coreData = ClassPoolMgr.Instance.Pull<CoreData>();

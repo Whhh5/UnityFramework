@@ -14,4 +14,5 @@ public interface IABBAssetLoader
     public T LoadAsset<T>(int assetID)
         where T : Object;
     public void UnloadAsset(in int assetID);
+    public void Log();
 }

@@ -35,7 +35,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _ColorMask: 15
-    - _DissolveThreshold: 0.459
+    - _DissolveThreshold: 0
     - _EdgeGradientPow: 1.18
     - _EdgeIntensity: 2.5
     - _EdgeWidth: 0.2

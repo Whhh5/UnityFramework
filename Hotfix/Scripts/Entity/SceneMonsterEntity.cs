@@ -37,7 +37,7 @@ public abstract class SceneMonsterEntityData<T, TUserData> : SceneMonsterEntityD
 public class SceneMonsterEntityData : SceneEntityData<SceneMonsterEntity, SceneMonsterEntityUserData>
 {
 
-    private int _MonsterCfgId;
+    protected int _MonsterCfgId;
     private EnSceneEntityStatus _SceneEntityStatus;
     private EnGameLayerInt _EnemyLayerInt;
     private EnGameLayerInt _FriendLayerInt;

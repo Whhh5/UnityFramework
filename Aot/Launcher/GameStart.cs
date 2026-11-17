@@ -1,4 +1,4 @@
-#if UNITY_WEBGL && UNItY_MINIGAME_WX && !UNITY_EDITOR
+#if UNITY_WEBGL && UNITY_MINIGAME_WX && !UNITY_EDITOR
 #define UNITY_WX
 #endif
 
@@ -40,7 +40,6 @@ public class GameStart : MonoBehaviour
 #endif
         ;
 
-    private CancellationTokenSource _Token;
     private async void Awake()
     {
         Instance = this;

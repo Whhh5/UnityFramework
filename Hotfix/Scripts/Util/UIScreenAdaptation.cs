@@ -114,7 +114,7 @@ public class UIScreenAdaptation : MonoBehaviour
             _rt = GetComponent<RectTransform>();
 
         var safeArea = _ScreenRect;
-        AotDebug.Log($"areatest: {safeArea.position} {safeArea.size} {GetScreenWidth()} {GetScreenHeight()}");
+        //AotDebug.Log($"areatest: {safeArea.position} {safeArea.size} {GetScreenWidth()} {GetScreenHeight()}");
 
         // 微信小游戏首帧 SafeArea 可能为 0，兜底处理
         if (safeArea.width <= 0 || safeArea.height <= 0)

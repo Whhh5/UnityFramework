@@ -59,14 +59,8 @@ public class UIDissolveController : MonoBehaviour, IUIAnimationController
         _TmpMats.Clear();
         _SliderValue = -1;
     }
-    public void Init()
-    {
-    }
-    public void Destroy()
-    {
-    }
 
-    public void SetSliderValue(float slider)
+    private void SetSliderValue(float slider)
     {
         _SliderValue = Mathf.Clamp01(slider);
         if (gameObject.activeSelf)
@@ -80,4 +74,13 @@ public class UIDissolveController : MonoBehaviour, IUIAnimationController
         }
     }
 
+    public void SetShowSliderValue(float value)
+    {
+        SetSliderValue(1 - value);
+    }
+
+    public void SetHideSliderValue(float value)
+    {
+        SetSliderValue(value);
+    }
 }

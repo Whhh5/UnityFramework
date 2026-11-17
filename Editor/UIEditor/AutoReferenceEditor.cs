@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -81,13 +82,13 @@ public static class AutoReferenceFinder
     public static void ScanGameObject(GameObject go)
     {
         if (go == null) return;
-        if (go.TryGetComponent<GameEntity>(out var com))
+        var coms = go.GetComponents<MonoBehaviour>();
+        if (coms == null)
+            return;
+        for (int i = 0; i < coms.Length; i++)
         {
+            var com = coms[i];
             AutoAssignReferences(com);
-        }
-        if (go.TryGetComponent<UIWindowItem>(out var com2))
-        {
-            AutoAssignReferences(com2);
         }
     }
 

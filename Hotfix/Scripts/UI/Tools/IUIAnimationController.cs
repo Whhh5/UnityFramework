@@ -1,8 +1,11 @@
 using UnityEngine;
 
-public interface IUIAnimationController
+public interface IUIAnimationSliderValue
 {
-    public void Init();
-    public void Destroy();
-    public void SetSliderValue(float value);
+    public void SetShowSliderValue(float value);
+    public void SetHideSliderValue(float value);
+}
+public interface IUIAnimationController: IUIAnimationSliderValue
+{
+
 }

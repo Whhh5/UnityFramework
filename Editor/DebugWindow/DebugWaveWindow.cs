@@ -29,6 +29,7 @@ public class DebugWaveWindow : EditorWindow
     // wave
     private readonly Dictionary<int, WaveEditorInfo> _GridIndex2Rect = new();
     private readonly Dictionary<int, Rect> _MonsterMenuDic = new();
+    private Dictionary<int, int> _MonsterId2AttributeGroupId = new();
     private Rect _CloseMonsterRect;
     private int _CurWaveId;
 
@@ -338,26 +339,26 @@ public class DebugWaveWindow : EditorWindow
     {
         _CurWaveId = waveId;
         _LastSelectMonsterIndex = -1;
-        if (waveId > 0)
-        {
-            if (!_GridIndex2Rect.ContainsKey(waveId))
-            {
-                var waveCfg = ExcelEditorUtil.GetCfg<BattleWaveCfg>(_CurWaveId);
-                var index = 0;
-                var userData = new CommonSerializeToIntArrayUserData()
-                {
-                    arrParams = waveCfg.arrMonsterInfos,
-                    count = waveCfg.arrMonsterInfos?.Length ?? 0,
-                    startIndex = 0,
-                };
-                var waveGridInfo = new WaveEditorInfo()
-                {
-                    gridInfos = new(),
-                };
-                ISerializeToIntArray.ParseToValue(userData.arrParams, userData.startIndex, userData.count, ref index, out waveGridInfo.monsterInfos, userData);
-                _GridIndex2Rect.Add(waveId, waveGridInfo);
-            }
-        }
+        //if (waveId > 0)
+        //{
+        //    if (!_GridIndex2Rect.ContainsKey(waveId))
+        //    {
+        //        var waveCfg = ExcelEditorUtil.GetCfg<BattleWaveCfg>(waveId);
+        //        var index = 0;
+        //        var userData = new CommonSerializeToIntArrayUserData()
+        //        {
+        //            arrParams = waveCfg.arrMonsterInfos,
+        //            count = waveCfg.arrMonsterInfos?.Length ?? 0,
+        //            startIndex = 0,
+        //        };
+        //        var waveGridInfo = new WaveEditorInfo()
+        //        {
+        //            gridInfos = new(),
+        //        };
+        //        ISerializeToIntArray.ParseToValue(userData.arrParams, userData.startIndex, userData.count, ref index, out waveGridInfo.monsterInfos, userData);
+        //        _GridIndex2Rect.Add(waveId, waveGridInfo);
+        //    }
+        //}
     }
     #endregion
 
@@ -378,14 +379,62 @@ public class DebugWaveWindow : EditorWindow
             _MaxRow = mapCfg.nGridRowCol[0];
             _MaxCol = mapCfg.nGridRowCol[1];
         }
+
+    }
+    private bool TryGetMonsterAttributeGroupId(int monsterId, out int attGroupId)
+    {
+        return _MonsterId2AttributeGroupId.TryGetValue(monsterId, out attGroupId);
     }
     public void SetChapterId(int chapterId)
     {
         _ChapterId = chapterId;
+        _MonsterId2AttributeGroupId.Clear();
         if (chapterId > 0)
         {
             var chapterCfg = ExcelEditorUtil.GetCfg<ChapterCfg>(chapterId);
             SettingMapId(chapterCfg.nMapId);
+
+            // 设置怪物属性组信息
+            for (int i = 0; i < chapterCfg.arrMonsterIds.Length; i += 2)
+            {
+                var monsterId = chapterCfg.arrMonsterIds[i];
+                var attGroupId = chapterCfg.arrMonsterIds[i + 1];
+                _MonsterId2AttributeGroupId.Add(monsterId, attGroupId);
+            }
+
+            // 设置波数信息
+            var waveList = new List<int>(chapterCfg.nMaxWaveId - chapterCfg.nMinWaveId + 5);
+            for (int waveId = chapterCfg.nMinWaveId; waveId <= chapterCfg.nMaxWaveId; waveId++)
+            {
+                waveList.Add(waveId);
+            }
+            if (chapterCfg.nBossWaveId > 0)
+                waveList.Add(chapterCfg.nBossWaveId);
+            foreach (var waveId in waveList)
+            {
+                if (_GridIndex2Rect.ContainsKey(waveId))
+                    continue;
+                if (!ExcelEditorUtil.Contains<BattleWaveCfg>(waveId))
+                {
+                    var newWaveCfg = ExcelEditorUtil.CreateTypeInstance<BattleWaveCfg>();
+                    ExcelEditorUtil.SetCfgValue(newWaveCfg, nameof(newWaveCfg.nWaveId), waveId);
+                    ExcelEditorUtil.AddCfg(newWaveCfg);
+                }
+                var waveCfg = ExcelEditorUtil.GetCfg<BattleWaveCfg>(waveId);
+                var index = 0;
+                var userData = new CommonSerializeToIntArrayUserData()
+                {
+                    arrParams = waveCfg.arrMonsterInfos,
+                    count = waveCfg.arrMonsterInfos?.Length ?? 0,
+                    startIndex = 0,
+                };
+                var waveGridInfo = new WaveEditorInfo()
+                {
+                    gridInfos = new(),
+                };
+                ISerializeToIntArray.ParseToValue(userData.arrParams, userData.startIndex, userData.count, ref index, out waveGridInfo.monsterInfos, userData);
+                _GridIndex2Rect.Add(waveId, waveGridInfo);
+            }
         }
         else
         {
@@ -446,9 +495,8 @@ public class DebugWaveWindow : EditorWindow
                 x = offset.x,
                 y = delRect.yMax + 5,
             };
-            for (int i = 0; i < chapterCfg.arrMonsterIds.Length; i++)
+            foreach (var (monsterId, _) in _MonsterId2AttributeGroupId)
             {
-                var monsterId = chapterCfg.arrMonsterIds[i];
                 var monsterCfg = ExcelEditorUtil.GetCfg<MonsterCfg>(monsterId);
                 var iconAssetCfg = ExcelEditorUtil.GetCfg<AssetCfg>(monsterCfg.nIconAssetID);
                 if (iconAssetCfg != null)
@@ -584,10 +632,9 @@ public class DebugWaveWindow : EditorWindow
                 {
                     _CopyWaveInfo.monsterInfos.Add(new()
                     {
-                        attValuesId = monsterInfo.attValuesId,
                         backRow = monsterInfo.backRow,
                         col = monsterInfo.col,
-                        energyCount = monsterInfo.energyCount,
+                        attributeCofficient = monsterInfo.attributeCofficient,
                         monsterId = monsterInfo.monsterId,
                     });
                 }
@@ -616,10 +663,9 @@ public class DebugWaveWindow : EditorWindow
                     {
                         waveInfo.monsterInfos.Add(new()
                         {
-                            attValuesId = monsterInfo.attValuesId,
                             backRow = monsterInfo.backRow,
                             col = monsterInfo.col,
-                            energyCount = monsterInfo.energyCount,
+                            attributeCofficient = monsterInfo.attributeCofficient,
                             monsterId = monsterInfo.monsterId,
                         });
                     }
@@ -645,6 +691,29 @@ public class DebugWaveWindow : EditorWindow
                     waveInfo.monsterInfos.Clear();
                 }
             }
+        }
+
+        // 当前能量数
+        if (_ChapterId > 0)
+        {
+            var chapterCfg = ExcelEditorUtil.GetCfg<ChapterCfg>(_ChapterId);
+            var count = 0;
+            for (int i = chapterCfg.nMinWaveId; i <= chapterCfg.nMaxWaveId; i++)
+            {
+                if (!_GridIndex2Rect.TryGetValue(i, out var info))
+                    continue;
+                foreach (var item in info.monsterInfos)
+                {
+                    var monsterCfg = ExcelEditorUtil.GetCfg<MonsterCfg>(item.monsterId);
+                    count += monsterCfg.nEnergyCount;
+                }
+            }
+
+            var energyCountRect = new Rect(clearBtnRect)
+            {
+                x = clearBtnRect.xMax + 5
+            };
+            GUI.Box(energyCountRect, $"energy:{count}");
         }
     }
 
@@ -707,7 +776,7 @@ public class DebugWaveWindow : EditorWindow
 
             var monsterCfg = ExcelEditorUtil.GetCfg<MonsterCfg>(info.monsterId);
             var assCfg = ExcelEditorUtil.GetCfg<AssetCfg>(monsterCfg.nIconAssetID);
-            var icon = AssetDatabase.LoadAssetAtPath<Texture>(assCfg.strPath);
+            var icon = assCfg == null ? null : AssetDatabase.LoadAssetAtPath<Texture>(assCfg.strPath);
 
             var iconRect = new Rect()
             {
@@ -789,8 +858,7 @@ public class DebugWaveWindow : EditorWindow
                 var info = new GameBattleWaveMonsterInfo()
                 {
                     monsterId = _CurCtlMonsterId,
-                    attValuesId = _CopyMonsterInfo.attValuesId,
-                    energyCount = _CopyMonsterInfo.energyCount,
+                    attributeCofficient = _CopyMonsterInfo.attributeCofficient,
                 };
                 monsterList.Add(info);
                 _CurMouseCtlMonsterIndex = monsterList.Count - 1;
@@ -980,8 +1048,7 @@ public class DebugWaveWindow : EditorWindow
         {
             _CopyMonsterInfo = new()
             {
-                attValuesId = monsterInfo.attValuesId,
-                energyCount = monsterInfo.energyCount,
+                attributeCofficient = monsterInfo.attributeCofficient,
             };
         }
         var pasteRect = new Rect(copyRect)
@@ -989,13 +1056,12 @@ public class DebugWaveWindow : EditorWindow
             x = copyRect.xMax + 5,
         };
         var enable = GUI.enabled;
-        GUI.enabled &= _CopyMonsterInfo != null && _CopyMonsterInfo.attValuesId > 0;
-        if (_CopyMonsterInfo != null && _CopyMonsterInfo.attValuesId > 0)
+        GUI.enabled &= _CopyMonsterInfo != null && _CopyMonsterInfo.attributeCofficient > 0;
+        if (_CopyMonsterInfo != null && _CopyMonsterInfo.attributeCofficient > 0)
         {
             if (GUI.Button(pasteRect, "Paste"))
             {
-                monsterInfo.attValuesId = _CopyMonsterInfo.attValuesId;
-                monsterInfo.energyCount = _CopyMonsterInfo.energyCount;
+                monsterInfo.attributeCofficient = _CopyMonsterInfo.attributeCofficient;
             }
         }
         GUI.enabled = enable;
@@ -1045,23 +1111,39 @@ public class DebugWaveWindow : EditorWindow
         GUI.Label(monsterNameRect, $"{monsterNameAssetCfg.strValueCh}");
 
 
-        var energyNameRect = new Rect()
+        var cofficientNameRect = new Rect()
         {
             x = offset.x,
             y = iconRect.yMin + maxSize + 10,
             width = rect.width * 0.3f,
             height = 20,
         };
-        var energyValueRect = new Rect(energyNameRect)
+        var cofficientValueRect = new Rect(cofficientNameRect)
         {
-            x = energyNameRect.xMax,
-            width = rect.width - energyNameRect.width - offset.x * 2,
+            x = cofficientNameRect.xMax + 5,
+            width = rect.width - cofficientNameRect.width - 5 - offset.x * 2,
+        };
+        var cofficientRect = new Rect(cofficientNameRect)
+        {
+            y = cofficientNameRect.yMax + 2,
+            width = rect.width - offset.x * 2,
+        };
+        GUI.Label(cofficientNameRect, $"属性系数");
+        var cofficient = EditorGUI.FloatField(cofficientValueRect, monsterInfo.attributeCofficient);
+        cofficient = GUI.HorizontalSlider(cofficientRect, cofficient, 1, 5);
+        monsterInfo.attributeCofficient = Mathf.Round(cofficient * 100) / 100;
+
+        var energyNameRect = new Rect(cofficientNameRect)
+        {
+            y = cofficientRect.yMax + 10,
+        };
+        var energyValueRect = new Rect(cofficientValueRect)
+        {
+            y = cofficientRect.yMax + 10,
+            width = cofficientRect.width / 2,
         };
         GUI.Label(energyNameRect, "击杀能量");
-        var changeTxt = GUI.TextField(energyValueRect, $"{monsterInfo.energyCount}");
-        if (int.TryParse(changeTxt, out var valueInt))
-            monsterInfo.energyCount = valueInt;
-
+        GUI.Label(energyValueRect, $"{monsterCfg.nEnergyCount}");
 
         var gridNameRect = new Rect(energyNameRect)
         {
@@ -1089,58 +1171,61 @@ public class DebugWaveWindow : EditorWindow
         {
             y = gridNameRect.yMax + 10,
         };
-        GUI.Label(attIdNameRect, "属性组");
-        EditorGuiUtil.DrawCfgField<AttributeValueCfg>(attIdValueRect, monsterInfo.attValuesId, selectId =>
+        GUI.Label(attIdNameRect, "属性信息");
+        if (TryGetMonsterAttributeGroupId(monsterInfo.monsterId, out var attGroupId))
         {
-            monsterInfo.attValuesId = selectId;
-        });
-        var attValueOffset = new Vector2(20, 10);
-        var attValueCfg = ExcelEditorUtil.GetCfg<AttributeValueCfg>(monsterInfo.attValuesId);
-        if (attValueCfg != null)
-        {
-            var attNameWidth = (rect.width - offset.x * 2 - attValueOffset.x) * 0.3f;
-            var attValueWidth = rect.width - attNameWidth - offset.x * 2 - attValueOffset.x;
-            var attNameRect = new Rect()
+            var attValueOffset = new Vector2(20, 10);
+            var attValueCfg = ExcelEditorUtil.GetCfg<AttributeValueCfg>(attGroupId);
+            if (attValueCfg != null)
             {
-                x = attValueOffset.x + attIdNameRect.xMin,
-                y = attValueOffset.y + attIdNameRect.yMax,
-                width = attNameWidth,
-                height = 20,
-            };
-            var attValueRect = new Rect(attNameRect)
-            {
-                x = attNameRect.xMax,
-                width = attValueWidth,
-            };
-            var attCfgType = typeof(AttributeValueCfg);
-            for (var attId = EnEntityAttributeId.None + 1; attId < EnEntityAttributeId.EnumCount; attId++)
-            {
-                var fieldName = $"n{attId}";
-                var field = attCfgType.GetField(fieldName, BindingFlags.Public | BindingFlags.Instance);
-                if (field == null)
-                    continue;
-                var value = field.GetValue(attValueCfg);
-                var attCfg = ExcelEditorUtil.GetCfg<AttributeCfg>((int)attId);
-                var langCfg = ExcelEditorUtil.GetCfg<LanguageCfg>(attCfg.nNameLangId);
-                var addNameStr = attCfg.nValueType == (int)EnValueType.Percentage ? "(%)" : "";
-                GUI.Label(attNameRect, $"{langCfg.strValueCh}" + addNameStr);
-                changeTxt = GUI.TextField(attValueRect, $"{value}");
-                if (typeof(int) == field.FieldType)
+                var attNameWidth = (rect.width - offset.x * 2 - attValueOffset.x) * 0.3f;
+                var attValueWidth = rect.width - attNameWidth - offset.x * 2 - attValueOffset.x;
+                var attNameRect = new Rect()
                 {
-                    if (int.TryParse(changeTxt, out valueInt) && !value.Equals(valueInt))
-                        ExcelEditorUtil.SetCfgValue(attValueCfg, fieldName, valueInt);
-                }
-                else if (typeof(float) == field.FieldType)
+                    x = attValueOffset.x + attIdNameRect.xMin,
+                    y = attValueOffset.y + attIdNameRect.yMax,
+                    width = attNameWidth,
+                    height = 20,
+                };
+                var attValueRect = new Rect(attNameRect)
                 {
-                    if (float.TryParse(changeTxt, out var valueFloat) && !value.Equals(valueFloat))
-                        ExcelEditorUtil.SetCfgValue(attValueCfg, fieldName, valueFloat);
+                    x = attNameRect.xMax,
+                    width = attValueWidth,
+                };
+                var attCfgType = typeof(AttributeValueCfg);
+                for (var attId = EnEntityAttributeId.None + 1; attId < EnEntityAttributeId.EnumCount; attId++)
+                {
+                    var fieldName = $"n{attId}";
+                    var field = attCfgType.GetField(fieldName, BindingFlags.Public | BindingFlags.Instance);
+                    if (field == null)
+                        continue;
+                    var value = field.GetValue(attValueCfg);
+                    var toValue = value;
+                    var attCfg = ExcelEditorUtil.GetCfg<AttributeCfg>((int)attId);
+                    if (attCfg.bCofficient > 0)
+                    {
+                        if (int.TryParse($"{toValue}", out var intValue))
+                        {
+                            toValue = GameAttributeUtility.AttributeChange_Cofficient((EnValueType)attCfg.nValueType, intValue, monsterInfo.attributeCofficient);
+                        }
+                        else if (float.TryParse($"{toValue}", out var floatValue))
+                        {
+                            toValue = GameAttributeUtility.AttributeChange_Cofficient((EnValueType)attCfg.nValueType, floatValue, monsterInfo.attributeCofficient);
+                        }
+                    }
+                    var langCfg = ExcelEditorUtil.GetCfg<LanguageCfg>(attCfg.nNameLangId);
+                    var valueDescLangCfg = ExcelEditorUtil.GetCfg<LanguageCfg>(attCfg.nValueDescLangId);
+                    var addNameStr = attCfg.nValueType == (int)EnValueType.Percentage ? "(%)" : "";
+                    var addDescStr = string.Format(valueDescLangCfg.strValueCh, $"{toValue}({value})");
+                    GUI.Label(attNameRect, $"{langCfg.strValueCh}" + addNameStr);
+                    GUI.Label(attValueRect, addDescStr);
+                    attNameRect.y = attNameRect.yMax + 5;
+                    attValueRect.y = attValueRect.yMax + 5;
                 }
-                attNameRect.y = attNameRect.yMax + 5;
-                attValueRect.y = attValueRect.yMax + 5;
             }
+
         }
     }
-
     #endregion
 
     #region copy monster
@@ -1156,8 +1241,7 @@ public class DebugWaveWindow : EditorWindow
             SettingCreateNewMonster(monsterInfo.monsterId);
             _CopyMonsterInfo = new()
             {
-                energyCount = monsterInfo.energyCount,
-                attValuesId = monsterInfo.attValuesId,
+                attributeCofficient = monsterInfo.attributeCofficient,
             };
         }
     }

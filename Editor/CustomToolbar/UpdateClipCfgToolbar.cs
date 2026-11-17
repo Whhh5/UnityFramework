@@ -51,10 +51,10 @@ public class UpdateClipCfgToolbar : ICustomUnityToolbar
         {
             var clipCfg = ExcelEditorUtil.GetCfgByIndex<ClipCfg>(i);
             var assetCfg = ExcelEditorUtil.GetCfg<AssetCfg>(clipCfg.nAssetID);
-            var clipAsset = AssetDatabase.LoadAssetAtPath<AnimationClip>(assetCfg.strPath);
+            var clipAsset = assetCfg == null ? null : AssetDatabase.LoadAssetAtPath<AnimationClip>(assetCfg.strPath);
             if (clipAsset == null)
             {
-                Debug.LogError($"AnimationClip 资源不存在 path：{clipCfg.nAssetID}:{assetCfg.strPath}");
+                Debug.LogError($"AnimationClip 资源不存在 path：{clipCfg.nAssetID}:{assetCfg?.strPath}");
                 continue;
             }
             if (clipCfg.bIsLoop != (clipAsset.isLooping ? 1 : 0))

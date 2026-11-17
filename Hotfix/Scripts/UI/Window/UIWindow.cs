@@ -7,10 +7,13 @@ using UnityEngine.UI;
 public class UIWindowUserData : GameEntityUserData
 {
     public int windowId;
+    public int sortingOrder;
     public override void OnPoolDestroy()
     {
         base.OnPoolDestroy();
-        windowId = -1;
+        windowId
+            = sortingOrder
+            = -1;
     }
 }
 public abstract class UIWindowData<TEntity, TUserData> : UIWindowData
@@ -56,14 +59,17 @@ public abstract class UIWindowData : UIEntityData<UIWindow, UIWindowUserData>
 {
     public abstract EnUIWindowType WindowType { get; }
     protected int _WindowId;
+    protected int _SortingOrder;
     public override void OnPoolDestroy()
     {
         base.OnPoolDestroy();
         _WindowId = -1;
+        _SortingOrder = -1;
     }
     protected override void OnPoolInit(UIWindowUserData userData)
     {
         _WindowId = userData.windowId;
+        _SortingOrder = userData.sortingOrder;
     }
 
     public override void OnGOCreate(GameEntity entity)
@@ -86,7 +92,7 @@ public abstract class UIWindowData : UIEntityData<UIWindow, UIWindowUserData>
         else
         {
             canvas.overrideSorting = true;
-            canvas.sortingOrder = _WindowId;
+            canvas.sortingOrder = _SortingOrder;
         }
     }
 
@@ -97,6 +103,10 @@ public abstract class UIWindowData : UIEntityData<UIWindow, UIWindowUserData>
         if (IsLoadSuccess)
             await _UIEntity.HideAsync();
     }
+    public int GetSortingOrder()
+    {
+        return _SortingOrder;
+    }
 }
 public abstract class UIWindow : UIEntity
 {
@@ -104,6 +114,7 @@ public abstract class UIWindow : UIEntity
     private CancellationTokenSource _TokenSource;
 
     private UIAnimationControllerGroup _AnimController;
+    private IUIAnimationSliderValue _AnimSliderValue;
 
     private CanvasGroup _CanvasGroup = null;
     public void SetWindowId(int windowId)
@@ -125,6 +136,18 @@ public abstract class UIWindow : UIEntity
                 _AnimController.Register(ctl);
             }
         }
+        if (_AnimController != null)
+        {
+            _AnimSliderValue = _AnimController;
+        }
+        else if(gameObject.TryGetComponent<IUIAnimationSliderValue>(out var sliderValue))
+        {
+            _AnimSliderValue = sliderValue;
+        }
+        if (_AnimSliderValue == null)
+        {
+            _AnimSliderValue = gameObject.AddComponent<UIScaleAnimation>();
+        }
         _CanvasGroup.interactable = false;
         ShowAsync().Forget();
     }
@@ -136,6 +159,7 @@ public abstract class UIWindow : UIEntity
         base.OnUnload();
         _TokenSource = null;
         _AnimController = null;
+        _AnimSliderValue = null;
     }
 
     public CancellationToken GetWindowToken()
@@ -188,13 +212,13 @@ public abstract class UIWindow : UIEntity
 
     protected virtual async UniTask ShowAsync()
     {
-        if (_AnimController != null)
+        if (_AnimSliderValue != null)
         {
-            await DOTween.To(() => 1f, slider =>
+            await DOTween.To(() => 0f, slider =>
             {
-                SetAnimSlider(slider);
+                _AnimSliderValue.SetShowSliderValue(slider);
 
-            }, 0f, 0.6f)
+            }, 1f, 0.2f)
                 .SetUpdate(true)
                 .SetId(GetHashCode());
         }
@@ -203,14 +227,14 @@ public abstract class UIWindow : UIEntity
     public virtual async UniTask HideAsync()
     {
         Hide();
-        if (_AnimController != null)
+        if (_AnimSliderValue != null)
         {
             DOTween.Kill(GetHashCode());
             await DOTween.To(() => 0f, slider =>
             {
-                SetAnimSlider(slider);
+                _AnimSliderValue.SetHideSliderValue(slider);
 
-            }, 1f, 0.6f)
+            }, 1f, 0.1f)
             .SetUpdate(true)
             .SetId(GetHashCode());
         }
@@ -223,10 +247,5 @@ public abstract class UIWindow : UIEntity
     protected virtual void Hide()
     {
         _CanvasGroup.interactable = false;
-    }
-
-    private void SetAnimSlider(float slider)
-    {
-        _AnimController.SetSliderValue(slider);
     }
 }

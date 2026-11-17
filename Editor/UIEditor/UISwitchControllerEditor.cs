@@ -1,9 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEditor;
-using Unity.VisualScripting;
 using System.Linq;
+using UnityEditor;
+using UnityEngine;
 
 [CustomEditor(typeof(UISwitchController))]
 public class UISwitchControllerEditor : Editor
@@ -50,7 +47,15 @@ public class UISwitchControllerEditor : Editor
     {
         foreach(var item in m_Taarget.GetArrChildSwitch())
         {
-            item.Switch(index);
+            try
+            {
+                item.Switch(index);
+            }
+            catch
+            {
+
+            }
+            EditorUtility.SetDirty(item);
         }
         EditorUtility.SetDirty(m_Taarget);
     }

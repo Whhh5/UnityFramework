@@ -14,6 +14,7 @@ public static class SceneEntityComUtility
             EnSceneEntityComType.Buff => ClassPoolMgr.Instance.Pull<EntityBuffComData>(userData),
             EnSceneEntityComType.Cmd => ClassPoolMgr.Instance.Pull<EntityCmdComData>(userData),
             EnSceneEntityComType.Spine => ClassPoolMgr.Instance.Pull<EntitySpineComData>(userData),
+            EnSceneEntityComType.Misc => ClassPoolMgr.Instance.Pull<EntityMiscComData>(userData),
             _ => null,
         };
     }

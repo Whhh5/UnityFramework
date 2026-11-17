@@ -6,19 +6,29 @@ using UnityEngine;
 public class PersistentAccountData : PersistentDataBase
 {
     [JsonProperty]
-    private int _Exp;
+    private int _GameCount;
     //[JsonProperty]
     //private int _Level;
 
 
 
-    public void SetExp(int exp)
+    public void SetGameCount(int count)
     {
-        _Exp = exp;
+        _GameCount = count;
+        SetDirty(true);
     }
-    public int GetExp()
+    public int GetGameCount()
     {
-        return _Exp;
+        return _GameCount;
+    }
+    public void SetIsFirstGame(bool isFirstGame)
+    {
+        _GameCount = isFirstGame ? 0 : 1;
+        SetDirty(true);
+    }
+    public bool IsFirstGame()
+    {
+        return _GameCount == 0;
     }
     //public void SetLevel(int level)
     //{

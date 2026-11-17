@@ -10,6 +10,10 @@ public class ChapterCfg : ICfg
 	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 nIconAssetId;
 	// 
 	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 nMapId;
+	// 
+	[Newtonsoft.Json.JsonProperty()] public readonly System.Single fCofficient;
+	// 
+	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 nSuccessDiamondCount;
 	// 默认初始球id，等级
 	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32[] arrDefaultBalls;
 	// 波数

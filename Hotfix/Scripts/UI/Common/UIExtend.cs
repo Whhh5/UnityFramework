@@ -12,15 +12,25 @@ public static class UIExtend
     {
         btn.onClick.AddListener(callback);
     }
-    //public static void RemoveAllListeners(this Button btn)
-    //{
-    //    btn.onClick.RemoveAllListeners();
-    //}
     public static void RemoveListener(this Button btn, UnityAction callback)
     {
         btn.onClick.RemoveListener(callback);
     }
-
+    public static void AddListener(this Toggle btn, UnityAction<bool> callback)
+    {
+        btn.onValueChanged.AddListener(callback);
+    }
+    public static void RemoveListener(this Toggle btn, UnityAction<bool> callback)
+    {
+        btn.onValueChanged.RemoveListener(callback);
+    }
+    public static void SetComValid(this Component com, bool valid)
+    {
+        if (com.TryGetComponent<UISwitchController>(out var controller))
+        {
+            controller.Switch(valid ? 0 : 1);
+        }
+    }
 
     private class ImageLoadData : IClassPoolInit
     {
@@ -60,7 +70,8 @@ public static class UIExtend
 
         loadData.loadTarget = loadTarget;
         loadData.status = EnLoadStatus.Loading;
-        var (isCancel, loadHandle) = await ABBLoadMgr.Instance.LoadAsync<Sprite>(loadTarget, loadData.token.Token).SuppressCancellationThrow();
+        var (isCancel, loadHandle) = await ABBLoadMgr.Instance.LoadAsync<Sprite>(loadTarget, loadData.token.Token)
+            .SuppressCancellationThrow();
         if (!isCancel)
         {
             if (!_ImgLoadDatas.ContainsKey(image))
@@ -69,6 +80,9 @@ public static class UIExtend
             loadData.token = null;
             loadData.handle = loadHandle;
             var sprite = loadHandle.GetObject<Sprite>();
+            if (sprite == null)
+            {
+            }
             image.sprite = sprite;
         }
     }

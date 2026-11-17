@@ -10,6 +10,8 @@ public class CoreQualityCfg : ICfg
 	[Newtonsoft.Json.JsonProperty()] public readonly System.String strColor;
 	// 
 	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 nGemGrooveCount;
+	// 
+	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 nIconAssetId;
 	public System.Int32 GetID()
 	{
 		return nCoreQuality;

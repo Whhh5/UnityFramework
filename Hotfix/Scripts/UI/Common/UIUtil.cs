@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
@@ -48,5 +49,40 @@ public static class UIUtil
         var canvasScale = UIMgr.Instance.GetCanvasScale();
         var worldPos = uiPos / 100 * canvasScale;
         return worldPos;
+    }
+
+    public static void ShowHitTips(int langId)
+    {
+        var content = LanguageUtility.GetLanguage(langId);
+        ShowHitTips(content);
+    }
+    public static void ShowHitTips(string content)
+    {
+        var ud = ClassPoolMgr.Instance.Pull<UIHitTipsUserData>();
+        ud.Setting(content);
+        UIMgr.Instance.ShowWindow<UIHitTipsData>(ud);
+        ClassPoolMgr.Instance.Push(ud);
+    }
+    public static void ShowControllerDialog(string content, EnSourceId sourceId, Action confirmation, Action cancel, GoodsInfo goodsInfo)
+    {
+        var ud = ClassPoolMgr.Instance.Pull<UIControllerDialogUserData>();
+        ud.Setting(content, confirmation, cancel, goodsInfo, sourceId);
+        UIMgr.Instance.ShowWindow<UIControllerDialogData>(ud);
+        ClassPoolMgr.Instance.Push(ud);
+    }
+    public static void ShowControllerDialog(string content, EnSourceId sourceId, Action confirmation, Action cancel, List<GoodsInfo> goodsInfos)
+    {
+        var ud = ClassPoolMgr.Instance.Pull<UIControllerDialogUserData>();
+        ud.Setting(content, confirmation, cancel, goodsInfos, sourceId);
+        UIMgr.Instance.ShowWindow<UIControllerDialogData>(ud);
+        ClassPoolMgr.Instance.Push(ud);
+    }
+    public static void ShowControllerDialog(string content, EnSourceId sourceId, Action confirmation, Action cancel)
+    {
+        ShowControllerDialog(content, sourceId, confirmation, cancel, null);
+    }
+    public static void ShowControllerDialog(string content, EnSourceId sourceId, Action confirmation)
+    {
+        ShowControllerDialog(content, sourceId, confirmation, null, null);
     }
 }

@@ -71,10 +71,37 @@ public class GlobalConfigSO : ScriptableObject
             return _Instance;
         }
     }
-
+    public string GetLocalhostServerUrl()
+    {
+        return Path.Combine(DownloadRootUrl, ProjectName);
+    }
     public string GetPersistentRoot()
     {
         var path = PersistentRoot;
+        return path;
+    }
+    public string GetProjectStaticWebAssetUrl()
+    {
+        var url = LoaderType switch
+        {
+            EnLoaderType.Editor => DownloadRootUrl,
+            EnLoaderType.Localhost => DownloadRootUrl,
+            EnLoaderType.internet => StaticWebUtl,
+            _ => throw new Exception($"get server url error: {LoaderType}"),
+        };
+        var path = Path.Combine(url, ProjectName);
+        return path;
+    }
+    public string GetProjectServerUrlPath()
+    {
+        var url = LoaderType switch
+        {
+            EnLoaderType.Editor => DownloadRootUrl,
+            EnLoaderType.Localhost => DownloadRootUrl,
+            EnLoaderType.internet => ServerUrl,
+            _ => throw new Exception($"get server url error: {LoaderType}"),
+        };
+        var path = Path.Combine(url, ProjectName);
         return path;
     }
     public string GetServerUrlPath()
@@ -86,7 +113,6 @@ public class GlobalConfigSO : ScriptableObject
             EnLoaderType.internet => ServerUrl,
             _ => throw new Exception($"get server url error: {LoaderType}"),
         };
-        var path = Path.Combine(url, ProjectName);
-        return path;
+        return url;
     }
 }

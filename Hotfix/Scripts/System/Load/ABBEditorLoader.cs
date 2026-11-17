@@ -60,5 +60,10 @@ public class ABBEditorLoader : IABBAssetLoader
             return null;
         return obj;
     }
+
+    public void Log()
+    {
+        
+    }
 }
 #endif

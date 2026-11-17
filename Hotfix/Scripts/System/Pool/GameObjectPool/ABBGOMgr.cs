@@ -41,7 +41,7 @@ public class ABBGOMgr : Singleton<ABBGOMgr>
     private readonly Dictionary<EnLoadTarget, GoPoolItem> _GoPools = new();
 
     private GameObject _GoPoolRoot = null;
-    private readonly float _DelayDestroyTime = 10f;
+    private readonly float _DelayDestroyTime = 5f;
 
     public override async UniTask AwakeAsync()
     {
@@ -144,8 +144,8 @@ public class ABBGOMgr : Singleton<ABBGOMgr>
             if (poolItem.count == 0 && poolItem.gos.Count == 0)
             {
                 _GoPools.Remove(target);
-                ClassPoolMgr.Instance.Push(poolItem);
                 ABBLoadMgr.Instance.Unload(poolItem.handle);
+                ClassPoolMgr.Instance.Push(poolItem);
             }
         }
     }

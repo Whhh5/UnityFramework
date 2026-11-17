@@ -40,6 +40,10 @@ public class UIMgr : SingletonMono<UIMgr>
     private Shader _UITmpDissolveShader = null;
     private Texture _NoiseTexture;
     private Shader _UIImageShader;
+    protected override void OnDestroy()
+    {
+        base.OnDestroy();
+    }
     protected override async void Awake()
     {
         base.Awake();
@@ -117,6 +121,18 @@ public class UIMgr : SingletonMono<UIMgr>
     {
         return _WindowId2EntityDataID.ContainsKey(windowId);
     }
+    public bool ContainsWindow<T>()
+        where T: UIWindowData
+    {
+        foreach (var (windowId, _) in _WindowId2EntityDataID)
+        {
+            var windowData = GetWindow(windowId);
+            if (windowData.GetType() != typeof(T))
+                continue;
+            return true;
+        }
+        return false;
+    }
     public int ShowWindow(EnLoadTarget windowId, RectTransform parent = null)
     {
         return windowId switch
@@ -145,6 +161,7 @@ public class UIMgr : SingletonMono<UIMgr>
     {
         var windowId = ABBUtil.GetTempKey();
         userData.windowId = windowId;
+        userData.sortingOrder = GetNextSortingOrder();
         var dataID = EntityMgr.Instance.CreateEntityData<T>(userData);
         _WindowId2EntityDataID.Add(windowId, dataID);
         _WindowList.Add(windowId);
@@ -285,6 +302,19 @@ public class UIMgr : SingletonMono<UIMgr>
         var testWindowId = _WindowList[^1];
         return windowId == testWindowId;
 
+    }
+    public int GetNextSortingOrder()
+    {
+        for (int i = 0; i < _WindowList.Count; i++)
+        {
+            var windowId = _WindowList[^(i + 1)];
+            var windowData = GetWindow(windowId);
+            if (windowData.WindowType == EnUIWindowType.SubWindow)
+                continue;
+            var maxOrder = windowData.GetSortingOrder();
+            return maxOrder + 100;
+        }
+        return 100;
     }
 
     public void ShowLobby()

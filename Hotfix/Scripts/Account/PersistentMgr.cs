@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
+using UnityEngine;
 
 public interface IPersistentData
 {
@@ -25,10 +26,22 @@ public class PersistentMgr : Singleton<PersistentMgr>
     {
         await base.AwakeAsync();
 
+
+    }
+    public async UniTask InitPersistentData()
+    {
         var path = GetPersistentFilePath();
-        var perData = await WebUtil.DownloadFileAsync(path);
+        var perData = await WebUtil.DownloadServerFileAsync(path);
         var perStr = Encoding.UTF8.GetString(perData);
         _PersistentString = JsonConvert.DeserializeObject<Dictionary<EnPersistentId, string>>(perStr) ?? new();
+
+        var accountData = PersistentMgr.Instance.GetData<PersistentAccountData>(EnPersistentId.Account);
+        var gameCount = accountData.GetGameCount();
+        accountData.SetGameCount(++gameCount);
+        if (gameCount == 1)
+        {
+            FirstGame();
+        }
     }
     public void UploadPeresistentData(bool isDelay = true)
     {
@@ -77,7 +90,7 @@ public class PersistentMgr : Singleton<PersistentMgr>
         return perData as TValue;
     }
     public TValue GetData<TValue>(EnPersistentId perId)
-        where TValue: PersistentDataBase, new()
+        where TValue : PersistentDataBase, new()
     {
         var perData = GetPerisitentData<TValue>(perId);
         return perData;
@@ -98,4 +111,27 @@ public class PersistentMgr : Singleton<PersistentMgr>
         _PersistentString.Remove(perId);
         _Persistents.Remove(perId);
     }
+
+
+    private void FirstGame()
+    {
+        {
+            var data = PersistentMgr.Instance.GetData<PersistentCharacterData>(EnPersistentId.Character);
+            var defCharaId = UICharacterUtility.GetDefaultCharacterId();
+            data.SetIsLock(defCharaId, false);
+            UICharacterMgr.Instance.RefreshAptitude(defCharaId, false);
+            data.SetActiveCharacterId(defCharaId);
+        }
+        {
+            var data = PersistentMgr.Instance.GetData<PersistentGoodsData>(EnPersistentId.Goods);
+            data.SetGoodsCount((int)EnGoodsId.Coin, 100000);
+            data.SetGoodsCount((int)EnGoodsId.Diamond, 100000);
+            data.SetGoodsCount((int)EnGoodsId.Energy, 100000);
+        }
+        {
+            GameChapterMgr.Instance.SetMaxSuccessChapterId(0);
+            GameChapterMgr.Instance.SetCurSelectChapterId(1);
+        }
+    }
+
 }

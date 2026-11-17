@@ -108,14 +108,22 @@ public class SpriteMask2DSlider : MonoBehaviour
         {
             case EnSpriteMask2DSliderChangeModel.Lerp:
                 {
-                    DOTween.Kill(GetInstanceID());
-                    var time = Mathf.Abs(testValue) / (_MaxValue - _MinValue);
-                    DOTween.To(() => 0f, sliderValue =>
+                    if (Application.isPlaying)
                     {
-                        var lerpValue = Vector3.Lerp(transform.localScale, scale, sliderValue);
-                        transform.localScale = lerpValue;
-                    }, 1f, time)
-                        .SetId(GetInstanceID());
+                        DOTween.Kill(GetInstanceID());
+                        var time = Mathf.Abs(testValue) / (_MaxValue - _MinValue);
+                        DOTween.To(() => 0f, sliderValue =>
+                        {
+                            var lerpValue = Vector3.Lerp(transform.localScale, scale, sliderValue);
+                            transform.localScale = lerpValue;
+                        }, 1f, time)
+                            .SetUpdate(true)
+                            .SetId(GetInstanceID());
+                    }
+                    else
+                    {
+                        transform.localScale = scale;
+                    }
                 }
                 break;
             default:

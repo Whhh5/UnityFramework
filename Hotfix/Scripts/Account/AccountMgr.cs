@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class AccountMgr : Singleton<AccountMgr>
 {
-    private static int _AccountId;
+    private static string _AccountId;
 
     private struct AccountLevelInfo
     {
@@ -20,12 +20,17 @@ public class AccountMgr : Singleton<AccountMgr>
     private readonly List<AccountLevelInfo> _Level2ExpInfo = new();
     private int _MaxLevel;
     private int _CurLevel;
+    private bool _IsLogin = false;
 
     public override void Destroy()
     {
+        EventMgr.Instance.Unregister(EnABBEvent.EVENT_ACCOUNT_LOGIN, OnEvent_AccountLogin);
+        EventMgr.Instance.Unregister<GameGoodsChangeEventData>(EnABBEvent.EVENT_GOODS_CHANGE, (int)EnGoodsId.Exp, 0, OnEvent_ExpChange);
         base.Destroy();
         _Level2ExpInfo.Clear();
-        _MaxLevel = -1;
+        _MaxLevel
+            = _CurLevel
+            = -1;
     }
     public override async UniTask AwakeAsync()
     {
@@ -40,13 +45,18 @@ public class AccountMgr : Singleton<AccountMgr>
         }
         _MaxLevel = _Level2ExpInfo.Count;
 
+        EventMgr.Instance.Register<GameGoodsChangeEventData>(EnABBEvent.EVENT_GOODS_CHANGE, (int)EnGoodsId.Exp, 0, OnEvent_ExpChange);
+        EventMgr.Instance.Register(EnABBEvent.EVENT_ACCOUNT_LOGIN, OnEvent_AccountLogin);
+    }
+    private void OnEvent_AccountLogin(in int _, in int __)
+    {
         _CurLevel = CalculateLevel();
     }
-    public void SetAccountId(int accountId)
+    public void SetAccountId(string accountId)
     {
         _AccountId = accountId;
     }
-    public int GetAccoundId()
+    public string GetAccoundId()
     {
         return _AccountId;
     }
@@ -95,25 +105,20 @@ public class AccountMgr : Singleton<AccountMgr>
         EventMgr.Instance.FireExecute(EnABBEvent.EVENT_ACCOUNT_LEVEL_CHANGE, evUd);
         ClassPoolMgr.Instance.Push(evUd);
     }
+    private void OnEvent_ExpChange(in int goodsCfgId, in int _, in GameGoodsChangeEventData data)
+    {
+        UpdateLevel();
+    }
 
     public void ChangeExp(int exp)
     {
-        var perData = PersistentMgr.Instance.GetData<PersistentAccountData>(EnPersistentId.Account);
-        var curExp = perData.GetExp();
-        var toExp = curExp + exp;
-        perData.SetExp(toExp);
-
-        var evUd = ClassPoolMgr.Instance.Pull<GameAccountExpChangeEventData>();
-        evUd.Setting(curExp, toExp);
-        EventMgr.Instance.FireExecute(EnABBEvent.EVENT_ACCOUNT_EXP_CHANGE, evUd);
-        ClassPoolMgr.Instance.Push(evUd);
+        UIGoodsMgr.Instance.AddGoods((int)EnGoodsId.Exp, exp);
 
         UpdateLevel();
     }
     public int GetExp()
     {
-        var perData = PersistentMgr.Instance.GetData<PersistentAccountData>(EnPersistentId.Account);
-        var exp = perData.GetExp();
+        var exp = UIGoodsMgr.Instance.GetGoodsCount((int)EnGoodsId.Exp);
         return exp;
     }
     public float GetExpSliderValue()
@@ -132,15 +137,14 @@ public class AccountMgr : Singleton<AccountMgr>
         var value = Mathf.Clamp01((float)exp / localExp);
         return value;
     }
-    //public void SetLevel(int level)
-    //{
-    //    var perData = PersistentMgr.Instance.GetData<PersistentAccountData>(EnPersistentId.Account);
-    //    perData.SetLevel(level);
-    //}
-    //public int GetLevel()
-    //{
-    //    var perData = PersistentMgr.Instance.GetData<PersistentAccountData>(EnPersistentId.Account);
-    //    var level = perData.GetLevel();
-    //    return level;
-    //}
+    public async void LoginGame(string account)
+    {
+        if (_IsLogin)
+            return;
+        _IsLogin = true;
+        AccountMgr.Instance.SetAccountId(account);
+        await PersistentMgr.Instance.InitPersistentData();
+        EventMgr.Instance.FireExecute(EnABBEvent.EVENT_ACCOUNT_LOGIN);
+        UIMgr.Instance.ShowLobby();
+    }
 }

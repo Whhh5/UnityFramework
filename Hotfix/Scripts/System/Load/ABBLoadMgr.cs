@@ -39,12 +39,14 @@ public class ABBLoadMgr : Singleton<ABBLoadMgr>
 
         _Loader = GlobalConfigSO.Instance.LoaderType switch
         {
+#if UNITY_EDITOR
             EnLoaderType.Editor => new ABBEditorLoader(),
+#endif
             _ => new AbbAssetbundleLoader(),
         };
         await _Loader.Initialization();
     }
-    private IABBAssetLoader GetLoader()
+    public IABBAssetLoader GetLoader()
     {
         return _Loader;
     }
@@ -53,7 +55,9 @@ public class ABBLoadMgr : Singleton<ABBLoadMgr>
     {
         var (isCancel, handle) = await LoadAsync<T>((int)loadTarget, token).SuppressCancellationThrow();
         if (isCancel)
+        {
             throw new OperationCanceledException();
+        }
         return handle;
     }
     private async UniTask<LoadHandle> LoadAsync<T>(int assetCfgID, CancellationToken token)
@@ -63,7 +67,9 @@ public class ABBLoadMgr : Singleton<ABBLoadMgr>
         var (isCancel, result) = await loader.LoadAssetAsync<T>(assetCfgID, token)
             .SuppressCancellationThrow();
         if (isCancel)
+        {
             throw new OperationCanceledException();
+        }
         var loadKey = ABBUtil.GetTempKey();
         var loadData = ClassPoolMgr.Instance.Pull<LoadData>();
         loadData.loadTarget = assetCfgID;

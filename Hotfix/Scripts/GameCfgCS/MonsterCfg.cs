@@ -58,6 +58,8 @@ public class MonsterCfg : ICfg
 	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 nIconAssetID;
 	// 
 	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 nDieAudioId;
+	// 
+	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 nEnergyCount;
 	public System.Int32 GetID()
 	{
 		return nMonsterID;

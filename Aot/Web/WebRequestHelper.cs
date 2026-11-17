@@ -17,7 +17,7 @@ public static class WebRequestHelper
     {
         // 非 WebGL 平台，直接使用 Task.Run 或 async 包装（保持原逻辑，避免破坏其他平台）
         // 注意：WebGL 不支持 Task.Run
-        if (!PlatformUtil.IsWebGL)
+        if (!AotPlatformUtility.IsWebGL)
         {
             return SendNativeAsync(request, cancellationToken);
         }

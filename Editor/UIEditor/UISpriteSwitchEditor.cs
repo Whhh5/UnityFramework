@@ -6,11 +6,10 @@ using UnityEditor;
 [CustomEditor(typeof(UISpriteSwitch))]
 public class UISpriteSwitchEditor : Editor 
 {
-    private UISpriteSwitch m_Target;
-    private List<UISpriteSwitchItem> m_ArrSprite => m_Target.GetArrSprite();
+    private UISpriteSwitch _Target;
     private void OnEnable()
     {
-        m_Target = target as UISpriteSwitch;
+        _Target = target as UISpriteSwitch;
     }
     public override void OnInspectorGUI()
     {
@@ -24,7 +23,8 @@ public class UISpriteSwitchEditor : Editor
         {
             if (GUILayout.Button("Add", GUILayout.Width(100)))
             {
-                m_ArrSprite.Add(new() { });
+                _Target.AddSprite();
+                EditorUtility.SetDirty(_Target);
             }
         }
         EditorGUILayout.EndHorizontal();
@@ -33,24 +33,24 @@ public class UISpriteSwitchEditor : Editor
 
     private void DrawArrSpriteItem()
     {
-        for (int i = 0; i < m_ArrSprite.Count; i++)
+        for (int i = 0; i < _Target.GetSwitchCount(); i++)
         {
             DrawSpriteItem(i);
         }
     }
     private void DrawSpriteItem(int index)
     {
-        var item = m_ArrSprite[index];
+        var item = _Target.GetArrSprite(index);
 
         EditorGUILayout.BeginHorizontal();
         {
             if(GUILayout.Button($"{index}", GUILayout.Width(20)))
             {
-                m_Target.Switch(index);
+                _Target.Switch(index);
                 // SceneView.RepaintAll();
                 // Canvas.ForceUpdateCanvases();
                 // AssetDatabase.Refresh();
-                EditorUtility.SetDirty(m_Target);
+                EditorUtility.SetDirty(_Target);
             }
             var sprite = EditorGUILayout.ObjectField(item.GetSprite(), typeof(Sprite), false, GUILayout.Width(150)) as Sprite;
             item.SetSprite(sprite);
@@ -58,7 +58,8 @@ public class UISpriteSwitchEditor : Editor
             item.SetColor(color);
             if(GUILayout.Button("✖️", GUILayout.Width(20)))
             {
-                m_ArrSprite.RemoveAt(index);
+                _Target.RemoveAt(index);
+                EditorUtility.SetDirty(_Target);
             }
         }
         EditorGUILayout.EndHorizontal();

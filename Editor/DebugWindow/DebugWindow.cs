@@ -51,17 +51,19 @@ public class DebugWindow : EditorWindow
                 Debug.Log(logStr);
             }
         }
-        if (GUILayout.Button("upload", GUILayout.Width(100), GUILayout.Height(30)))
+        EditorGUILayout.BeginHorizontal();
         {
-            //ServerTest();
-            UIRewardMgr.Instance.SendReward(new List<GoodsInfo>()
+            if (GUILayout.Button("ab info", GUILayout.Width(100), GUILayout.Height(30)))
             {
-                new(1,100),
-                new(1,1),
-                new(110010101, 1),
-                new(110010102, 4),
-            });
+                var loader = ABBLoadMgr.Instance.GetLoader();
+                loader.Log();
+            }
+            if (GUILayout.Button("clear windows", GUILayout.Width(100), GUILayout.Height(30)))
+            {
+                UIMgr.Instance.HideAllWindow();
+            }
         }
+        EditorGUILayout.EndHorizontal();
         EditorGUILayout.BeginHorizontal();
         {
             if (GUILayout.Button("upload persistent", GUILayout.Width(100), GUILayout.Height(30)))
@@ -158,6 +160,16 @@ public class DebugWindow : EditorWindow
                 var index = Random.Range(0, count);
                 var cfg = GameSchedule.Instance.GetCoreCfg(index);
                 UICoreMgr.Instance.AddCore(cfg.nCoreId);
+            }
+        }
+        EditorGUILayout.EndHorizontal();
+        EditorGUILayout.BeginHorizontal();
+        {
+            if (GUILayout.Button("open chapter", GUILayout.Width(100), GUILayout.Height(30)))
+            {
+                var count = GameSchedule.Instance.GetChapterCfgCount();
+                var chapterCfg = GameSchedule.Instance.GetChapterCfg(count - 1);
+                GameChapterMgr.Instance.SetMaxSuccessChapterId(chapterCfg.nChapterId);
             }
         }
         EditorGUILayout.EndHorizontal();
@@ -279,7 +291,7 @@ public class DebugWindow : EditorWindow
     private async void ServerTest()
     {
         var file = "Persistent/q0.txt";
-        var cur = await WebUtil.DownloadFileAsync(file);
+        var cur = await WebUtil.DownloadServerFileAsync(file);
         var curStr = Encoding.UTF8.GetString(cur);
         curStr += "1";
         await WebUtil.UploadFileAsync(file, curStr);

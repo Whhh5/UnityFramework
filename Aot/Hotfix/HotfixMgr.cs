@@ -40,7 +40,7 @@ public class HotfixMgr : IUpdateGame
     private async UniTask CheckCatalogAsync()
     {
         var path = AssetbundleUtil.GetAbCatalogLocalPath();
-        var webCatalogData = await WebUtil.DownloadFileAsync(path);
+        var webCatalogData = await WebUtil.DownloadStaticAssetFileAsync(path);
         var catalogStr = Encoding.UTF8.GetString(webCatalogData);
         var webCatalogList = AssetbundleUtil.JsonToCatalogList(catalogStr);
 
@@ -63,7 +63,7 @@ public class HotfixMgr : IUpdateGame
                 continue;
 
             var abLoadPath = AssetbundleUtil.GetAssetbundleLocalPath(webCatalog.abName);
-            var abFileByte = await WebUtil.DownloadFileAsync(abLoadPath);
+            var abFileByte = await WebUtil.DownloadStaticAssetFileAsync(abLoadPath);
             if (abFileByte.Length != webCatalog.length
                 || AotUtility.CalculateFileMD5(abFileByte) != webCatalog.md5)
             {
@@ -109,7 +109,7 @@ public class HotfixMgr : IUpdateGame
     }
     private async UniTask DownloadFile(string webLocalPath, string savePath)
     {
-        var abInfoData = await WebUtil.DownloadFileAsync(webLocalPath);
+        var abInfoData = await WebUtil.DownloadStaticAssetFileAsync(webLocalPath);
         File.WriteAllBytes(savePath, abInfoData);
     }
     private async UniTask LoadAssemblyAsync()

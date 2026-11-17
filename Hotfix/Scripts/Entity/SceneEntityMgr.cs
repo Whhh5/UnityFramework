@@ -6,7 +6,16 @@ public class SceneEntityMgr : Singleton<SceneEntityMgr>
 {
     private readonly Dictionary<int, SceneEntityData> _SceneEntityDatas = new();
 
-
+    public override void Destroy()
+    {
+        foreach (var (entityId, _) in _SceneEntityDatas)
+        {
+            SceneEntityMgr.Instance.RemoveAllCom(entityId);
+            EntityMgr.Instance.RecycleEntityData(entityId);
+        }
+        base.Destroy();
+        _SceneEntityDatas.Clear();
+    }
     private SceneEntityData GetSceneEntityData(in int entityId)
     {
         return _SceneEntityDatas[entityId];

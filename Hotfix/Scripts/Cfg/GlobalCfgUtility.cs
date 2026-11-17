@@ -153,4 +153,76 @@ public static class GlobalCfgUtility
 		var cfg = GameSchedule.Instance.GetGlobalCfg0(20423);
 		return cfg.nIntValue;
 	}
+	/// <summary>
+	/// 复活消耗道具id
+	/// </summary>
+	/// <returns>System.Int32</returns>
+	public static System.Int32 Get30111_Int32()
+	{
+		var cfg = GameSchedule.Instance.GetGlobalCfg0(30111);
+		return cfg.nIntValue;
+	}
+	/// <summary>
+	/// 复活消耗道具数量
+	/// </summary>
+	/// <returns>System.Int32</returns>
+	public static System.Int32 Get30112_Int32()
+	{
+		var cfg = GameSchedule.Instance.GetGlobalCfg0(30112);
+		return cfg.nIntValue;
+	}
+	/// <summary>
+	/// 战斗最大主动技能数量
+	/// </summary>
+	/// <returns>System.Int32</returns>
+	public static System.Int32 Get40001_Int32()
+	{
+		var cfg = GameSchedule.Instance.GetGlobalCfg0(40001);
+		return cfg.nIntValue;
+	}
+	/// <summary>
+	/// 战斗最大被动技能数量
+	/// </summary>
+	/// <returns>System.Int32</returns>
+	public static System.Int32 Get40002_Int32()
+	{
+		var cfg = GameSchedule.Instance.GetGlobalCfg0(40002);
+		return cfg.nIntValue;
+	}
+	/// <summary>
+	/// 战斗升级选择页签数量
+	/// </summary>
+	/// <returns>System.Int32</returns>
+	public static System.Int32 Get40003_Int32()
+	{
+		var cfg = GameSchedule.Instance.GetGlobalCfg0(40003);
+		return cfg.nIntValue;
+	}
+	/// <summary>
+	/// 账号位数
+	/// </summary>
+	/// <returns>System.Int32</returns>
+	public static System.Int32 Get50001_Int32()
+	{
+		var cfg = GameSchedule.Instance.GetGlobalCfg0(50001);
+		return cfg.nIntValue;
+	}
+	/// <summary>
+	/// 密码最大位数
+	/// </summary>
+	/// <returns>System.Int32</returns>
+	public static System.Int32 Get50002_Int32()
+	{
+		var cfg = GameSchedule.Instance.GetGlobalCfg0(50002);
+		return cfg.nIntValue;
+	}
+	/// <summary>
+	/// 密码最小位数
+	/// </summary>
+	/// <returns>System.Int32</returns>
+	public static System.Int32 Get50003_Int32()
+	{
+		var cfg = GameSchedule.Instance.GetGlobalCfg0(50003);
+		return cfg.nIntValue;
+	}
 }

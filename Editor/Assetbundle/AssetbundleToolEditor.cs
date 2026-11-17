@@ -120,7 +120,7 @@ public static class AssetbundleToolEditor
                     continue;
             }
             var abPath = Path.Combine(root, abName);
-            var abData = await File.ReadAllBytesAsync(abPath);
+            var abData = File.ReadAllBytes(abPath);
 
             var upLoadPath = AssetbundleUtil.GetAssetbundleLocalPath(abName);
             if (!await UploadContent(upLoadPath, abData))
@@ -311,13 +311,13 @@ public static class AssetbundleToolEditor
             //assetBundleVariant = ,
             assetNames = assetNames.ToArray(),
         };
-    }
+    } 
 
 
     public static async UniTask<bool> UploadContent(string uploadLocalPath, byte[] data)
     {
-        var uploadContent = Encoding.UTF8.GetString(data);
-        await WebUtil.UploadFileAsync(uploadLocalPath, uploadContent);
+        var server = GlobalConfigSO.Instance.GetLocalhostServerUrl();
+        await WebUtil.UploadFileAsync(server, uploadLocalPath, data);
 
         //var path = Path.Combine(GlobalConfigSO.Instance.ServerDataPath, uploadLocalPath);
         //AotDebug.Log($"上传成功: {path}");
@@ -333,7 +333,8 @@ public static class AssetbundleToolEditor
         //var dir = Path.GetDirectoryName(path);
         //if (!Directory.Exists(dir))
         //    Directory.CreateDirectory(dir);
-        var result = await WebUtil.DownloadFileAsync(uploadLocalPath);
+        var server = GlobalConfigSO.Instance.GetLocalhostServerUrl();
+        var result = await WebUtil.DownloadFileAsync(server, uploadLocalPath);
         return result;
     }
 }

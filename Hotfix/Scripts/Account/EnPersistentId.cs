@@ -8,4 +8,6 @@ public enum EnPersistentId
     Character,
     Account,
     Gem,
+    Chapter,
+    Setting,
 }

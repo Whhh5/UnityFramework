@@ -27,7 +27,7 @@ public class PlayableClipAdapter : PlayableAdapter<PlayableClipAdapterUserData>
     public override void OnPoolDestroy()
     {
         _LoadToken?.Cancel();
-        if(_ClipLoadHandle.IsValid())
+        if (_ClipLoadHandle.IsValid())
             ABBLoadMgr.Instance.Unload(_ClipLoadHandle);
         if (_ClipPlayable.IsValid())
             _ClipPlayable.Destroy();
@@ -60,8 +60,18 @@ public class PlayableClipAdapter : PlayableAdapter<PlayableClipAdapterUserData>
 
         if (!isCancel)
         {
+
+            if (_LoadToken == null)
+            {
+                if (_ClipLoadHandle.IsValid())
+                    ABBLoadMgr.Instance.Unload(_ClipLoadHandle);
+                return;
+            }
+
+
             _ClipLoadHandle = handle;
             await UniTask.SwitchToMainThread(cancellationToken: _LoadToken.Token);
+
 
             var clip = handle.GetObject<AnimationClip>();
             _ClipPlayable = AnimationClipPlayable.Create(_Graph.GetGraph(), clip);
@@ -71,6 +81,7 @@ public class PlayableClipAdapter : PlayableAdapter<PlayableClipAdapterUserData>
             var time = GetPlayTime();
             _ClipPlayable.SetTime(time);
             _LoadToken = null;
+
         }
     }
     public override float GetPlayTime()

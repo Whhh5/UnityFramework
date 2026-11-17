@@ -11,6 +11,7 @@ public enum EnSceneEntityComType
     Attribute,
     Cmd,
     Spine,
+    Misc,
 }
 public interface IEntity3DComData : IClassPool
 {

@@ -52,15 +52,22 @@ public abstract class UITipsData : UIWindowData
 }
 public abstract class UITips : UIWindow
 {
+    public virtual bool IsClickClose()
+    {
+        return true;
+    }
     protected override void Update()
     {
         base.Update();
 
-        if (Input.GetMouseButtonDown(0))
+        if (IsClickClose())
         {
-            if (UIMgr.Instance.IsValid(_WindowId))
+            if (Input.GetMouseButtonDown(0))
             {
-                UIMgr.Instance.HideWindow(_WindowId);
+                if (UIMgr.Instance.IsValid(_WindowId))
+                {
+                    UIMgr.Instance.HideWindow(_WindowId);
+                }
             }
         }
     }

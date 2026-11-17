@@ -98,6 +98,9 @@ public enum EnTypeId
     GameBattleLeechEntity,
     _______________________________GameCharacter = 5000,
     GameBattleCharacter1EntityData,
+    GameUICharacter1EntityData,
+    GameBattleCharacter2EntityData,
+    GameUICharacter2EntityData,
     _______________________________EntityBuff = 5100,
     EntityVulnerableBuffData,
     EntityBurnBuffData,
@@ -255,6 +258,9 @@ public static class TypeDefine
             EnTypeId.GameSkillBossSummonEventData => ClassPoolMgr.Instance.Pull<GameSkillBossSummonEventData>(userData),
 
             EnTypeId.GameBattleCharacter1EntityData => ClassPoolMgr.Instance.Pull<GameBattleCharacter1EntityData>(userData),
+            EnTypeId.GameUICharacter1EntityData => ClassPoolMgr.Instance.Pull<GameUICharacter1EntityData>(userData),
+            EnTypeId.GameBattleCharacter2EntityData => ClassPoolMgr.Instance.Pull<GameBattleCharacter2EntityData>(userData),
+            EnTypeId.GameUICharacter2EntityData => ClassPoolMgr.Instance.Pull<GameUICharacter2EntityData>(userData),
 
             EnTypeId.EntityVulnerableBuffData => ClassPoolMgr.Instance.Pull<EntityVulnerableBuffData>(userData),
             EnTypeId.EntityBurnBuffData => ClassPoolMgr.Instance.Pull<EntityBurnBuffData>(userData),
