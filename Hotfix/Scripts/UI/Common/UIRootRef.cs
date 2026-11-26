@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class UIRootRef : MonoBehaviour
+public class UIRootRef : SingletonMono<UIRootRef>
 {
 
     [SerializeField]
@@ -17,11 +17,4 @@ public class UIRootRef : MonoBehaviour
     [SerializeField]
     private RectTransform _UITipsRootRect = null;
     public RectTransform UITipsRootRect => _UITipsRootRect;
-
-
-
-    private void Awake()
-    {
-        UIMgr.Instance.SetUIRootRef(this);
-    }
 }

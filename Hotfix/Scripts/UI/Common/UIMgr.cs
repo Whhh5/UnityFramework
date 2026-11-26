@@ -21,57 +21,24 @@ public enum EnWindowHideType
     Close,
     SelectItem,
 }
-public partial class UIMgr : SingletonMono<UIMgr>
+public partial class UIMgr : Singleton<UIMgr>
 {
-    private UIRootRef _RootRef = null;
     private readonly Dictionary<int, int> _WindowId2EntityDataID = new();
     private readonly List<int> _WindowList = new();
     private readonly Dictionary<EnUIWindowType, RectTransform> m_WindowType2Root = new();
 
-    protected override void OnDestroy()
-    {
-        base.OnDestroy();
-    }
-    protected override async void Awake()
-    {
-        base.Awake();
 
-        if (ABBUtil.TryGetClassesWithBaseClass<IStartLaunch>(out var launch))
-        {
-            var ins = Activator.CreateInstance(launch) as IStartLaunch;
-            ins.StartLaunch();
-        }
-        else
-        {
-            //ShowWindow<CGameStartWindowData>();
-            ABBUtil.LogError($"没有找到启动界面，请继承 {typeof(IStartLaunch)}");
-        }
-        await UniTask.Delay(0);
-    }
-
-    public void SetUIRootRef(UIRootRef rootRef)
-    {
-        _RootRef = rootRef;
-    }
-    public RectTransform GetUITipsRootRect()
-    {
-        return _RootRef.UITipsRootRect;
-    }
-    public RectTransform GetCanvasRect()
-    {
-        return _RootRef.CanvasRect;
-    }
     public float GetCanvasScale()
     {
-        return _RootRef.CanvasRect.lossyScale.x;
+        return UIRootRef.Instance.CanvasRect.lossyScale.x;
     }
     public Vector2 GetUISize()
     {
-        return _RootRef.MainCanvas.GetComponent<RectTransform>().sizeDelta;
+        return UIRootRef.Instance.MainCanvas.GetComponent<RectTransform>().sizeDelta;
     }
     public Camera GetCanvasCamera()
     {
-        return _RootRef.MainCanvas.worldCamera;
+        return UIRootRef.Instance.MainCanvas.worldCamera;
     }
     public T GetWindow<T>(int windowId)
         where T : UIWindowData
@@ -133,7 +100,7 @@ public partial class UIMgr : SingletonMono<UIMgr>
         if (parent == null)
         {
             if (!m_WindowType2Root.TryGetValue(windowData.WindowType, out parent))
-                parent = _RootRef.UIRootRect;
+                parent = UIRootRef.Instance.UIRootRect;
         }
         windowData.SetParentTran(parent);
         EntityMgr.Instance.LoadEntity(dataID);
