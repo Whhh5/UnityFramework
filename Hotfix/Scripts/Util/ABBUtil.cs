@@ -68,12 +68,11 @@ public static class ABBUtil
     }
     public static string GetDataPath()
     {
-        return Application.dataPath;
+        return AotUtility.GetDataPath();
     }
     public static string GetUnityRootPath()
     {
-        var unityPath = Path.GetDirectoryName(GetDataPath());
-        return unityPath;
+        return AotUtility.GetUnityRootPath();
     }
     public static string GetUnityCustomCachePath(string name)
     {

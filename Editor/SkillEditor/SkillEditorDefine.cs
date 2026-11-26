@@ -22,7 +22,7 @@ public static class SkillEditorDefine
         { typeof(SkillRandomPlayableAdapter), typeof(SkillRandomPlayableAdapterEditor) },
         { typeof(SkillStageInfo), typeof(SkillStageInfoEditor) },
 
-        { typeof(EntityNoMovementBuffData), typeof(EntityNoMovementBuffDataEditor) },
+        //{ typeof(EntityNoMovementBuffData), typeof(EntityNoMovementBuffDataEditor) },
 
         { typeof(SkillPhysicsScheduleAction), typeof(SkillPhysicsScheduleActionEditor) },
         { typeof(SkillBuffScheduleAction), typeof(SkillBuffScheduleActionEditor) },
@@ -199,6 +199,7 @@ public static class SkillEditorDefine
 
     public static IEntityBuffParamsEditor GetEntityBuffParamsEditor(EnBuff buff)
     {
+#if !UNITY_TEST
         var buffType = buff switch
         {
             EnBuff.NoMovement => GetEditorType(typeof(EntityNoMovementBuffData)),
@@ -210,6 +211,9 @@ public static class SkillEditorDefine
         var result = ins as IEntityBuffParamsEditor;
         SkillEditorWindow.EditorInstanceInitialize(result);
         return result;
+#else
+        return null;
+#endif
     }
 
     public static ISkillScheduleActionEditor GetSkillScheduleActionEditor(EnAtkLinkScheculeType scheduleType)

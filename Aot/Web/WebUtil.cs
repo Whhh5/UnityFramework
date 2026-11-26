@@ -87,7 +87,24 @@ public static class WebUtil
     public static async UniTask UploadFileAsync(string downLoadUrl, string localPath, byte[] datas)
     {
         var url = Path.Combine(downLoadUrl, localPath).Replace("\\", "/");
-        var uri = new Uri(url);
+
+#if UNITY_EDITOR
+        if (GlobalConfigSO.Instance.LoaderType == EnLoaderType.Editor)
+        {
+            AotDebug.Log($"开始上传 -> {url}");
+            var dir = Path.GetDirectoryName(url);
+            if (!Directory.Exists(dir))
+                Directory.CreateDirectory(dir);
+
+            File.WriteAllBytes(url, datas);
+            AotDebug.LogWarning($"上传完成 {datas.Length} -> {url}");
+            return;
+        }
+#endif
+        if (!url.Contains("http") || !Uri.TryCreate(url, UriKind.Absolute, out var uri))
+        {
+            throw new Exception($"uri error: {url}");
+        }
 
         AotDebug.Log($"开始上传 -> {uri}");
 

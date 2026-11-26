@@ -1,18 +1,35 @@
+using System;
+using System.Collections.Generic;
+
 public partial class BuffUtil
 {
+
+	private static readonly Dictionary<EnBuff, Func<IClassPoolDestroy, IEntityBuff>> _EntityBuffs = new();
+
+	public static void Register<T>(EnBuff buff)
+		where T: IEntityBuff, new()
+    {
+        var func = Register_BuffData<T>();
+
+        _EntityBuffs.Add(buff, func);
+
+    }
 	public static IEntityBuff CreateBuffData(EnBuff buff, IClassPoolDestroy data)
 	{
-		return buff switch
-		{
-			EnBuff.NoMovement => ClassPoolMgr.Instance.Pull<EntityNoMovementBuff>(data),
-			EnBuff.Vulnerable => ClassPoolMgr.Instance.Pull<EntityVulnerableBuff>(data),
-			EnBuff.Burn => ClassPoolMgr.Instance.Pull<EntityBurnBuff>(data),
-			EnBuff.Crystal => ClassPoolMgr.Instance.Pull<EntityCrystalBuff>(data),
-			EnBuff.ShatteredArmor => ClassPoolMgr.Instance.Pull<EntityShatteredArmorBuff>(data),
-			EnBuff.Freeze => ClassPoolMgr.Instance.Pull<EntityFreezeBuff>(data),
-			EnBuff.Electric => ClassPoolMgr.Instance.Pull<EntityElectricBuff>(data),
-			EnBuff.Bleed => ClassPoolMgr.Instance.Pull<EntityBleedBuff>(data),
-            _ => default,
-		};
-	}
+		if (!_EntityBuffs.TryGetValue(buff, out var func))
+			throw new ArgumentNullException();
+		var result = func.Invoke(data);
+		return result;
+
+    }
+
+    private static Func<IClassPoolDestroy, IEntityBuff> Register_BuffData<T>()
+        where T : IEntityBuff, new()
+    {
+        return (data) =>
+        {
+            var cl = ClassPoolMgr.Instance.Pull<T>(data);
+            return cl;
+        };
+    }
 }

@@ -5,8 +5,25 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
-public static class UIUtil
+public static partial class UIUtil
 {
+    private static readonly Dictionary<EnLoadTarget, Func<RectTransform, int>> _WindowDatas = new();
+    public static void Register<T>(EnLoadTarget id)
+        where T : UIWindowData, new()
+    {
+        static int func(RectTransform parent)
+        {
+            return UIMgr.Instance.ShowWindow<T>(parent);
+        }
+        _WindowDatas.Add(id, func);
+    }
+    public static int ShowWindow(EnLoadTarget windowId, RectTransform parent = null)
+    {
+        if (!_WindowDatas.TryGetValue(windowId, out var func))
+            throw new ArgumentNullException();
+        var id = func.Invoke(parent);
+        return id;
+    }
     //public static Vector2 WorldToUIPos(Vector3 worldPos)
     //{
     //    var canvasRect = UIMgr.Instance.GetCanvasRect();
@@ -63,26 +80,11 @@ public static class UIUtil
         UIMgr.Instance.ShowWindow<UIHitTipsData>(ud);
         ClassPoolMgr.Instance.Push(ud);
     }
-    public static void ShowControllerDialog(string content, EnSourceId sourceId, Action confirmation, Action cancel, GoodsInfo goodsInfo)
-    {
-        var ud = ClassPoolMgr.Instance.Pull<UIControllerDialogUserData>();
-        ud.Setting(content, confirmation, cancel, goodsInfo, sourceId);
-        UIMgr.Instance.ShowWindow<UIControllerDialogData>(ud);
-        ClassPoolMgr.Instance.Push(ud);
-    }
-    public static void ShowControllerDialog(string content, EnSourceId sourceId, Action confirmation, Action cancel, List<GoodsInfo> goodsInfos)
-    {
-        var ud = ClassPoolMgr.Instance.Pull<UIControllerDialogUserData>();
-        ud.Setting(content, confirmation, cancel, goodsInfos, sourceId);
-        UIMgr.Instance.ShowWindow<UIControllerDialogData>(ud);
-        ClassPoolMgr.Instance.Push(ud);
-    }
     public static void ShowControllerDialog(string content, EnSourceId sourceId, Action confirmation, Action cancel)
     {
-        ShowControllerDialog(content, sourceId, confirmation, cancel, null);
-    }
-    public static void ShowControllerDialog(string content, EnSourceId sourceId, Action confirmation)
-    {
-        ShowControllerDialog(content, sourceId, confirmation, null, null);
+        var ud = ClassPoolMgr.Instance.Pull<UIControllerDialogUserData>();
+        ud.Setting(content, confirmation, cancel, sourceId);
+        UIMgr.Instance.ShowWindow<UIControllerDialogData>(ud);
+        ClassPoolMgr.Instance.Push(ud);
     }
 }

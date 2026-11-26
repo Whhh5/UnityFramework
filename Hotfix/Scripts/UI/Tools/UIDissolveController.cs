@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+#if !UNITY_TEST
 //[RequireComponent(typeof(Graphic))]
 public class UIDissolveController : MonoBehaviour, IUIAnimationController
 {
@@ -84,3 +85,4 @@ public class UIDissolveController : MonoBehaviour, IUIAnimationController
         SetSliderValue(value);
     }
 }
+#endif

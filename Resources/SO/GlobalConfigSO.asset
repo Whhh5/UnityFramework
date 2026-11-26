@@ -12,11 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 12008a010e2074f82a035879693f24c9, type: 3}
   m_Name: GlobalConfigSO
   m_EditorClassIdentifier: 
-  _LoaderType: 2
+  _LoaderType: 0
   ProjectName: RunGame
   StaticWebUtl: https://cloud1-d5gy0bngg418fba77-1304051594.tcloudbaseapp.com
   DownloadRootUrl: http://192.168.31.129:8000
   ServerUrl: https://librarian-widget-churn.ngrok-free.dev
+  LocalDataPath: Misc/Temp
   PersistentRoot: Persistent
   HotfixList:
   - 1

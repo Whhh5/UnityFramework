@@ -5,22 +5,10 @@ using UnityEngine.Profiling;
 
 public class ToolsMenu
 {
-    [MenuItem("Tools/Debug Wave Window", priority = 101)]
-    public static void OpenWindow_WaveDebug()
-    {
-        var window = EditorWindow.GetWindow<DebugWaveWindow>();
-        window.Show();
-    }
     [MenuItem("Tools/Debug Window", priority = 101)]
     public static void OpenWindow_Debug()
     {
         var window = EditorWindow.GetWindow<DebugWindow>();
-        window.Show();
-    }
-    [MenuItem("Tools/Debug Ball", priority = 101)]
-    public static void OpenBall_Debug()
-    {
-        var window = EditorWindow.GetWindow<DebugSkillBallWindow>();
         window.Show();
     }
     [UnityEditor.MenuItem("Tools/Mat", priority = 301)]

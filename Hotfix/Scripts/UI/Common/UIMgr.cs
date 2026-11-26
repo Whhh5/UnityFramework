@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Text;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -22,24 +21,21 @@ public enum EnWindowHideType
     Close,
     SelectItem,
 }
-public class UIMgr : SingletonMono<UIMgr>
+public partial class UIMgr : SingletonMono<UIMgr>
 {
     [SerializeField]
     private Canvas m_MainCanvas = null;
     [SerializeField]
     private RectTransform _CanvasRect = null;
     [SerializeField]
-    private RectTransform m_UIRootRect = null;
+    private RectTransform _UIRootRect = null;
     [SerializeField]
-    private RectTransform m_UITipsRootRect = null;
+    private RectTransform _UITipsRootRect = null;
 
     private readonly Dictionary<int, int> _WindowId2EntityDataID = new();
     private readonly List<int> _WindowList = new();
     private readonly Dictionary<EnUIWindowType, RectTransform> m_WindowType2Root = new();
 
-    private Shader _UITmpDissolveShader = null;
-    private Texture _NoiseTexture;
-    private Shader _UIImageShader;
     protected override void OnDestroy()
     {
         base.OnDestroy();
@@ -58,35 +54,13 @@ public class UIMgr : SingletonMono<UIMgr>
             //ShowWindow<CGameStartWindowData>();
             ABBUtil.LogError($"没有找到启动界面，请继承 {typeof(IStartLaunch)}");
         }
-
-        //AotDebug.Log($"uimgrloadshader {_NoiseTexture} {_UITmpDissolveShader} {_UIImageShader}");
-        var noiseLoadhandle = await ABBLoadMgr.Instance.LoadAsync<Texture>(EnLoadTarget.Sp_Noise2, default);
-        _NoiseTexture = noiseLoadhandle.GetObject<Texture>();
-        var tmpDissolveShader = await ABBLoadMgr.Instance.LoadAsync<Shader>(EnLoadTarget.Shader_DistanceFieldDissolve_ScreenSpaceNoise, default);
-        _UITmpDissolveShader = tmpDissolveShader.GetObject<Shader>();
-        var imgDissolveShader = await ABBLoadMgr.Instance.LoadAsync<Shader>(EnLoadTarget.Shader_UI_Dissolve_ScreenSpaceNoise, default);
-        _UIImageShader = imgDissolveShader.GetObject<Shader>();
-
-        //AotDebug.Log($"uimgrloadshader {_NoiseTexture} {_UITmpDissolveShader} {_UIImageShader}");
-    }
-
-    public Shader GetTmpDissolveShader()
-    {
-        return _UITmpDissolveShader;
-    }
-    public Shader GetImageDissolveShader()
-    {
-        return _UIImageShader;
-    }
-    public Texture GetNoiseTexture()
-    {
-        return _NoiseTexture;
+        await UniTask.Delay(0);
     }
 
 
     public RectTransform GetUITipsRootRect()
     {
-        return m_UITipsRootRect;
+        return _UITipsRootRect;
     }
     public RectTransform GetCanvasRect()
     {
@@ -135,17 +109,8 @@ public class UIMgr : SingletonMono<UIMgr>
     }
     public int ShowWindow(EnLoadTarget windowId, RectTransform parent = null)
     {
-        return windowId switch
-        {
-            EnLoadTarget.Pre_UIHallMainBattleWindow => ShowWindow<UIHallMainBattleWindowData>(parent),
-            EnLoadTarget.Pre_UIHallMainShopWindow => ShowWindow<UIHallMainShopWindowData>(parent),
-            EnLoadTarget.Pre_UIHallMainTalentWindow => ShowWindow<UIHallMainTalentWindowData>(parent),
-            EnLoadTarget.Pre_UIHallMainCoreWindow => ShowWindow<UIHallMainCoreWindowData>(parent),
-            EnLoadTarget.Pre_UIHallMainCharacterWindow => ShowWindow<UIHallMainCharacterWindowData>(parent),
-            EnLoadTarget.Pre_UIHallMainDebugWindow => ShowWindow<UIHallMainDebugWindowData>(parent),
-            EnLoadTarget.Pre_UIHallMainInlayWindow => ShowWindow<UIHallMainInlayWindowData>(parent),
-            _ => -1
-        };
+        var id = UIUtil.ShowWindow(windowId, parent);
+        return id;
     }
     public int ShowWindow<T>(RectTransform parent = null)
         where T : UIWindowData, new()
@@ -173,7 +138,7 @@ public class UIMgr : SingletonMono<UIMgr>
         if (parent == null)
         {
             if (!m_WindowType2Root.TryGetValue(windowData.WindowType, out parent))
-                parent = m_UIRootRect;
+                parent = _UIRootRect;
         }
         windowData.SetParentTran(parent);
         EntityMgr.Instance.LoadEntity(dataID);
@@ -315,14 +280,5 @@ public class UIMgr : SingletonMono<UIMgr>
             return maxOrder + 100;
         }
         return 100;
-    }
-
-    public void ShowLobby()
-    {
-        UIMgr.Instance.ShowWindow<UIHallMainWindowData>();
-    }
-    public void HideLobby()
-    {
-        UIMgr.Instance.HideWindow<UIHallMainWindowData>();
     }
 }

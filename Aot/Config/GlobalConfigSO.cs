@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using UnityEditor.Connect;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -7,7 +8,7 @@ using UnityEngine.Networking;
 public class GlobalConfigSO : ScriptableObject
 {
     [SerializeField]
-    private EnLoaderType _LoaderType = EnLoaderType.Editor;
+    private EnLoaderType _LoaderType = EnLoaderType.Localhost;
 
     [Header("项目名称")]
     public string ProjectName = $"RunGame";
@@ -18,6 +19,8 @@ public class GlobalConfigSO : ScriptableObject
     public string DownloadRootUrl = $"http://192.168.31.129:8000";
     [Header("外网服务器地址穿透")]
     public string ServerUrl = $"https://librarian-widget-churn.ngrok-free.dev";
+    [Header("本地临时地址")]
+    public string LocalDataPath = $"Misc/Temp";
 
     [Header("外网服务器地址穿透")]
     public string PersistentRoot = $"Persistent";
@@ -84,7 +87,9 @@ public class GlobalConfigSO : ScriptableObject
     {
         var url = LoaderType switch
         {
-            EnLoaderType.Editor => DownloadRootUrl,
+#if UNITY_EDITOR
+            EnLoaderType.Editor => Path.Combine(AotUtility.GetUnityRootPath(), LocalDataPath),
+#endif
             EnLoaderType.Localhost => DownloadRootUrl,
             EnLoaderType.internet => StaticWebUtl,
             _ => throw new Exception($"get server url error: {LoaderType}"),
@@ -94,21 +99,21 @@ public class GlobalConfigSO : ScriptableObject
     }
     public string GetProjectServerUrlPath()
     {
-        var url = LoaderType switch
-        {
-            EnLoaderType.Editor => DownloadRootUrl,
-            EnLoaderType.Localhost => DownloadRootUrl,
-            EnLoaderType.internet => ServerUrl,
-            _ => throw new Exception($"get server url error: {LoaderType}"),
-        };
+        var url = GetServerUrlPath();
         var path = Path.Combine(url, ProjectName);
         return path;
     }
     public string GetServerUrlPath()
     {
+#if UNITY_EDITOR
+        if (LoaderType == EnLoaderType.Editor)
+        {
+            var unityPath = AotUtility.GetUnityRootPath();
+            return Path.Combine(unityPath, LocalDataPath);
+        }
+#endif
         var url = LoaderType switch
         {
-            EnLoaderType.Editor => DownloadRootUrl,
             EnLoaderType.Localhost => DownloadRootUrl,
             EnLoaderType.internet => ServerUrl,
             _ => throw new Exception($"get server url error: {LoaderType}"),

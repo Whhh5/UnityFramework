@@ -206,7 +206,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1500217936459508540}
   - component: {fileID: 7904577131181739581}
-  - component: {fileID: 1827766019816271100}
+  - component: {fileID: 3508925967043823323}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -248,7 +248,7 @@ MonoBehaviour:
   _MainCamera: {fileID: 3659354222074089898}
   _UICamera: {fileID: 4309702686377889350}
   m_URPCamera: {fileID: 1587386687699674151}
---- !u!114 &1827766019816271100
+--- !u!114 &3508925967043823323
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -262,8 +262,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_MainCanvas: {fileID: 5635760564663322656}
   _CanvasRect: {fileID: 5175209978910336729}
-  m_UIRootRect: {fileID: 6432249979216190106}
-  m_UITipsRootRect: {fileID: 0}
+  _UIRootRect: {fileID: 6432249979216190106}
+  _UITipsRootRect: {fileID: 0}
 --- !u!1 &3593034681736410041
 GameObject:
   m_ObjectHideFlags: 0

@@ -40,7 +40,7 @@ public class PersistentMgr : Singleton<PersistentMgr>
         accountData.SetGameCount(++gameCount);
         if (gameCount == 1)
         {
-            FirstGame();
+            EventMgr.Instance.FireExecute(EnABBEvent.ENTITY_APP_FIRST);
         }
     }
     public void UploadPeresistentData(bool isDelay = true)
@@ -110,28 +110,6 @@ public class PersistentMgr : Singleton<PersistentMgr>
     {
         _PersistentString.Remove(perId);
         _Persistents.Remove(perId);
-    }
-
-
-    private void FirstGame()
-    {
-        {
-            var data = PersistentMgr.Instance.GetData<PersistentCharacterData>(EnPersistentId.Character);
-            var defCharaId = UICharacterUtility.GetDefaultCharacterId();
-            data.SetIsLock(defCharaId, false);
-            UICharacterMgr.Instance.RefreshAptitude(defCharaId, false);
-            data.SetActiveCharacterId(defCharaId);
-        }
-        {
-            var data = PersistentMgr.Instance.GetData<PersistentGoodsData>(EnPersistentId.Goods);
-            data.SetGoodsCount((int)EnGoodsId.Coin, 100000);
-            data.SetGoodsCount((int)EnGoodsId.Diamond, 100000);
-            data.SetGoodsCount((int)EnGoodsId.Energy, 100000);
-        }
-        {
-            GameChapterMgr.Instance.SetMaxSuccessChapterId(0);
-            GameChapterMgr.Instance.SetCurSelectChapterId(1);
-        }
     }
 
 }

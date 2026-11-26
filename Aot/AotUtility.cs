@@ -51,4 +51,14 @@ public  static class AotUtility
         var result = CalculateFileMD5(bytes);
         return result;
     }
+
+    public static string GetDataPath()
+    {
+        return Application.dataPath;
+    }
+    public static string GetUnityRootPath()
+    {
+        var unityPath = Path.GetDirectoryName(GetDataPath());
+        return unityPath;
+    }
 }

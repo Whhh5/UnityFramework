@@ -1,4 +1,7 @@
 
+using System;
+using System.Collections.Generic;
+
 public enum EnTypeId
 {
     None = 0,
@@ -173,6 +176,30 @@ public enum EnTypeId
 }
 public static class TypeDefine
 {
+
+    private static readonly Dictionary<int, Func<IClassPool, IClassPool>> _ClassData = new();
+
+    public static void Register<T>(EnTypeId typeId)
+        where T: IClassPool, new()
+    {
+        Register<T>((int)typeId);
+    }
+    public static void Register<T>(int typeId)
+    where T : IClassPool, new()
+    {
+        var func = Resiter_ClassData<T>(typeId);
+        _ClassData.Add(typeId, func);
+    }
+
+    private static Func<IClassPool, IClassPool> Resiter_ClassData<T>(int typeId)
+        where T : IClassPool, new()
+    {
+        return (data) =>
+        {
+            return ClassPoolMgr.Instance.Pull<SkillVirtualTimelineNodePlayableInfo>(data);
+        };
+    }
+
     public static IClassPool CreateInstance(in int typeId, in IClassPool userData)
     {
         return (EnTypeId)typeId switch
@@ -210,7 +237,7 @@ public static class TypeDefine
             EnTypeId.CompareGreaterInfo => ClassPoolMgr.Instance.Pull<CompareGreaterInfo>(userData),
             EnTypeId.CompareEqualInfo => ClassPoolMgr.Instance.Pull<CompareEqualInfo>(userData),
             EnTypeId.PhysicsResolveCylinder => ClassPoolMgr.Instance.Pull<PhysicsResolveCylinder>(userData),
-            EnTypeId.EntityNoMovementBuffData => ClassPoolMgr.Instance.Pull<EntityNoMovementBuffData>(userData),
+            //EnTypeId.EntityNoMovementBuffData => ClassPoolMgr.Instance.Pull<EntityNoMovementBuffData>(userData),
 
             EnTypeId.SkillBehaviourScheduleAction => ClassPoolMgr.Instance.Pull<SkillBehaviourScheduleAction>(userData),
             EnTypeId.SkillBuffScheduleAction => ClassPoolMgr.Instance.Pull<SkillBuffScheduleAction>(userData),
@@ -241,94 +268,6 @@ public static class TypeDefine
 
             EnTypeId.AiPerceptionLayerTest => ClassPoolMgr.Instance.Pull<AiPerceptionLayerTest>(userData),
             EnTypeId.AiPerceptionDistanceTest => ClassPoolMgr.Instance.Pull<AiPerceptionDistanceTest>(userData),
-
-            // game
-            EnTypeId.GameBattleMonster1000101EntityData => ClassPoolMgr.Instance.Pull<GameBattleMonster1000101EntityData>(userData),
-            EnTypeId.GameBattleMonster1000102EntityData => ClassPoolMgr.Instance.Pull<GameBattleMonster1000102EntityData>(userData),
-            EnTypeId.GameBattleMonster1000103EntityData => ClassPoolMgr.Instance.Pull<GameBattleMonster1000103EntityData>(userData),
-            EnTypeId.GameBattleMonster1000104EntityData => ClassPoolMgr.Instance.Pull<GameBattleMonster1000104EntityData>(userData),
-            EnTypeId.GameBattleMonster1000201EntityData => ClassPoolMgr.Instance.Pull<GameBattleMonster1000201EntityData>(userData),
-            EnTypeId.GameBattleMonster1000301EntityData => ClassPoolMgr.Instance.Pull<GameBattleMonster1000301EntityData>(userData),
-            EnTypeId.GameBattleMapBoss1001101EntityData => ClassPoolMgr.Instance.Pull<GameBattleMapBoss1001101EntityData>(userData),
-
-            EnTypeId.GameBattleLeechEntity => ClassPoolMgr.Instance.Pull<GameBattleLeechEntityData>(userData),
-
-
-            EnTypeId.GameSkillBossDebutEventData => ClassPoolMgr.Instance.Pull<GameSkillBossDebutEventData>(userData),
-            EnTypeId.GameSkillBossSummonEventData => ClassPoolMgr.Instance.Pull<GameSkillBossSummonEventData>(userData),
-
-            EnTypeId.GameBattleCharacter1EntityData => ClassPoolMgr.Instance.Pull<GameBattleCharacter1EntityData>(userData),
-            EnTypeId.GameUICharacter1EntityData => ClassPoolMgr.Instance.Pull<GameUICharacter1EntityData>(userData),
-            EnTypeId.GameBattleCharacter2EntityData => ClassPoolMgr.Instance.Pull<GameBattleCharacter2EntityData>(userData),
-            EnTypeId.GameUICharacter2EntityData => ClassPoolMgr.Instance.Pull<GameUICharacter2EntityData>(userData),
-
-            EnTypeId.EntityVulnerableBuffData => ClassPoolMgr.Instance.Pull<EntityVulnerableBuffData>(userData),
-            EnTypeId.EntityBurnBuffData => ClassPoolMgr.Instance.Pull<EntityBurnBuffData>(userData),
-            EnTypeId.EntityCrystalBuffData => ClassPoolMgr.Instance.Pull<EntityCrystalBuffData>(userData),
-            EnTypeId.EntityShatteredArmorBuffData => ClassPoolMgr.Instance.Pull<EntityShatteredArmorBuffData>(userData),
-            EnTypeId.EntityFreezeBuffData => ClassPoolMgr.Instance.Pull<EntityFreezeBuffData>(userData),
-            EnTypeId.EntityElectricBuffData => ClassPoolMgr.Instance.Pull<EntityElectricBuffData>(userData),
-            EnTypeId.EntityBleedBuffData => ClassPoolMgr.Instance.Pull<EntityBleedBuffData>(userData),
-
-            EnTypeId.GameBattleSkillBall1Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBall_1Data>(userData),
-            EnTypeId.GameBattleSkillBall101Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBall101Data>(userData),
-            EnTypeId.GameBattleSkillBall1001Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBall1001Data>(userData),
-            EnTypeId.GameBattleSkillBall1002Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBall1002Data>(userData),
-            EnTypeId.GameBattleSkillBall1003Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBall1003Data>(userData),
-            EnTypeId.GameBattleSkillBall1004Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBall1004Data>(userData),
-            EnTypeId.GameBattleSkillBall1005Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBall1005Data>(userData),
-            EnTypeId.GameBattleSkillBall1006Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBall1006Data>(userData),
-            EnTypeId.GameBattleSkillBall1007Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBall1007Data>(userData),
-            EnTypeId.GameBattleSkillBall1008Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBall1008Data>(userData),
-            EnTypeId.GameBattleSkillBall1009Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBall1009Data>(userData),
-            EnTypeId.GameBattleSkillBall1010Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBall1010Data>(userData),
-            EnTypeId.GameBattleSkillBall1011Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBall1011Data>(userData),
-            EnTypeId.GameBattleSkillBall1012Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBall1012Data>(userData),
-
-            EnTypeId.GameBattleSkillPassivity2001Data => ClassPoolMgr.Instance.Pull<GameBattleSkillPassivity2001Data>(userData),
-            EnTypeId.GameBattleSkillPassivity2002Data => ClassPoolMgr.Instance.Pull<GameBattleSkillPassivity2002Data>(userData),
-            EnTypeId.GameBattleSkillPassivity2003Data => ClassPoolMgr.Instance.Pull<GameBattleSkillPassivity2003Data>(userData),
-            EnTypeId.GameBattleSkillPassivity2004Data => ClassPoolMgr.Instance.Pull<GameBattleSkillPassivity2004Data>(userData),
-            EnTypeId.GameBattleSkillPassivity2005Data => ClassPoolMgr.Instance.Pull<GameBattleSkillPassivity2005Data>(userData),
-            EnTypeId.GameBattleSkillPassivity2006Data => ClassPoolMgr.Instance.Pull<GameBattleSkillPassivity2006Data>(userData),
-            EnTypeId.GameBattleSkillPassivity2007Data => ClassPoolMgr.Instance.Pull<GameBattleSkillPassivity2007Data>(userData),
-            EnTypeId.GameBattleSkillPassivity2008Data => ClassPoolMgr.Instance.Pull<GameBattleSkillPassivity2008Data>(userData),
-
-            EnTypeId.GameBattleSkillBall10071011Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBall10071011Data>(userData),
-            EnTypeId.GameBattleSkillBall10091010Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBall10091010Data>(userData),
-            EnTypeId.GameBattleSkillBall10021006Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBall10021006Data>(userData),
-            EnTypeId.GameBattleSkillBall10071012Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBall10071012Data>(userData),
-            EnTypeId.GameBattleSkillBall10011008Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBall10011008Data>(userData),
-            EnTypeId.GameBattleSkillBall10031004Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBall10031004Data>(userData),
-
-            EnTypeId.GameBattleSkillBallPart1001Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBallPart1001Data>(userData),
-            EnTypeId.GameBattleSkillBallPart1002Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBallPart1002Data>(userData),
-            EnTypeId.GameBattleSkillBallPart1003Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBallPart1003Data>(userData),
-            EnTypeId.GameBattleSkillBallPart1004Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBallPart1004Data>(userData),
-            EnTypeId.GameBattleSkillBallPart1005Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBallPart1005Data>(userData),
-            EnTypeId.GameBattleSkillBallPart1006Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBallPart1006Data>(userData),
-            EnTypeId.GameBattleSkillBallPart1007Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBallPart1007Data>(userData),
-            EnTypeId.GameBattleSkillBallPart1008Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBallPart1008Data>(userData),
-            EnTypeId.GameBattleSkillBallPart1009Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBallPart1009Data>(userData),
-            EnTypeId.GameBattleSkillBallPart1010Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBallPart1010Data>(userData),
-            EnTypeId.GameBattleSkillBallPart1011Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBallPart1011Data>(userData),
-            EnTypeId.GameBattleSkillBallPart1012Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBallPart1012Data>(userData),
-
-            EnTypeId.GameBattleSkillBallPart10071011Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBallPart10071011Data>(userData),
-            EnTypeId.GameBattleSkillBallPart10091010Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBallPart10091010Data>(userData),
-            EnTypeId.GameBattleSkillBallPart10021006Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBallPart10021006Data>(userData),
-            EnTypeId.GameBattleSkillBallPart10071012Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBallPart10071012Data>(userData),
-            EnTypeId.GameBattleSkillBallPart10011008Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBallPart10011008Data>(userData),
-            EnTypeId.GameBattleSkillBallPart10031004Data => ClassPoolMgr.Instance.Pull<GameBattleSkillBallPart10031004Data>(userData),
-
-            EnTypeId.GameBattleSkillBallPartInfo => ClassPoolMgr.Instance.Pull<GameBattleSkillBallPartInfo>(userData),
-
-
-            EnTypeId.GameBattleWaveMonsterInfo => ClassPoolMgr.Instance.Pull<GameBattleWaveMonsterInfo>(userData),
-
-
-            EnTypeId.GameSkillMonsterAttack1EventData => ClassPoolMgr.Instance.Pull<GameSkillMonsterAttack1EventData>(userData),
-            EnTypeId.GameSkillMonsterDieEventData => ClassPoolMgr.Instance.Pull<GameSkillMonsterDieEventData>(userData),
 
             _ => null,
         };

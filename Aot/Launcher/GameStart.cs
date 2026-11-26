@@ -11,7 +11,9 @@ using UnityEngine;
 
 public enum EnLoaderType
 {
+#if UNITY_EDITOR
     Editor,
+#endif
     Localhost,
     internet,
     EnumCount,

@@ -3,7 +3,7 @@ using Cysharp.Threading.Tasks;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
 using UnityEngine;
 
-public class AccountMgr : Singleton<AccountMgr>
+public partial class AccountMgr : Singleton<AccountMgr>
 {
     private static string _AccountId;
 
@@ -25,7 +25,7 @@ public class AccountMgr : Singleton<AccountMgr>
     public override void Destroy()
     {
         EventMgr.Instance.Unregister(EnABBEvent.EVENT_ACCOUNT_LOGIN, OnEvent_AccountLogin);
-        EventMgr.Instance.Unregister<GameGoodsChangeEventData>(EnABBEvent.EVENT_GOODS_CHANGE, (int)EnGoodsId.Exp, 0, OnEvent_ExpChange);
+        //EventMgr.Instance.Unregister<GameGoodsChangeEventData>(EnABBEvent.EVENT_GOODS_CHANGE, (int)EnGoodsId.Exp, 0, OnEvent_ExpChange);
         base.Destroy();
         _Level2ExpInfo.Clear();
         _MaxLevel
@@ -45,7 +45,7 @@ public class AccountMgr : Singleton<AccountMgr>
         }
         _MaxLevel = _Level2ExpInfo.Count;
 
-        EventMgr.Instance.Register<GameGoodsChangeEventData>(EnABBEvent.EVENT_GOODS_CHANGE, (int)EnGoodsId.Exp, 0, OnEvent_ExpChange);
+        //EventMgr.Instance.Register<GameGoodsChangeEventData>(EnABBEvent.EVENT_GOODS_CHANGE, (int)EnGoodsId.Exp, 0, OnEvent_ExpChange);
         EventMgr.Instance.Register(EnABBEvent.EVENT_ACCOUNT_LOGIN, OnEvent_AccountLogin);
     }
     private void OnEvent_AccountLogin(in int _, in int __)
@@ -100,26 +100,27 @@ public class AccountMgr : Singleton<AccountMgr>
         var lastLevel = _CurLevel;
         _CurLevel = level;
 
-        var evUd = ClassPoolMgr.Instance.Pull<GameAccountLevelChangeEventData>();
-        evUd.Setting(lastLevel, level);
-        EventMgr.Instance.FireExecute(EnABBEvent.EVENT_ACCOUNT_LEVEL_CHANGE, evUd);
-        ClassPoolMgr.Instance.Push(evUd);
+        //var evUd = ClassPoolMgr.Instance.Pull<GameAccountLevelChangeEventData>();
+        //evUd.Setting(lastLevel, level);
+        //EventMgr.Instance.FireExecute(EnABBEvent.EVENT_ACCOUNT_LEVEL_CHANGE, evUd);
+        //ClassPoolMgr.Instance.Push(evUd);
     }
-    private void OnEvent_ExpChange(in int goodsCfgId, in int _, in GameGoodsChangeEventData data)
-    {
-        UpdateLevel();
-    }
+    //private void OnEvent_ExpChange(in int goodsCfgId, in int _, in GameGoodsChangeEventData data)
+    //{
+    //    UpdateLevel();
+    //}
 
     public void ChangeExp(int exp)
     {
-        UIGoodsMgr.Instance.AddGoods((int)EnGoodsId.Exp, exp);
+        //UIGoodsMgr.Instance.AddGoods((int)EnGoodsId.Exp, exp);
 
         UpdateLevel();
     }
     public int GetExp()
     {
-        var exp = UIGoodsMgr.Instance.GetGoodsCount((int)EnGoodsId.Exp);
-        return exp;
+        //var exp = UIGoodsMgr.Instance.GetGoodsCount((int)EnGoodsId.Exp);
+        //return exp;
+        return 9;
     }
     public float GetExpSliderValue()
     {
@@ -145,6 +146,6 @@ public class AccountMgr : Singleton<AccountMgr>
         AccountMgr.Instance.SetAccountId(account);
         await PersistentMgr.Instance.InitPersistentData();
         EventMgr.Instance.FireExecute(EnABBEvent.EVENT_ACCOUNT_LOGIN);
-        UIMgr.Instance.ShowLobby();
+        EventMgr.Instance.FireExecute(EnABBEvent.EVENT_SHOW_LOBBY);
     }
 }

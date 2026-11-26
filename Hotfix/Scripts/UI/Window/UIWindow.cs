@@ -168,27 +168,6 @@ public abstract class UIWindow : UIEntity
             _TokenSource = new();
         return _TokenSource.Token;
     }
-
-    protected void RegisterUIDissolve<T>(T go)
-    {
-        if (_AnimController == null)
-            return;
-        if (go is not MonoBehaviour mono)
-            return;
-        if (!mono.TryGetComponent<UIDissolveController>(out var ctl))
-            ctl = mono.gameObject.AddComponent<UIDissolveController>();
-        _AnimController.Register(ctl);
-    }
-    protected void UnregisterUIDissolve<T>(T go)
-    {
-        if (_AnimController == null)
-            return;
-        if (go is not MonoBehaviour mono)
-            return;
-        if (!mono.TryGetComponent<UIDissolveController>(out var ctl))
-            return;
-        _AnimController.Unregister(ctl);
-    }
     protected void RegisterUIController<T>(T go)
     {
         if (_AnimController == null)
