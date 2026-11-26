@@ -1,15 +1,22 @@
 using System.Collections;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
 
 public class TimeMgr : Singleton<TimeMgr>
 {
     private int _IsPause;
-    private readonly EnDotweenId _TimeSclaeId = EnDotweenId.GameMapMgr;
+    private int _TimeSclaeId;
     private readonly Dictionary<int, float> _GameSpeedList = new(10);
     private float _CurSpeed = -1;
     private float _FinalSpeed = -1;
+    public override async UniTask AwakeAsync()
+    {
+        await base.AwakeAsync();
+
+        _TimeSclaeId = this.GetHashCode();
+    }
     public int SetGameSpeed(float speed, bool immediately)
     {
         var setId = ABBUtil.GetTempKey();

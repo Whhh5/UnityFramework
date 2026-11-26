@@ -23,15 +23,7 @@ public enum EnWindowHideType
 }
 public partial class UIMgr : SingletonMono<UIMgr>
 {
-    [SerializeField]
-    private Canvas m_MainCanvas = null;
-    [SerializeField]
-    private RectTransform _CanvasRect = null;
-    [SerializeField]
-    private RectTransform _UIRootRect = null;
-    [SerializeField]
-    private RectTransform _UITipsRootRect = null;
-
+    private UIRootRef _RootRef = null;
     private readonly Dictionary<int, int> _WindowId2EntityDataID = new();
     private readonly List<int> _WindowList = new();
     private readonly Dictionary<EnUIWindowType, RectTransform> m_WindowType2Root = new();
@@ -57,26 +49,29 @@ public partial class UIMgr : SingletonMono<UIMgr>
         await UniTask.Delay(0);
     }
 
-
+    public void SetUIRootRef(UIRootRef rootRef)
+    {
+        _RootRef = rootRef;
+    }
     public RectTransform GetUITipsRootRect()
     {
-        return _UITipsRootRect;
+        return _RootRef.UITipsRootRect;
     }
     public RectTransform GetCanvasRect()
     {
-        return _CanvasRect;
+        return _RootRef.CanvasRect;
     }
     public float GetCanvasScale()
     {
-        return _CanvasRect.lossyScale.x;
+        return _RootRef.CanvasRect.lossyScale.x;
     }
     public Vector2 GetUISize()
     {
-        return m_MainCanvas.GetComponent<RectTransform>().sizeDelta;
+        return _RootRef.MainCanvas.GetComponent<RectTransform>().sizeDelta;
     }
     public Camera GetCanvasCamera()
     {
-        return m_MainCanvas.worldCamera;
+        return _RootRef.MainCanvas.worldCamera;
     }
     public T GetWindow<T>(int windowId)
         where T : UIWindowData
@@ -138,7 +133,7 @@ public partial class UIMgr : SingletonMono<UIMgr>
         if (parent == null)
         {
             if (!m_WindowType2Root.TryGetValue(windowData.WindowType, out parent))
-                parent = _UIRootRect;
+                parent = _RootRef.UIRootRect;
         }
         windowData.SetParentTran(parent);
         EntityMgr.Instance.LoadEntity(dataID);

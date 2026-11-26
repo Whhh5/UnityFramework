@@ -199,21 +199,18 @@ public static class SkillEditorDefine
 
     public static IEntityBuffParamsEditor GetEntityBuffParamsEditor(EnBuff buff)
     {
-#if !UNITY_TEST
-        var buffType = buff switch
-        {
-            EnBuff.NoMovement => GetEditorType(typeof(EntityNoMovementBuffData)),
-            _ => null,
-        };
-        if (buffType == null)
-            return null;
-        var ins = Activator.CreateInstance(buffType);
-        var result = ins as IEntityBuffParamsEditor;
-        SkillEditorWindow.EditorInstanceInitialize(result);
-        return result;
-#else
+        //var buffType = buff switch
+        //{
+        //    EnBuff.NoMovement => GetEditorType(typeof(EntityNoMovementBuffData)),
+        //    _ => null,
+        //};
+        //if (buffType == null)
+        //    return null;
+        //var ins = Activator.CreateInstance(buffType);
+        //var result = ins as IEntityBuffParamsEditor;
+        //SkillEditorWindow.EditorInstanceInitialize(result);
+        //return result;
         return null;
-#endif
     }
 
     public static ISkillScheduleActionEditor GetSkillScheduleActionEditor(EnAtkLinkScheculeType scheduleType)
