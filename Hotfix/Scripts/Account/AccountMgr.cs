@@ -147,5 +147,6 @@ public partial class AccountMgr : Singleton<AccountMgr>
         await PersistentMgr.Instance.InitPersistentData();
         EventMgr.Instance.FireExecute(EnABBEvent.EVENT_ACCOUNT_LOGIN);
         EventMgr.Instance.FireExecute(EnABBEvent.EVENT_SHOW_LOBBY);
+        AotDebug.LogWarning($"login success enter game: {account}");
     }
 }

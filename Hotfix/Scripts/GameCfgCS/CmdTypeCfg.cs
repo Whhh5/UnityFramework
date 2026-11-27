@@ -1,7 +1,7 @@
-﻿// CmdTyoeCfg
-public class CmdTyoeCfg : ICfg
+﻿// CmdTypeCfg
+public class CmdTypeCfg : ICfg
 {
-	private CmdTyoeCfg() {}
+	private CmdTypeCfg() {}
 	// id
 	[Newtonsoft.Json.JsonProperty()] public readonly System.Int32 nCmdID;
 	public System.Int32 GetID()
